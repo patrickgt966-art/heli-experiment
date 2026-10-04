@@ -32,17 +32,18 @@ Bilinen sınır: Yönetici anahtarını çalan kişi sizden önce davranıp yön
 3. `create_launch_claims`, `create_market_inventory`
 4. `initialize_identity(verifier)`, `initialize_release_policy(minimum_quote_depth)` — ikisi de `genesis`'ten **önce** olmalı; sonradan oluşturulamaz.
 5. `create_vault(0..3)`
-6. `genesis` — 100M basılır, 10M yakılır, basma yetkisi kalıcı olarak kaldırılır.
-7. `prepare_auction_quote`, `prepare_auction_proceeds`
-8. `open_auction(floor, tick_size)` — `start - 600` saniyeden **önce** olmalı. İhale açılmazsa proje satış emri hiç konamaz.
-9. `initialize_governance(recovery)` — kurtarma anahtarının **açık** anahtarı. Özel anahtar çevrimdışı kalır.
-10. Manifest piyasası oluşturulur (Manifest talimatı), ardından `create_manifest_base`, `create_manifest_quote`, `bind_manifest_market`.
-11. `create_management_base`, `create_management_quote`, `initialize_management`
-12. `create_release_base(3)`, `create_release_quote(3)`, `initialize_release_seat(3)`
-13. `create_fee_base`, `create_fee_quote`, `initialize_fee_vaults(monthly_cap, reserve)` — `monthly_cap` (tek teklif üst sınırı) sonradan değiştirilemez.
-14. Upgrade yetkisini kurtarma anahtarına devredin:
+6. `create_token_metadata(name, symbol, uri)` — cüzdanlarda görünecek ad (≤32 bayt), sembol (≤10 bayt) ve logo/JSON adresi (`https://`, ≤200 bayt). **Bir kez** yazılır; güncelleme yetkisi config PDA'sıdır ve programda güncelleme talimatı yoktur (upgrade anahtarı kaldırılınca kalıcı). Meta veri olmadan `genesis` çalışmaz. Adres, sitedeki bir JSON dosyasını göstermelidir (ör. `{"name":…,"symbol":…,"description":…,"image":"https://…/logo.png"}`); alan adı süresi dolarsa logo kaybolur, kalıcı barındırma (ör. Arweave) düşünülebilir.
+7. `genesis` — 100M basılır, 10M yakılır, basma yetkisi kalıcı olarak kaldırılır.
+8. `prepare_auction_quote`, `prepare_auction_proceeds`
+9. `open_auction(floor, tick_size)` — `start - 600` saniyeden **önce** olmalı. İhale açılmazsa proje satış emri hiç konamaz.
+10. `initialize_governance(recovery)` — kurtarma anahtarının **açık** anahtarı. Özel anahtar çevrimdışı kalır.
+11. Manifest piyasası oluşturulur (Manifest talimatı), ardından `create_manifest_base`, `create_manifest_quote`, `bind_manifest_market`.
+12. `create_management_base`, `create_management_quote`, `initialize_management`
+13. `create_release_base(3)`, `create_release_quote(3)`, `initialize_release_seat(3)`
+14. `create_fee_base`, `create_fee_quote`, `initialize_fee_vaults(monthly_cap, reserve)` — `monthly_cap` (tek teklif üst sınırı) sonradan değiştirilemez.
+15. Upgrade yetkisini kurtarma anahtarına devredin:
     `solana program set-upgrade-authority <PROGRAM_ID> --new-upgrade-authority <KURTARMA_ANAHTARI.json>`
-15. Keeper yapılandırmasındaki pinleri güncelleyin: `admin`, `verifier`, `heliUpgradeAuthority` (kurtarma anahtarının açık anahtarı) ve Manifest ikili hash'i.
+16. Keeper yapılandırmasındaki pinleri güncelleyin: `admin`, `verifier`, `heliUpgradeAuthority` (kurtarma anahtarının açık anahtarı) ve Manifest ikili hash'i.
 
 Sonradan yönetici veya doğrulayıcı değiştirildiğinde keeper bilinçli olarak durur ("Administrator or verifier pin changed"). Yeni değerleri yapılandırmaya elle girin.
 

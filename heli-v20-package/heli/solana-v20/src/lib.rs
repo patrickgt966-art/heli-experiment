@@ -8,6 +8,8 @@ use auction::*;
 use manifest_bridge::*; use identity::*; use release::*;
 use management::*; use market_release::*;
 declare_id!("HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv");
+/// Metaplex Token Metadata program (wallet-visible token name, symbol and logo).
+pub const TOKEN_METADATA:Pubkey=anchor_lang::solana_program::pubkey!("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 
 #[program]
 pub mod heli_core_v20 {
@@ -32,8 +34,31 @@ pub mod heli_core_v20 {
  pub fn create_fee_base(ctx:Context<CreateFeeBase>)->Result<()> {require!(!ctx.accounts.config.closed,ErrorCode::State);Ok(())}
  pub fn create_fee_quote(ctx:Context<CreateFeeQuote>)->Result<()> {require!(!ctx.accounts.config.closed,ErrorCode::State);Ok(())}
  pub fn create_vault(ctx:Context<CreateVault>,kind:u8)->Result<()> {require!(kind<4&&!ctx.accounts.config.live&&!ctx.accounts.config.closed,ErrorCode::State);ctx.accounts.config.vault_mask|=1<<kind;Ok(())}
+ // Owner decision (4 Oct 2026): the token's public name, symbol and logo URI are written once, before genesis,
+ // while the config PDA is still the mint authority. The config PDA is also the update authority and the program
+ // has no update instruction, so the metadata is fixed once the upgrade key is removed.
+ pub fn create_token_metadata(ctx:Context<CreateTokenMetadata>,name:String,symbol:String,uri:String)->Result<()> {
+  let a=&ctx.accounts;let c=&a.config;
+  require!(!c.live&&!c.closed&&!c.metadata_created&&a.mint.supply==0,ErrorCode::State);
+  require!(!name.is_empty()&&name.len()<=32&&!symbol.is_empty()&&symbol.len()<=10&&uri.len()<=200&&uri.starts_with("https://"),ErrorCode::TokenMetadata);
+  let(expected,_)=Pubkey::find_program_address(&[b"metadata",TOKEN_METADATA.as_ref(),c.mint.as_ref()],&TOKEN_METADATA);
+  require_keys_eq!(a.metadata.key(),expected,ErrorCode::TokenMetadata);
+  // CreateMetadataAccountV3 (index 33): DataV2 {name, symbol, uri, no royalty, no creators/collection/uses},
+  // is_mutable, no collection details.
+  let mut data=vec![33u8];
+  for s in [&name,&symbol,&uri] {data.extend_from_slice(&(s.len() as u32).to_le_bytes());data.extend_from_slice(s.as_bytes());}
+  data.extend_from_slice(&[0,0,0,0,0,1,0]);
+  use anchor_lang::solana_program::{instruction::{AccountMeta,Instruction},program::invoke_signed};
+  let ix=Instruction{program_id:TOKEN_METADATA,data,accounts:vec![AccountMeta::new(a.metadata.key(),false),AccountMeta::new_readonly(a.mint.key(),false),
+   AccountMeta::new_readonly(c.key(),true),AccountMeta::new(a.admin.key(),true),AccountMeta::new_readonly(c.key(),true),AccountMeta::new_readonly(a.system_program.key(),false)]};
+  let bump=[c.bump];let seeds:&[&[u8]]=&[b"config",&bump];
+  invoke_signed(&ix,&[a.metadata.to_account_info(),a.mint.to_account_info(),c.to_account_info(),a.admin.to_account_info(),a.system_program.to_account_info(),a.token_metadata_program.to_account_info()],&[seeds])?;
+  ctx.accounts.config.metadata_created=true;Ok(())
+ }
  pub fn genesis(ctx:Context<Genesis>)->Result<()> {
   let c=&ctx.accounts.config;require!(!c.live&&!c.closed&&c.vault_mask==15&&ctx.accounts.mint.supply==0,ErrorCode::State);
+  // The mint authority is revoked below; without metadata the token would stay nameless in wallets forever.
+  require!(c.metadata_created,ErrorCode::TokenMetadata);
   let bump=[c.bump];let seeds:&[&[u8]]=&[b"config",&bump];let sign=&[seeds];
   token::mint_to(CpiContext::new_with_signer(ctx.accounts.token_program.to_account_info(),MintTo{mint:ctx.accounts.mint.to_account_info(),to:ctx.accounts.launch.to_account_info(),authority:c.to_account_info()},sign),100_000_000*UNIT)?;
   for(v,a)in[(&ctx.accounts.human,70_000_000*UNIT),(&ctx.accounts.rewards,0),(&ctx.accounts.liquidity,0),(&ctx.accounts.founder,15_000_000*UNIT)] {
@@ -242,7 +267,7 @@ fn market_ready(m:&Market,x:u64,y:u64,now:i64)->Result<bool> {
  if x==0||y<5000*UNIT{return Ok(false);}let p=m.samples.iter().rev().find(|p|p.time<=now-30*DAY&&p.time>=now-31*DAY);
  if let Some(p)=p {let avg=(m.cumulative-p.cumulative)/(now-p.time)as u128;let spot=muldiv(y as u128,UNIT as u128,x as u128)?;Ok(avg>0&&spot*10000>=avg*8000)}else{Ok(false)}
 }
-#[account] pub struct Config {pub admin:Pubkey,pub mint:Pubkey,pub quote_mint:Pubkey,pub history:Pubkey,pub start:i64,pub cursor:i64,pub stocks:[u64;4],pub principal:u64,pub lp_requested:u64,pub apr_bps:u16,pub pending_apr:u16,pub apr_effective:u16,pub bump:u8,pub vault_mask:u8,pub live:bool,pub closed:bool,pub paused:bool,pub last_settled_epoch:u16,pub launch_people:u32,pub launch_claimed:u32,pub launch_finalized:bool,pub launch_per_person:u64,pub launch_remaining:u64,pub market_remaining:u64,pub sale_authorized:u64,pub sale_total_sold:u64,pub sale_order:Pubkey,pub meteora_instruction_hash:[u8;32],pub meteora_committed_at:i64,pub meteora_pool:Pubkey,pub meteora_listed:bool,pub dlmm_pair:Pubkey,pub dlmm_committed_at:i64,pub dlmm_floor_bin:i32,pub dlmm_heli_is_x:bool,pub dlmm_listed:bool,pub dlmm_active_id:i32,pub dlmm_bin_step:u16,pub dlmm_base_factor:u16,pub dlmm_pool_created:bool,pub manifest_market:Pubkey,pub manifest_trader_bump:u8,pub manifest_bound:bool,pub manifest_base_deposited:u64,pub manifest_base_returned:u64,pub manifest_quote_withdrawn:u64,pub revenue_total:u64}
+#[account] pub struct Config {pub admin:Pubkey,pub mint:Pubkey,pub quote_mint:Pubkey,pub history:Pubkey,pub start:i64,pub cursor:i64,pub stocks:[u64;4],pub principal:u64,pub lp_requested:u64,pub apr_bps:u16,pub pending_apr:u16,pub apr_effective:u16,pub bump:u8,pub vault_mask:u8,pub live:bool,pub closed:bool,pub paused:bool,pub last_settled_epoch:u16,pub launch_people:u32,pub launch_claimed:u32,pub launch_finalized:bool,pub launch_per_person:u64,pub launch_remaining:u64,pub market_remaining:u64,pub sale_authorized:u64,pub sale_total_sold:u64,pub sale_order:Pubkey,pub meteora_instruction_hash:[u8;32],pub meteora_committed_at:i64,pub meteora_pool:Pubkey,pub meteora_listed:bool,pub dlmm_pair:Pubkey,pub dlmm_committed_at:i64,pub dlmm_floor_bin:i32,pub dlmm_heli_is_x:bool,pub dlmm_listed:bool,pub dlmm_active_id:i32,pub dlmm_bin_step:u16,pub dlmm_base_factor:u16,pub dlmm_pool_created:bool,pub manifest_market:Pubkey,pub manifest_trader_bump:u8,pub manifest_bound:bool,pub manifest_base_deposited:u64,pub manifest_base_returned:u64,pub manifest_quote_withdrawn:u64,pub revenue_total:u64,pub metadata_created:bool}
 #[account] pub struct Operations {pub monthly_cap:u64,pub reserve:u64,pub window:u16,pub spent_in_window:u64,pub earned_total:u64,pub spent_total:u64,pub next_nonce:u64,pub donated_total:u64,pub sale_allocated_total:u64,pub revenue_spent:u64,pub out_day:i64,pub out_days:[u64;30]}
 #[account] pub struct Expense {pub destination:Pubkey,pub proposer:Pubkey,pub purpose:[u8;32],pub amount:u64,pub ready_at:i64,pub nonce:u64,pub paid:bool,pub cancelled:bool}
 #[event] pub struct ExpenseExecuted {pub nonce:u64,pub destination:Pubkey,pub amount:u64,pub purpose:[u8;32]}
@@ -271,7 +296,7 @@ pub const GOVERNANCE_DELAY:i64=7*DAY;
 // Large histories use external rent-funded zero accounts and in-place access. No 10KB CPI allocation.
 #[account(zero_copy(unsafe))] #[repr(C)] pub struct GlobalBook {pub low:[u64;720],pub high:[u64;720],pub cutoff:[i64;720],pub rate:[u64;720]}
 #[account(zero_copy(unsafe))] #[repr(C)] pub struct UserBook {pub low:[u64;720],pub high:[u64;720],pub claimed:[u64;12]}
-#[error_code] pub enum ErrorCode {#[msg("Invalid state")]State,#[msg("Invalid calendar window")]Time,#[msg("Quota exceeded")]Quota,#[msg("Invalid credential")]Identity,#[msg("Arithmetic error")]Math,#[msg("Collateral deficit")]Collateral,#[msg("Checkpoint required")]Checkpoint,#[msg("Market guard rejected")]Market,#[msg("Staking policy is fixed")]FixedStakingPolicy,#[msg("Staking is disabled")]StakingDisabled,#[msg("Liquidity inventory is disabled")]LiquidityDisabled,#[msg("Monthly free dividends are disabled")]MonthlyDividendDisabled,#[msg("Only the program upgrade authority can initialize")]InitializerNotAuthorized,#[msg("Order price outside the permitted band")]PriceOutsideBand,#[msg("Signer is not authorized for this governance action")]Unauthorized,#[msg("Expense destination must be outside the program treasury")]ExpenseDestination,#[msg("There is no free initial allocation")]FreeAllocationDisabled,#[msg("Reserve funds move only when an approved expense is paid")]ExpenseFundedOnPayment}
+#[error_code] pub enum ErrorCode {#[msg("Invalid state")]State,#[msg("Invalid calendar window")]Time,#[msg("Quota exceeded")]Quota,#[msg("Invalid credential")]Identity,#[msg("Arithmetic error")]Math,#[msg("Collateral deficit")]Collateral,#[msg("Checkpoint required")]Checkpoint,#[msg("Market guard rejected")]Market,#[msg("Staking policy is fixed")]FixedStakingPolicy,#[msg("Staking is disabled")]StakingDisabled,#[msg("Liquidity inventory is disabled")]LiquidityDisabled,#[msg("Monthly free dividends are disabled")]MonthlyDividendDisabled,#[msg("Only the program upgrade authority can initialize")]InitializerNotAuthorized,#[msg("Order price outside the permitted band")]PriceOutsideBand,#[msg("Signer is not authorized for this governance action")]Unauthorized,#[msg("Expense destination must be outside the program treasury")]ExpenseDestination,#[msg("There is no free initial allocation")]FreeAllocationDisabled,#[msg("Reserve funds move only when an approved expense is paid")]ExpenseFundedOnPayment,#[msg("Invalid or missing token metadata")]TokenMetadata}
 
 // Account validation is kept in one source file for reproducible Playground builds.
 include!("accounts.rs");

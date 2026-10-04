@@ -617,6 +617,55 @@
       ]
     },
     {
+      "name": "createTokenMetadata",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "metadata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMetadataProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "symbol",
+          "type": "string"
+        },
+        {
+          "name": "uri",
+          "type": "string"
+        }
+      ]
+    },
+    {
       "name": "genesis",
       "accounts": [
         {
@@ -3171,6 +3220,10 @@
           {
             "name": "revenueTotal",
             "type": "u64"
+          },
+          {
+            "name": "metadataCreated",
+            "type": "bool"
           }
         ]
       }
@@ -3894,6 +3947,11 @@
       "code": 6017,
       "name": "ExpenseFundedOnPayment",
       "msg": "Reserve funds move only when an approved expense is paid"
+    },
+    {
+      "code": 6018,
+      "name": "TokenMetadata",
+      "msg": "Invalid or missing token metadata"
     }
   ]
 }
