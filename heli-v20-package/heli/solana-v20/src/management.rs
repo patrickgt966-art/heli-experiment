@@ -4,17 +4,17 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::{instruction::{AccountMeta,Instruction},program::{invoke,invoke_signed},system_instruction};
 use anchor_spl::token::{self,Mint,Token,TokenAccount,Transfer};
-use crate::{Config,Epoch,ErrorCode,OpeningAuction,UNIT,boundary,outgoing,manifest_bridge::check_market,release::{ReleasePolicy,reference_price,bid_book,order_bounds,check_order_price,order_expiry}};
+use crate::{Config,Epoch,ErrorCode,OpeningAuction,UNIT,boundary,month_index,outgoing,manifest_bridge::check_market,release::{ReleasePolicy,reference_price,bid_book,order_bounds,check_order_price,order_expiry,outside_bid_quote,crash_ceiling,order_quote}};
 
 #[account]
-pub struct ManagementBook {pub quote_floor:u64,pub total_released:u64,pub quote_funded:u64,pub quote_returned:u64,pub trader_bump:u8}
+pub struct ManagementBook {pub quote_floor:u64,pub total_released:u64,pub quote_funded:u64,pub quote_returned:u64,pub trader_bump:u8,pub crash_month:u16,pub crash_base:u64,pub crash_spent:u64}
 
 #[derive(Accounts)]
 pub struct InitializeManagement<'info>{
  #[account(seeds=[b"config"],bump=config.bump,has_one=admin)] pub config:Box<Account<'info,Config>>,
  #[account(address=config.mint)] pub mint:Box<Account<'info,Mint>>,
  #[account(address=config.quote_mint)] pub quote_mint:Box<Account<'info,Mint>>,
- #[account(init,payer=admin,space=8+33,seeds=[b"management-book"],bump)] pub management_book:Box<Account<'info,ManagementBook>>,
+ #[account(init,payer=admin,space=8+64,seeds=[b"management-book"],bump)] pub management_book:Box<Account<'info,ManagementBook>>,
  /// CHECK: Fixed System-owned signer PDA; Manifest seat is claimed by CPI.
  #[account(init,payer=admin,space=0,owner=system_program.key(),seeds=[b"management-trader"],bump)] pub management_trader:UncheckedAccount<'info>,
  /// CHECK: Bound market, owner, mints, program and header checked before CPI.
@@ -101,9 +101,20 @@ pub fn release(mut ctx:Context<ManagementAction>,amount:u64)->Result<()> {
  Ok(())
 }
 
-pub fn order(ctx:Context<ManagementAction>,amount:u64,base_deposit:u64,mantissa:u32,exponent:i8,is_bid:bool)->Result<()> {
- let a=&ctx.accounts;active(a)?;require!(amount>0&&mantissa>0&&exponent>=-18&&exponent<=18&&(!is_bid||base_deposit==0),ErrorCode::Quota);
- let now=Clock::get()?;check_order_price(mantissa,exponent,is_bid,order_bounds(&a.policy,&a.auction,now.unix_timestamp))?;let expiry=order_expiry(&now)?;
+pub fn order(mut ctx:Context<ManagementAction>,amount:u64,base_deposit:u64,mantissa:u32,exponent:i8,is_bid:bool)->Result<()> {
+ let now=Clock::get()?;
+ {let a=&mut ctx.accounts;active(a)?;require!(amount>0&&mantissa>0&&exponent>=-18&&exponent<=18&&(!is_bid||base_deposit==0),ErrorCode::Quota);
+  let bounds=order_bounds(&a.policy,&a.auction,now.unix_timestamp);
+  if is_bid&&bounds.1.is_none() {
+   // Crash exception: only when outside buyers are really missing (measured now, not from stale observations).
+   require!(outside_bid_quote(&a.manifest_market.to_account_info(),&now)?<a.policy.minimum_quote_depth as u128,ErrorCode::PriceOutsideBand);
+   check_order_price(mantissa,exponent,true,(0,Some(crash_ceiling(&a.policy,&a.auction,now.unix_timestamp))))?;
+   let m=month_index(a.config.start,now.unix_timestamp);let b=&mut a.management_book;
+   if b.crash_month!=m {b.crash_month=m;b.crash_spent=0;b.crash_base=a.project_quote.amount;}
+   let spent=b.crash_spent.checked_add(order_quote(amount,mantissa,exponent)?).ok_or(ErrorCode::Math)?;
+   require!(spent<=b.crash_base/10,ErrorCode::Quota);b.crash_spent=spent;
+  } else {check_order_price(mantissa,exponent,is_bid,bounds)?;}}
+ let a=&ctx.accounts;let expiry=order_expiry(&now)?;
  if base_deposit>0 {require!(base_deposit<=a.management_base.amount,ErrorCode::Collateral);deposit_or_withdraw(a,true,base_deposit,2)?;}
  let mut data=vec![6,0];data.extend_from_slice(&0u32.to_le_bytes());data.extend_from_slice(&1u32.to_le_bytes());
  data.extend_from_slice(&amount.to_le_bytes());data.extend_from_slice(&mantissa.to_le_bytes());data.push(exponent as u8);data.push(is_bid as u8);data.extend_from_slice(&expiry.to_le_bytes());data.push(0);

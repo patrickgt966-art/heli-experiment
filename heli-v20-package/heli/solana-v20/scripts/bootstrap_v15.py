@@ -1,12 +1,12 @@
 """Small genuine V15 fixture; no public chain or keys."""
 import hashlib,struct
-def bootstrap(t, auction_quantity=1000, with_policy=False):
+def bootstrap(t, auction_quantity=1000, with_policy=False, min_depth=5000, reject_depth=None):
  t.clock(t.start-14*t.DAY);q=t.allocate(82,t.TOKEN);t.defaults['quote_mint']=q
  t.send('TEST quote mint',[t.Instruction(t.TOKEN,b'\x14\x06'+bytes(t.admin.pubkey())+b'\x00',[t.meta(q,True)])])
  t.defaults.update(history=t.allocate(8+720*8*4),launch=t.pda(b'launch-claims'),market_inventory=t.pda(b'market-inventory'),auction=t.pda(b'opening-auction'),quote_escrow=t.pda(b'auction-quote'),sale_proceeds=t.pda(b'auction-proceeds'),identity_policy=t.pda(b'identity-policy'),instructions=t.INSTRUCTIONS_SYSVAR)
  t.call('initialize',{'start':t.start});t.call('create_launch_claims');t.call('create_market_inventory');verifier=t.Keypair();t.call('initialize_identity',{'verifier':verifier.pubkey()})
  if with_policy:
-  t.defaults['policy']=t.pda(b'release-policy');t.call('initialize_release_policy',{'minimum_quote_depth':5000*t.U})
+  t.defaults['policy']=t.pda(b'release-policy');(reject_depth is not None and t.call('initialize_release_policy',{'minimum_quote_depth':reject_depth},reject='Quota',label='minimum depth below the code floor rejected'));t.call('initialize_release_policy',{'minimum_quote_depth':min_depth*t.U})
  for i,n in enumerate(['human','rewards','liquidity','founder']):t.call('create_vault',{'kind':i},{'vault':t.defaults[n]})
  t.call('genesis');t.call('prepare_auction_quote');t.call('prepare_auction_proceeds');t.call('open_auction',{'floor_quote_atoms_per_heli':100,'tick_size':50})
  qw=t.token_account(q,t.alice.pubkey());hw=t.token_account(t.defaults['mint'],t.alice.pubkey())

@@ -7,7 +7,7 @@ const COMPUTE_BUDGET:Pubkey=pubkey!("ComputeBudget111111111111111111111111111111
 use anchor_spl::token::{self,Mint,Token,TokenAccount,Transfer};
 use crate::{Config,Epoch,ErrorCode,OpeningAuction,UNIT,SCALE,boundary,outgoing,manifest_bridge::check_market};
 #[account]
-pub struct ReleasePolicy {pub minimum_quote_depth:u64,pub count:u8,pub next:u8,pub prices:[u64;24],pub times:[i64;24],pub sequence_mark:u64,pub mark_time:i64}
+pub struct ReleasePolicy {pub minimum_quote_depth:u64,pub count:u8,pub next:u8,pub prices:[u64;24],pub times:[i64;24],pub sequence_mark:u64,pub mark_time:i64,pub last_reference:u64,pub last_reference_time:i64}
 #[derive(Accounts)]
 pub struct InitializeReleasePolicy<'info>{
  #[account(seeds=[b"config"],bump=config.bump,has_one=admin)] pub config:Box<Account<'info,Config>>,
@@ -16,7 +16,7 @@ pub struct InitializeReleasePolicy<'info>{
  #[account(mut)] pub admin:Signer<'info>,pub system_program:Program<'info,System>,
 }
 pub fn initialize(ctx:Context<InitializeReleasePolicy>,minimum_quote_depth:u64)->Result<()> {
- require!(!ctx.accounts.config.live&&minimum_quote_depth>=5000*10u64.pow(ctx.accounts.quote_mint.decimals as u32),ErrorCode::Quota);
+ require!(!ctx.accounts.config.live&&minimum_quote_depth>=1000*10u64.pow(ctx.accounts.quote_mint.decimals as u32),ErrorCode::Quota);
  ctx.accounts.policy.minimum_quote_depth=minimum_quote_depth;Ok(())
 }
 #[derive(Accounts)]
@@ -62,15 +62,46 @@ pub(crate) fn market_sequence(market:&AccountInfo)->Result<u64>{let d=market.try
 /// (marginal price in quote atoms per HELI, base atoms counted). Expired and global (unbacked) orders are
 /// skipped, so a stale or dust order cannot block or set the price on its own. Only orders with a sequence
 /// number below `before_sequence` count, which excludes bids placed after the previous observation.
+// Owner decision (V22): bids from the project's own Manifest seats (management, project inventory, release
+// sales) never count toward the reference price or depth; only outside demand is measured.
+fn project_traders()->[Pubkey;4]{
+ let p=&crate::ID;
+ [Pubkey::find_program_address(&[b"management-trader"],p).0,Pubkey::find_program_address(&[b"manifest-trader"],p).0,
+  Pubkey::find_program_address(&[b"release-trader",&[2]],p).0,Pubkey::find_program_address(&[b"release-trader",&[3]],p).0]
+}
+// Resting order bytes 32..36 hold the trader's seat index; the seat node payload starts with the trader key.
+fn own(d:&[u8],v:&[u8],project:&[Pubkey;4])->Result<bool>{
+ let seat=node(d,u32::from_le_bytes(v[32..36].try_into().unwrap()))?;
+ Ok(project.iter().any(|k|k.as_ref()==&d[seat+16..seat+48]))
+}
+/// Quote value of all live outside bids (project seats, expired and global orders excluded). Used only to
+/// decide whether the market has lost its outside buyers; more than 64 resting bids counts as a deep market.
+pub(crate) fn outside_bid_quote(market:&AccountInfo,now:&Clock)->Result<u128>{
+ let d=market.try_borrow_data()?;require!(d.len()>=256,ErrorCode::Market);
+ let project=project_traders();let mut i=word(&d,160)?;let mut total=0u128;
+ for _ in 0..64 {
+  if i==NIL {return Ok(total);}
+  let at=node(&d,i)?;let v=&d[at+16..at+80];
+  let raw=u128::from_le_bytes(v[0..16].try_into().unwrap());let qty=u64::from_le_bytes(v[16..24].try_into().unwrap());
+  let last=u32::from_le_bytes(v[36..40].try_into().unwrap());
+  if v[40]==1&&v[41]!=3&&(last==0||last as u64>=now.slot)&&qty>0&&!own(&d,v,&project)? {
+   let price=raw.checked_mul(UNIT as u128).ok_or(ErrorCode::Math)?/SCALE;
+   total=total.saturating_add(qty as u128*price/UNIT as u128);
+  }
+  i=predecessor(&d,i)?;
+ }
+ Ok(u128::MAX)
+}
 pub(crate) fn bid_book(market:&AccountInfo,now:&Clock,min_quote:u64,before_sequence:u64)->Result<(u64,u64)> {
  let d=market.try_borrow_data()?;require!(d.len()>=256,ErrorCode::Market);
+ let project=project_traders();
  let mut i=word(&d,160)?;let mut depth=0u64;
  for _ in 0..64 {
   if i==NIL {break;}
   let at=node(&d,i)?;let v=&d[at+16..at+80];
   let raw=u128::from_le_bytes(v[0..16].try_into().unwrap());let qty=u64::from_le_bytes(v[16..24].try_into().unwrap());
   let sequence=u64::from_le_bytes(v[24..32].try_into().unwrap());let last=u32::from_le_bytes(v[36..40].try_into().unwrap());
-  if v[40]==1&&v[41]!=3&&(last==0||last as u64>=now.slot)&&qty>0&&sequence<before_sequence {
+  if v[40]==1&&v[41]!=3&&(last==0||last as u64>=now.slot)&&qty>0&&sequence<before_sequence&&!own(&d,v,&project)? {
    let price=raw.checked_mul(UNIT as u128).ok_or(ErrorCode::Math)?/SCALE;require!(price>0&&price<=u64::MAX as u128,ErrorCode::Market);
    depth=depth.checked_add(qty).ok_or(ErrorCode::Math)?;
    if depth as u128*price/UNIT as u128>=min_quote as u128 {return Ok((price as u64,depth));}
@@ -100,6 +131,8 @@ pub fn observe(ctx:Context<ObserveReleaseMarket>)->Result<()>{
  let(price,depth)=bid_book(&market,&now,p.minimum_quote_depth,p.sequence_mark)?;
  require!((depth as u128*price as u128)/UNIT as u128>=p.minimum_quote_depth as u128,ErrorCode::Market);
  let i=p.next as usize;p.prices[i]=price;p.times[i]=now.unix_timestamp;p.next=((i+1)%24)as u8;p.count=(p.count+1).min(24);
+ // Remembered for the crash exception: the last reference built from outside demand.
+ if let Ok(r)=reference_price(p,now.unix_timestamp) {p.last_reference=r;p.last_reference_time=now.unix_timestamp;}
  p.sequence_mark=sequence;p.mark_time=now.unix_timestamp;Ok(())
 }
 /// Owner policy for project and management orders (quote atoms per HELI): with a live reference price,
@@ -112,6 +145,22 @@ pub(crate) fn order_bounds(p:&ReleasePolicy,auction:&OpeningAuction,now:i64)->(u
  }
 }
 /// Manifest prices are mantissa*10^exponent quote atoms per base atom; HELI has 6 decimals.
+// Owner decision (V22, crash exception): with no valid reference AND outside bids below the minimum depth,
+// reserve-funded bids may still be placed, at most 95% of the last outside reference (at most 30 days old;
+// otherwise the opening auction price). The caller also enforces a monthly quote cap.
+pub(crate) fn crash_ceiling(p:&ReleasePolicy,auction:&OpeningAuction,now:i64)->u64{
+ let base=if p.last_reference>0&&now.saturating_sub(p.last_reference_time)<=30*86400 {p.last_reference}
+  else if auction.clearing_price>0 {auction.clearing_price}else{auction.floor};
+ (base as u128*95/100)as u64
+}
+// Quote atoms locked by a bid of `amount` base atoms at mantissa*10^exponent (same units as check_order_price).
+pub(crate) fn order_quote(amount:u64,mantissa:u32,exponent:i8)->Result<u64>{
+ let e=exponent as i32+6;
+ let(num,den)=if e>=0 {(mantissa as u128*10u128.pow(e as u32),1u128)}else{(mantissa as u128,10u128.pow((-e) as u32))};
+ let d=den.checked_mul(UNIT as u128).ok_or(ErrorCode::Math)?;
+ let q=(amount as u128).checked_mul(num).ok_or(ErrorCode::Math)?.checked_add(d-1).ok_or(ErrorCode::Math)?/d;
+ u64::try_from(q).map_err(|_|error!(ErrorCode::Math))
+}
 pub(crate) fn check_order_price(mantissa:u32,exponent:i8,is_bid:bool,bounds:(u64,Option<u64>))->Result<()>{
  let e=exponent as i32+6;
  let(num,den)=if e>=0 {(mantissa as u128*10u128.pow(e as u32),1u128)}else{(mantissa as u128,10u128.pow((-e) as u32))};

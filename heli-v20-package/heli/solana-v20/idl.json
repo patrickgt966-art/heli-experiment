@@ -3748,6 +3748,18 @@
           {
             "name": "traderBump",
             "type": "u8"
+          },
+          {
+            "name": "crashMonth",
+            "type": "u16"
+          },
+          {
+            "name": "crashBase",
+            "type": "u64"
+          },
+          {
+            "name": "crashSpent",
+            "type": "u64"
           }
         ]
       }
@@ -3793,6 +3805,14 @@
           },
           {
             "name": "markTime",
+            "type": "i64"
+          },
+          {
+            "name": "lastReference",
+            "type": "u64"
+          },
+          {
+            "name": "lastReferenceTime",
             "type": "i64"
           }
         ]

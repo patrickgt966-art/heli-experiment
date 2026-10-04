@@ -62,6 +62,12 @@ Sonradan yönetici veya doğrulayıcı değiştirildiğinde keeper bilinçli ola
 - Aylık gider tavanı takvim ayına göre sıfırlanır. Bu ay sayacı 720. aydan sonra da saymaya devam eder; arz takvimi (720 ay, 60. yıl kapanışı) değişmedi.
 - 60. yıl kapanışından sonra (sahibin kararı, bulgu 3-B): satış geliri `allocate_auction_proceeds` ile gider kasasına aktarılabilir, `contribute_quote` ile bağış alınabilir; giderler aynı aylık tavan, 7 gün bekleme, pause ve kurtarma iptaliyle sürer. Yeni arz yoktur. Yönetim emirleri kapanıştan sonra kapalıdır.
 
+## Pazar ölçümü (V22, sahibin kararları)
+
+- **Asgari derinlik:** `initialize_release_policy` için kod alt sınırı **1.000 quote birimi** (ör. 1.000 USDC). Gerçek değer kurulumda pazara göre seçilir ve sonra değişmez. Bu, bekleyen alış emirlerinin anlık toplamıdır; işlem hacmi değildir.
+- **Projenin kendi emirleri sayılmaz:** Yönetim, proje envanteri ve release satış hesaplarının Manifest koltuklarındaki alış emirleri referans fiyata ve derinliğe katılmaz. Not: kişisel cüzdanlardan verilen emirleri kod ayırt edemez; buna karşı koruma asgari derinlik ve şeffaflıktır.
+- **Çöküş istisnası:** Geçerli referans yok **ve** o anda dışarıdaki alış emirleri asgari derinliğin altındaysa, rezervle alış emri verilebilir. Tavan: son dış referansın %95'i (en fazla 30 gün eski; değilse açılış ihale fiyatının %95'i). Aylık sınır: ayın ilk çöküş alımındaki proje quote rezervinin %10'u. Gözlemler (keeper) durdurulup referans eskitilse bile dışarıda alıcı varsa istisna açılmaz.
+
 ## Yönetim release sınırı (V22, sahibin kararı, bulgu 4-B)
 
 O ayki yönetim release'leri ve doğrudan release satışlarının **toplamı** (`epoch.founder`) çağrı anındaki alış derinliğinin %2'sini (`depth/50`) aşamaz. Aylık bütçe sınırları (kapasitenin %20'si, insan bütçesinin ¼'ü) ayrıca geçerlidir. İnce pazarda payın kullanılmayan kısmı o ay kullanılamaz.
