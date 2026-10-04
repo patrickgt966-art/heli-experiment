@@ -46,6 +46,12 @@ Bilinen sınır: Yönetici anahtarını çalan kişi sizden önce davranıp yön
 
 Sonradan yönetici veya doğrulayıcı değiştirildiğinde keeper bilinçli olarak durur ("Administrator or verifier pin changed"). Yeni değerleri yapılandırmaya elle girin.
 
+## Yükleme maliyeti (4 Ekim 2026)
+
+- ELF 1.036.232 bayt: program verisi kirası ≈ **7,21 SOL** (yaklaşık 6.960 lamport/bayt). Yükleme sırasında aynı boyutta geçici bir tampon hesabı için bir o kadar daha gerekir; yükleme bitince iade edilir.
+- Upgrade anahtarı kalıcı olarak kaldırıldığında bu kira geri alınamaz. Önceki sürümler büyürse `solana program extend` ile alan eklenir; yüklemede gereksiz boş alan ayırmayın (kullandığınız CLI sürümünün `--max-len` varsayılanını kontrol edin).
+- Program `no-idl` ile derlenir: zincir üstü IDL hesabı yoktur (`anchor idl init` kullanılamaz). IDL depoda (`idl.json`) yayımlanır.
+
 ## Upgrade yetkisi planı
 
 - **Devnet ve denetim öncesi:** Yetki çevrimdışı kurtarma anahtarında kalır, böylece hatalar düzeltilebilir.
@@ -63,7 +69,7 @@ Sonradan yönetici veya doğrulayıcı değiştirildiğinde keeper bilinçli ola
 - **Gelir %100 harcanabilir:** `Config.revenue_total` doğrudan release satışlarının gelirini, `withdraw_project_quote` ile çekilen proje satış gelirini ve yönetimin net kârını (geri dönen > aktarılan, bir kez) sayar. İhale geliri gelir değildir (başlangıç rezervi). Harcanan gelir `Operations.revenue_spent`.
 - **Gelirin ötesinde:** kayan son 30 günde rezervden harcanan (`out_day`, `out_days[30]`) ≤ **10 quote birimi sabit teknik taban** + (rezerv − harcanmamış gelir) × 25/1200 (yılda %25). Takvim ayında sıfırlanmaz.
 - **Rezerv tabanı:** ödeme rezervde 1.000 quote biriminin altına inemez; tek istisna, 30 günlük harcama 10 birimlik sabit tabanın içindeyse (keeper çalışmaya devam etsin diye).
-- `initialize_fee_vaults(monthly_cap, reserve)`: `monthly_cap` artık yalnız **tek teklif** için üst sınırdır; harcama sınırı ödemede uygulanır. Bekleyen gideri **yalnız yönetici** iptal edebilir (kurtarma anahtarı edemez; tartışılacak).
+- `initialize_fee_vaults(monthly_cap, reserve)`: `monthly_cap` artık yalnız **tek teklif** için üst sınırdır; harcama sınırı ödemede uygulanır. Bekleyen gideri yönetici (`cancel_expense`) veya kurtarma anahtarı (`recovery_cancel_expense`) iptal edebilir.
 - 60. yıl kapanışından sonra (sahibin kararı, bulgu 3-B): aynı kurallarla giderler sürer, `contribute_quote` ile bağış alınabilir; 7 gün bekleme ve pause geçerli. Yeni arz yoktur. Yönetim emirleri kapanıştan sonra kapalıdır.
 
 ## Pazar ölçümü (V22, sahibin kararları)

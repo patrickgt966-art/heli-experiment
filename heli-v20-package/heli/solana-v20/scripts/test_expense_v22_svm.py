@@ -17,7 +17,7 @@ q=t.defaults['quote_mint']
 fee={'fee_base':t.pda(b'fee-base'),'fee_quote':t.pda(b'fee-quote'),'operations':t.pda(b'operations'),'quote_mint':q,'sale_proceeds':t.defaults['sale_proceeds']}
 t.call('create_fee_base',acc=fee);t.call('create_fee_quote',acc=fee)
 t.call('initialize_fee_vaults',{'monthly_cap':10**15,'reserve':0},fee)
-t.call('allocate_auction_proceeds',{'amount':1},fee,reject='Reserve funds move only when an approved expense is paid',label='the reserve is not moved ahead of an expense')
+t.removed('allocate_auction_proceeds','the reserve is not moved ahead of an expense')
 # Synthetic donation so the post-horizon payments below are funded.
 donor=t.token_account(q,t.admin.pubkey())
 t.send('TEST quote to donor',[t.Instruction(t.TOKEN,b'\x07'+struct.pack('<Q',1_000_000),[t.meta(q,True),t.meta(donor,True),t.meta(t.admin.pubkey(),False,True)])])

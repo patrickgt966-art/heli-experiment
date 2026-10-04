@@ -5,7 +5,7 @@ const MANIFEST=new web3.PublicKey('MNFSTqtC93rEfYHB6hF82sKdZpUDFWkViLByLd1k1Ms')
 const CLOCK=new web3.PublicKey('SysvarC1ock11111111111111111111111111111111');
 export const DEVNET='EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG';
 const sha=b=>createHash('sha256').update(b).digest('hex');
-const allowed=new Set(['finalize_auction','finalize_launch','open_epoch','settle','close_constitution','observe_release_market']);
+const allowed=new Set(['finalize_auction','open_epoch','settle','close_constitution','observe_release_market']);
 export function base58(bytes){let n=0n;for(const b of bytes)n=n*256n+BigInt(b);let out='';const a='123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';while(n){out=a[Number(n%58n)]+out;n/=58n;}for(const b of bytes){if(b!==0)break;out='1'+out;}return out;}
 export function verifyProgramBytes(account,{hash,length,authority}){
  if(!/^[0-9a-f]{64}$/.test(hash)||!Number.isSafeInteger(length)||length<=0||!(authority===null||typeof authority==='string'))throw Error('Invalid program pin');

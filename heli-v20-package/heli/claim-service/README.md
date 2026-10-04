@@ -1,5 +1,11 @@
 # HELI V20 wallet → identity → initial entitlement → claim
 
+> **Archived (4 October 2026).** The free initial allocation was removed by owner decision and its instructions
+> (`issue_credential`, `enroll_launch`, `claim_launch`, …) were deleted from the program to shrink the ELF.
+> This service is not used at launch. It keeps a frozen copy of the last IDL that had those instructions
+> (`archived-idl.json`) so its offline tests still run; against the current program every registration
+> is refused because the instruction no longer exists.
+
 ## October 3 update: identity-only connection before Devnet
 
 `HELI_MODE=identity` runs real Didit verification without a Solana connection,

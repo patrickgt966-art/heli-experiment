@@ -17,14 +17,10 @@ t.check('the whole 5M launch base is market inventory (5M minus the auction sale
 t.check('auction sale authorization covers 5M',c['saleAuthorized']==5_000_000*t.U)
 t.check('auction buyer received her HELI',t.amount(f['wallet'])==1000*t.U)
 t.check('no identity credential was created',t.svm.get_account(f['identity']['credential']) is None)
-ident=f['identity']|{'receipt':t.pda(b'launch-receipt',bytes(f['identity']['credential']))}
-for name,args in [('enroll_launch',None),('claim_launch',None),('dispute_launch',{'reason':[1]*32}),('restore_launch',{'reason':[1]*32}),('set_credential_active',{'active':False,'reason':[1]*32})]:
- t.call(name,args,ident,reject='failed',label=name+' rejected (no credential can exist)')
-t.call('finalize_launch',reject=NOFREE,label='finalize_launch disabled')
-for n in [1,6]:
- t.clock(t.boundary(n)+3600)
- t.call('finalize_launch',reject=NOFREE,label=f'finalize_launch disabled in month {n+1}')
-t.check('market inventory unchanged by disabled instructions',t.amount(t.defaults['market_inventory'])==5_000_000*t.U-a['soldHeli']*t.U)
+for name in ['issue_credential','enroll_launch','claim_launch','dispute_launch','restore_launch','set_credential_active','finalize_launch','enroll','dispute_entry','finalize_registry','claim_human','open_stake','stake','checkpoint_stake','request_exit','withdraw','claim_reward','checkpoint_global','schedule_apr','set_liquidity_request','allocate_auction_proceeds']:
+ t.removed(name)
+t.clock(t.boundary(6)+3600);t.removed('finalize_launch','no six-month free allocation reconciliation exists')
+t.check('market inventory unchanged',t.amount(t.defaults['market_inventory'])==5_000_000*t.U-a['soldHeli']*t.U)
 
 result={'source_sha256':t.actual_source,'binary_sha256':t.actual_binary,'checks_and_transactions':len(t.checks),'checks':t.checks,'all_passed':True,
  'scope':'Compiled ELF in local LiteSVM, synthetic keys; no-free-allocation launch only. Not a deployment or audit.'}

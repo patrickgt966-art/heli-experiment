@@ -66,20 +66,13 @@ v2=key()
 t.call('set_verifier',{'verifier':v2.pubkey()},{'admin':t.outsider.pubkey()},reject='has one',label='only the admin rotates the verifier')
 t.call('set_verifier',{'verifier':v2.pubkey()},{'admin':a3.pubkey()})
 t.check('verifier rotated',t.read(t.defaults['identity_policy'],'IdentityPolicy')['verifier']==str(v2.pubkey()))
-def credential(person,verifier,seed):
- now=t.svm.get_clock().unix_timestamp;nul=hashlib.sha256(seed).digest();dig=hashlib.sha256(b'synthetic').digest()
- msg=b'HELI_IDENTITY_V15\0'+bytes(t.PROGRAM)+bytes(t.defaults['config'])+bytes(person.pubkey())+nul+dig+struct.pack('<qq',now,now+600)
- data=b'\x01\x00'+struct.pack('<7H',48,65535,16,65535,112,len(msg),65535)+bytes(verifier.pubkey())+bytes(verifier.sign_message(msg))+msg
- acc={'person':person.pubkey(),'credential':t.pda(b'human',nul),'wallet_identity':t.pda(b'id-wallet',bytes(person.pubkey()))}
- return [t.Instruction(t.Pubkey.from_string('Ed25519SigVerify111111111111111111111111111'),data,[]),t.instruction('issue_credential',{'nullifier':list(nul),'proof_digest':list(dig),'issued_at':now,'expires_at':now+600},acc)]
-t.send('credential signed by the retired verifier',credential(t.bob,f['verifier'],b'bob'),[t.bob],reject='There is no free initial allocation')
-t.send('no credential is issued even with the current verifier (no free allocation)',credential(t.bob,v2,b'bob'),[t.bob],reject='There is no free initial allocation')
+t.removed('issue_credential','no credential can be issued with any verifier (instruction removed with the free allocation)')
 
 # Defensive cancel: the recovery key stops an expense written with a compromised admin key.
 q=t.defaults['quote_mint']
 fee={'fee_base':t.pda(b'fee-base'),'fee_quote':t.pda(b'fee-quote'),'operations':t.pda(b'operations'),'quote_mint':q,'admin':a3.pubkey(),'payer':a3.pubkey()}
 t.call('create_fee_base',acc=fee);t.call('create_fee_quote',acc=fee);t.call('initialize_fee_vaults',{'monthly_cap':50_000,'reserve':0},fee)
-t.call('allocate_auction_proceeds',{'amount':1},fee,reject='Reserve funds move only when an approved expense is paid',label='the reserve is not moved ahead of an expense')
+t.removed('allocate_auction_proceeds','the reserve is not moved ahead of an expense')
 loot=t.token_account(q,thief.pubkey());e={'expense':t.pda(b'expense',struct.pack('<Q',0)),'destination':loot,'proposer':a3.pubkey()}|fee
 t.call('propose_expense',{'nonce':0,'amount':10_000,'purpose':[9]*32},e)
 t.call('recovery_cancel_expense',{},{'expense':e['expense'],'recovery':t.outsider.pubkey()},reject=UNAUTH,label='only the recovery key has the defensive cancel')

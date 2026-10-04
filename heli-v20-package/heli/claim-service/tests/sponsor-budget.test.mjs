@@ -4,7 +4,7 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';import {randomBytes} from 'node:crypto';
 import {web3} from '../../mobile/deps.mjs';
 import {SponsoredChain} from '../../mobile/solana.mjs';
-const idl=JSON.parse(readFileSync(new URL('../../solana-v20/idl.json',import.meta.url)));
+const idl=JSON.parse(readFileSync(new URL('../archived-idl.json',import.meta.url)));
 const program='HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv',RENT=1_000_000,FEE=10_000,COST=3*RENT+FEE;
 function chain(options={}){
  let now=100_000;const verifier=web3.Keypair.generate().publicKey.toBase58(),mint=web3.Keypair.generate().publicKey.toBase58();

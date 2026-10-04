@@ -23,10 +23,10 @@ Website: https://heli-experiment.pages.dev · Full rules: [`heli-v20-package/hel
 - Crash exception: if outside bids stay below the minimum depth for at least 24 hours, confirmed by observations no more than two hours apart, the reserve may still buy, at most at 95% of the last outside reference (or of the auction price if that reference is older than 30 days), within the same 10% rolling cap.
 
 **Treasury and keys**
-- Sale revenue returns to the project reserve. Expenses are paid straight from the project reserve when an approved expense is paid, never moved ahead of time. Sale revenue is 100% spendable; beyond it, reserve spending over any rolling 30 days is limited to a fixed technical floor of 10 quote units plus 25% a year of the reserve (25%/12 per 30 days), and the reserve keeps 1,000 quote units except for spending within that floor. Expenses wait seven days, can be cancelled by the administrator and can never be paid back into project accounts. After the 60-year close, revenue can still pay expenses under the same limits, and price observations continue.
+- Sale revenue returns to the project reserve. Expenses are paid straight from the project reserve when an approved expense is paid, never moved ahead of time. Sale revenue is 100% spendable; beyond it, reserve spending over any rolling 30 days is limited to a fixed technical floor of 10 quote units plus 25% a year of the reserve (25%/12 per 30 days), and the reserve keeps 1,000 quote units except for spending within that floor. Expenses wait seven days, can be cancelled by the administrator or the offline recovery key and can never be paid back into project accounts. After the 60-year close, revenue can still pay expenses under the same limits, and price observations continue.
 - An administrative pause halts sales, treasury operations and expenses, but never the monthly release rule.
 - An offline recovery key can replace a lost administrator key after seven days.
-- Until the audit the program is upgradeable. The administrator and the manager may be the same key; the pause has no time limit; only the administrator can cancel a pending expense.
+- Until the audit the program is upgradeable. The administrator and the manager may be the same key; the pause has no time limit; the administrator or the offline recovery key can cancel a pending expense.
 - Team trading commitment: the founder and team trade HELI only from publicly declared wallets, never from undisclosed accounts. Team and any market-maker wallet addresses will be published before launch. (The program cannot tell personal wallets apart, so this is a public commitment, not a code rule.)
 
 A project reserve is not a guaranteed redemption backing. HELI makes no claim of guaranteed price, returns or liquidity.
@@ -35,7 +35,7 @@ A project reserve is not a guaranteed redemption backing. HELI makes no claim of
 
 | Area | Status |
 |---|---|
-| Program (V22) | Built reproducibly (Agave 2.1.21). ELF SHA-256 `73dfdbb6bacf0eacd147a17d8c9f006f609cc06815efb9b45d7fdedb414c7e3d`. |
+| Program (V22) | Built reproducibly (Agave 2.1.21); 1.04 MB. ELF SHA-256 `159998afc16e43591ebd8dde57106af5d69a53665bea4f8474f3083d13963176`. |
 | Local tests | All 720 monthly periods and treasury, price, governance, expense and entitlement controls pass in a local Solana simulator (LiteSVM) with the real program and Manifest binaries; Node suite 113/113. Counts are overlapping local checks, not an audit. |
 | Free allocation | Removed by owner decision (4 October 2026). The earlier identity-verified free allocation and its live pilot tests are archived in `reviews/`; the program rejects those instructions. |
 | Website | Published on Cloudflare Pages with the V22 rules. |

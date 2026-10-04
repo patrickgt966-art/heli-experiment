@@ -38,7 +38,7 @@ ea=epoch_accounts(t,1);t.call('open_epoch',{'number':1},ea);act=ma|ea
 t.call('management_release',{'amount':t.U},act,reject='calendar',label='management cannot release in first twelve months')
 t.call('management_fund_quote',{'amount':t.U},act|{'admin':t.outsider.pubkey()},reject='has one',label='outsider cannot use project reserve')
 t.call('management_order',{'amount':t.U,'base_deposit':0,'price_mantissa':1,'price_exponent':0,'is_bid':True},act|{'admin':t.outsider.pubkey()},reject='has one',label='outsider cannot place treasury orders')
-t.call('set_liquidity_request',{'amount':1},reject='Liquidity inventory is disabled',label='no duplicate liquidity release budget')
+t.removed('set_liquidity_request','no duplicate liquidity release budget')
 t.call('management_fund_quote',{'amount':400*t.U},act)
 
 def seat(owner):t.send('user seat',[t.Instruction(MANIFEST,b'\x01',[t.meta(owner.pubkey(),True,True),t.meta(m,True),t.meta(t.SYSTEM)])],[owner])
