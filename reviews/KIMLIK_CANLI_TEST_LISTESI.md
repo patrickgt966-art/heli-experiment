@@ -131,6 +131,14 @@ Kim: Test 2'deki kişilerden biri, gerçek bir telefonda (iPhone tercih edilir).
 
 Ek kontrol (isteğe bağlı): Başka birinin linkini açtığınızda onay penceresinde **sizin olmayan** bir cüzdan adresi görünmeli. "İptal" seçince kendi kayıtlı başvurunuz değişmemeli.
 
+## Test R — Açık rıza kutusu (4 Ekim 2026): BAŞARILI
+
+Pilot, açık rıza kutusunu içeren koda (commit `7645940`) güncellendi. iPhone'da, rıza kutusundan önce açılmış bir başvuruyla (Test 4'teki test cüzdanı):
+- Kutu görüntülendi; eski başvurudan da rıza istendi. ✔
+- Kutu işaretlenmeden "Continue identity verification": "Please read and tick the consent box first." uyarısı, Didit açılmadı. ✔
+- Kutu işaretlenince Didit doğrulaması açıldı. ✔
+- Belge veya yüz çekimi yapılmadı.
+
 ## Sonuç
 
 - [ ] Test 1 `review`/`duplicate` → H3 için canlı kanıt var.
