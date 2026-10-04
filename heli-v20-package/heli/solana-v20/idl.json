@@ -3750,16 +3750,17 @@
             "type": "u8"
           },
           {
-            "name": "crashMonth",
-            "type": "u16"
+            "name": "crashDay",
+            "type": "i64"
           },
           {
-            "name": "crashBase",
-            "type": "u64"
-          },
-          {
-            "name": "crashSpent",
-            "type": "u64"
+            "name": "crashDays",
+            "type": {
+              "array": [
+                "u64",
+                30
+              ]
+            }
           }
         ]
       }
@@ -3813,6 +3814,10 @@
           },
           {
             "name": "lastReferenceTime",
+            "type": "i64"
+          },
+          {
+            "name": "shallowSince",
             "type": "i64"
           }
         ]
@@ -4691,7 +4696,7 @@
     {
       "code": 6011,
       "name": "MonthlyDividendDisabled",
-      "msg": "Monthly free dividends are disabled; only the initial allocation is free"
+      "msg": "Monthly free dividends are disabled"
     },
     {
       "code": 6012,

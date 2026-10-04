@@ -12,6 +12,7 @@ The Management Treasury combines the former founder 5M, market-support 5M and st
 Staking is cancelled and has no allocation or new deposits/rewards. There is no separate liquidity release budget.
 Shared monthly release cap: approximately 0.402247% of the supply already released and not burned.
 The monthly rate describes a conditional 5M-to-90M upper path over 720 months, with full capacity use and no further burns.
+About 4.9% a year is an upper bound, not a forecast. Unsold released inventory still counts as released supply, so it is part of the base for later monthly caps.
 No tokens are given away. There is no monthly free dividend.
 The 70 million reserve supplies sale inventory after the first month closes and at subsequent monthly boundaries.
 The rate applies to released, unburned supply, initially 5 million, not to the 70 million reserve balance.
@@ -22,21 +23,23 @@ Monthly settlement requires a transaction; anyone can trigger the fixed amount a
 An administrative pause halts sales, treasury operations and expenses, but never the monthly release rule.
 Delayed periods are settled in order. Unused management permissions expire.
 At the 60-year close, only still-locked stock follows the existing final burn rule; unsold released inventory is protected.
-After the 60-year close no new HELI is released and management orders end; sale revenue can still pay expenses under the same monthly cap and seven-day wait.
+After the 60-year close no new HELI is released and management orders end; sale revenue can still pay expenses under the same monthly cap and seven-day wait. Price observations continue after the close.
 New Management Treasury HELI releases are locked for the first 12 months.
 Afterward, sales and newly released liquidity inventory share at most 20% of monthly capacity
 and one quarter of actual releases outside the Management Treasury, checked against a 24-hour
 reference price built only from outside bids that rested at least an hour; the project's own orders never count.
-In each month, all Management Treasury releases together may not exceed 2% of the resting outside bid depth.
+In each month, all Management Treasury releases together may not exceed 2% of outside bid depth: bids that rested at least an hour, priced no lower than 98% of the reference.
 A reference needs at least 1,000 quote units of outside bids at every hourly observation (the exact minimum is fixed at launch).
-If outside buyers disappear (no reference and outside bids below that minimum), reserve-funded bids may still buy,
+Crash exception: if outside bids stay below that minimum (recorded by an hourly observation) for at least 24 hours, reserve-funded bids may still buy,
 at most at 95% of the last outside reference (or of the opening auction price if it is older than 30 days),
-and at most 10% of the project quote reserve per month.
+and in total at most 10% of the project quote reserve over any rolling 30 days.
 The single manager can direct funded limit buy/sell orders, cancel orders and return assets to project accounts.
 Sales: at least 95% of the reference price (without a reference: at least the opening auction price).
-Reserve-funded bids: at most 105% of the reference price, and none without a reference. Orders expire after about 24 hours.
+Reserve-funded bids: at most 105% of the reference price; without a reference, only under the crash exception above. Orders expire after about 24 hours.
 Sale revenue returns to the project reserve. Bid liquidity needs actual quote funds. Expenses wait seven days, can be cancelled and can never be paid back into project accounts.
 An offline recovery key can replace a lost administrator key after a seven-day window.
+Who can still change things today: until the audit and upgrade-key removal, the program can be upgraded. The administrator and the manager may be the same key.
+The administrative pause has no time limit. Auction proceeds can be moved into the expense treasury immediately; paying an expense out still waits seven days.
 Team trading commitment: the founder and team trade HELI only from publicly declared wallets, never from undisclosed accounts.
 Team and any market-maker wallet addresses will be published before launch; the code cannot tell personal wallets apart.
 Released working HELI, cancelled orders and bought HELI never refill locked treasury stock or reset release quotas.

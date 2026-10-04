@@ -3,7 +3,9 @@ import {boundary,completedMonths} from './calendar.mjs';
 export function plan(s){
  const c=s.config,now=s.now,start=Number(c.start),last=Number(c.last_settled_epoch);
  // Pause does not stop the monthly rule (program H2-B); it only suppresses price observations below.
- if(!c.live||c.closed)return null;
+ if(!c.live&&!c.closed)return null;
+ // After the 60-year close only price observations continue (owner decision V22), so unsold inventory keeps a current floor.
+ if(!c.closed){
  if(s.auction&&!s.auction.finalized&&now>=start)return {name:'finalize_auction',key:'auction'};
  if(!c.launch_finalized&&now>=boundary(start,6))return {name:'finalize_launch',key:'launch'};
  const next=last+1,due=completedMonths(start,now),e=s.epoch;
@@ -15,6 +17,7 @@ export function plan(s){
   }
  }
  if(last===720&&now>=boundary(start,720))return {name:'close_constitution',key:'constitution'};
+ }
  if(c.manifest_bound&&!c.paused&&s.policy){
   // The program arms on the first call and samples hourly after its mark (only bids that rested since then count).
   const mark=Number(s.policy.mark_time);

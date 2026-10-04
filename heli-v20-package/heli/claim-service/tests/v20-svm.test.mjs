@@ -2,7 +2,7 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';import {createInterface} from 'node:readline';import {readFileSync,writeFileSync} from 'node:fs';import {fileURLToPath} from 'node:url';import {createPrivateKey,generateKeyPairSync,sign,randomUUID} from 'node:crypto';
 import {web3,spl} from '../../mobile/deps.mjs';import {V20Chain} from '../chain.mjs';import {ClaimAdmission} from '../admission.mjs';import {storage} from '../storage.mjs';
 test('no free allocation: a service-signed registration is refused by the real program in LiteSVM',async()=>{
- const child=spawn(process.env.HELI_TEST_PYTHON??'C:/Users/POLAT/AppData/Local/Programs/Python/Python313/python.exe',[fileURLToPath(new URL('svm_bridge.py',import.meta.url))],{stdio:['pipe','pipe','pipe']});
+ const child=spawn(process.env.HELI_TEST_PYTHON??'python3',[fileURLToPath(new URL('svm_bridge.py',import.meta.url))],{stdio:['pipe','pipe','pipe']});
  let pending=[],lines=[],errors='';child.stderr.on('data',b=>errors+=b.toString());const reader=createInterface({input:child.stdout});reader.on('line',line=>{const value=JSON.parse(line);if(pending.length)pending.shift()(value);else lines.push(value);});const next=()=>lines.length?Promise.resolve(lines.shift()):new Promise((resolve,reject)=>{const timeout=setTimeout(()=>reject(Error('Local SVM timeout: '+errors)),15000);pending.push(v=>{clearTimeout(timeout);resolve(v);});});
  const rpc=async(method,params={})=>{child.stdin.write(JSON.stringify({method,params})+'\n');const r=await next();if(r.error)throw Error(r.error);return r.result;};
  const data=storage();

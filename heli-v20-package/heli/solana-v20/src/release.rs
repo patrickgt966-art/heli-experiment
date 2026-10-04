@@ -7,7 +7,7 @@ const COMPUTE_BUDGET:Pubkey=pubkey!("ComputeBudget111111111111111111111111111111
 use anchor_spl::token::{self,Mint,Token,TokenAccount,Transfer};
 use crate::{Config,Epoch,ErrorCode,OpeningAuction,UNIT,SCALE,boundary,outgoing,manifest_bridge::check_market};
 #[account]
-pub struct ReleasePolicy {pub minimum_quote_depth:u64,pub count:u8,pub next:u8,pub prices:[u64;24],pub times:[i64;24],pub sequence_mark:u64,pub mark_time:i64,pub last_reference:u64,pub last_reference_time:i64}
+pub struct ReleasePolicy {pub minimum_quote_depth:u64,pub count:u8,pub next:u8,pub prices:[u64;24],pub times:[i64;24],pub sequence_mark:u64,pub mark_time:i64,pub last_reference:u64,pub last_reference_time:i64,pub shallow_since:i64}
 #[derive(Accounts)]
 pub struct InitializeReleasePolicy<'info>{
  #[account(seeds=[b"config"],bump=config.bump,has_one=admin)] pub config:Box<Account<'info,Config>>,
@@ -58,10 +58,6 @@ fn predecessor(d:&[u8],i:u32)->Result<u32>{
  err!(ErrorCode::Market)
 }
 pub(crate) fn market_sequence(market:&AccountInfo)->Result<u64>{let d=market.try_borrow_data()?;require!(d.len()>=256,ErrorCode::Market);Ok(u64::from_le_bytes(d[144..152].try_into().unwrap()))}
-/// Walks resting bids from the best price downward until `min_quote` of depth is reached and returns
-/// (marginal price in quote atoms per HELI, base atoms counted). Expired and global (unbacked) orders are
-/// skipped, so a stale or dust order cannot block or set the price on its own. Only orders with a sequence
-/// number below `before_sequence` count, which excludes bids placed after the previous observation.
 // Owner decision (V22): bids from the project's own Manifest seats (management, project inventory, release
 // sales) never count toward the reference price or depth; only outside demand is measured.
 fn project_traders()->[Pubkey;4]{
@@ -74,41 +70,55 @@ fn own(d:&[u8],v:&[u8],project:&[Pubkey;4])->Result<bool>{
  let seat=node(d,u32::from_le_bytes(v[32..36].try_into().unwrap()))?;
  Ok(project.iter().any(|k|k.as_ref()==&d[seat+16..seat+48]))
 }
-/// Quote value of all live outside bids (project seats, expired and global orders excluded). Used only to
-/// decide whether the market has lost its outside buyers; more than 64 resting bids counts as a deep market.
-pub(crate) fn outside_bid_quote(market:&AccountInfo,now:&Clock)->Result<u128>{
+/// Upper bound on bid-tree nodes read per measurement. Skipped orders (expired, global, project-owned,
+/// too fresh, dust) also count, so a measurement stays within compute limits (~1,150 CU per node per walk;
+/// a release reads the book twice). Filling this many slots above real demand costs an attacker Manifest
+/// account rent for every order; an incomplete scan never counts as a shallow market.
+const MAX_SCAN:usize=192;
+/// Walks live outside bids from the best price downward and calls `f(price, base atoms, quote value)` for
+/// each counted order until `f` returns true. Skipped: expired, global (unbacked), project-owned, orders
+/// placed at or after `before_sequence`, and dust worth less than 1/1000 of the minimum depth (so cheap
+/// orders cannot crowd out real demand). Returns true when the walk ended inside the book (stopped by `f`
+/// or reached the last bid), false when MAX_SCAN was exhausted first.
+fn walk_bids(market:&AccountInfo,now:&Clock,min_quote:u64,before_sequence:u64,mut f:impl FnMut(u64,u64,u128)->bool)->Result<bool>{
  let d=market.try_borrow_data()?;require!(d.len()>=256,ErrorCode::Market);
- let project=project_traders();let mut i=word(&d,160)?;let mut total=0u128;
- for _ in 0..64 {
-  if i==NIL {return Ok(total);}
-  let at=node(&d,i)?;let v=&d[at+16..at+80];
-  let raw=u128::from_le_bytes(v[0..16].try_into().unwrap());let qty=u64::from_le_bytes(v[16..24].try_into().unwrap());
-  let last=u32::from_le_bytes(v[36..40].try_into().unwrap());
-  if v[40]==1&&v[41]!=3&&(last==0||last as u64>=now.slot)&&qty>0&&!own(&d,v,&project)? {
-   let price=raw.checked_mul(UNIT as u128).ok_or(ErrorCode::Math)?/SCALE;
-   total=total.saturating_add(qty as u128*price/UNIT as u128);
-  }
-  i=predecessor(&d,i)?;
- }
- Ok(u128::MAX)
-}
-pub(crate) fn bid_book(market:&AccountInfo,now:&Clock,min_quote:u64,before_sequence:u64)->Result<(u64,u64)> {
- let d=market.try_borrow_data()?;require!(d.len()>=256,ErrorCode::Market);
- let project=project_traders();
- let mut i=word(&d,160)?;let mut depth=0u64;
- for _ in 0..64 {
-  if i==NIL {break;}
+ let project=project_traders();let mut i=word(&d,160)?;
+ for _ in 0..MAX_SCAN {
+  if i==NIL {return Ok(true);}
   let at=node(&d,i)?;let v=&d[at+16..at+80];
   let raw=u128::from_le_bytes(v[0..16].try_into().unwrap());let qty=u64::from_le_bytes(v[16..24].try_into().unwrap());
   let sequence=u64::from_le_bytes(v[24..32].try_into().unwrap());let last=u32::from_le_bytes(v[36..40].try_into().unwrap());
-  if v[40]==1&&v[41]!=3&&(last==0||last as u64>=now.slot)&&qty>0&&sequence<before_sequence&&!own(&d,v,&project)? {
+  // Cheap filters first (dust, expiry, freshness); the seat lookup for project ownership runs last.
+  if v[40]==1&&v[41]!=3&&(last==0||last as u64>=now.slot)&&qty>0&&sequence<before_sequence {
    let price=raw.checked_mul(UNIT as u128).ok_or(ErrorCode::Math)?/SCALE;require!(price>0&&price<=u64::MAX as u128,ErrorCode::Market);
-   depth=depth.checked_add(qty).ok_or(ErrorCode::Math)?;
-   if depth as u128*price/UNIT as u128>=min_quote as u128 {return Ok((price as u64,depth));}
+   let quote=qty as u128*price/UNIT as u128;
+   if quote.saturating_mul(1000)>=min_quote as u128&&!own(&d,v,&project)?&&f(price as u64,qty,quote) {return Ok(true);}
   }
   i=predecessor(&d,i)?;
  }
- err!(ErrorCode::Market)
+ Ok(false)
+}
+/// (marginal price, base atoms) of the best outside bids that together reach `min_quote` of depth.
+pub(crate) fn bid_book(market:&AccountInfo,now:&Clock,min_quote:u64,before_sequence:u64)->Result<(u64,u64)> {
+ let(mut depth,mut total,mut result)=(0u64,0u128,None);
+ walk_bids(market,now,min_quote,before_sequence,|price,qty,quote|{depth=depth.saturating_add(qty);total=total.saturating_add(quote);
+  if total>=min_quote as u128 {result=Some((price,depth));true}else{false}})?;
+ result.ok_or(error!(ErrorCode::Market))
+}
+/// Owner decision (V22): base atoms of all rested outside bids priced at or above `floor` (98% of the
+/// reference). The monthly management total may not exceed 2% of this. An incomplete scan counts only what
+/// was read, which can only lower the limit.
+pub(crate) fn band_depth(market:&AccountInfo,now:&Clock,min_quote:u64,before_sequence:u64,floor:u64)->Result<u64>{
+ let mut depth=0u64;
+ walk_bids(market,now,min_quote,before_sequence,|price,qty,_|{if price<floor {return true;}depth=depth.saturating_add(qty);false})?;
+ Ok(depth)
+}
+/// Whether live outside bids (fresh ones included) are provably below `min_quote`: the whole book was read
+/// and its outside quote value is short. An incomplete scan never counts as shallow.
+pub(crate) fn outside_shallow(market:&AccountInfo,now:&Clock,min_quote:u64)->Result<bool>{
+ let mut total=0u128;
+ let complete=walk_bids(market,now,min_quote,u64::MAX,|_,_,quote|{total=total.saturating_add(quote);total>=min_quote as u128})?;
+ Ok(complete&&total<min_quote as u128)
 }
 // Only ComputeBudget and this observation may share the transaction, so a bid cannot be placed and
 // cancelled around the observation atomically (it would also fail the resting-order rule above).
@@ -120,11 +130,17 @@ fn alone_in_transaction(sysvar:&AccountInfo)->Result<()>{
  Ok(())
 }
 pub fn observe(ctx:Context<ObserveReleaseMarket>)->Result<()>{
- let c=&ctx.accounts.config;require!(c.live&&!c.closed&&c.manifest_bound,ErrorCode::State);
+ // Owner decision (V22): observations continue after the 60-year close so remaining inventory keeps a
+ // current price floor; no new supply or management orders exist then.
+ let c=&ctx.accounts.config;require!((c.live||c.closed)&&c.manifest_bound,ErrorCode::State);
  alone_in_transaction(&ctx.accounts.instructions.to_account_info())?;
  let market=ctx.accounts.manifest_market.to_account_info();
  check_market(&market,&ctx.accounts.manifest_program.to_account_info(),&c.mint,&c.quote_mint)?;
  let now=Clock::get()?;let sequence=market_sequence(&market)?;let p=&mut ctx.accounts.policy;
+ // Crash exception bookkeeping: remember since when outside demand has been provably below the minimum.
+ // A shallow market yields no price sample; the call still succeeds so the condition is recorded.
+ if outside_shallow(&market,&now,p.minimum_quote_depth)? {if p.shallow_since==0 {p.shallow_since=now.unix_timestamp;}return Ok(());}
+ p.shallow_since=0;
  // Arm (or re-arm after a gap): record which orders already rest; the first sample follows an hour later.
  if p.mark_time==0||now.unix_timestamp-p.mark_time>7200 {p.count=0;p.next=0;p.sequence_mark=sequence;p.mark_time=now.unix_timestamp;return Ok(());}
  require!(now.unix_timestamp-p.mark_time>=3600,ErrorCode::Time);
@@ -145,9 +161,10 @@ pub(crate) fn order_bounds(p:&ReleasePolicy,auction:&OpeningAuction,now:i64)->(u
  }
 }
 /// Manifest prices are mantissa*10^exponent quote atoms per base atom; HELI has 6 decimals.
-// Owner decision (V22, crash exception): with no valid reference AND outside bids below the minimum depth,
-// reserve-funded bids may still be placed, at most 95% of the last outside reference (at most 30 days old;
-// otherwise the opening auction price). The caller also enforces a monthly quote cap.
+// Owner decision (V22, crash exception): with no valid reference AND outside bids recorded below the minimum
+// depth for at least 24 hours (and still below it), reserve-funded bids may be placed at most at 95% of the
+// last outside reference (at most 30 days old; otherwise the opening auction price). The caller also
+// enforces a rolling 30-day quote cap.
 pub(crate) fn crash_ceiling(p:&ReleasePolicy,auction:&OpeningAuction,now:i64)->u64{
  let base=if p.last_reference>0&&now.saturating_sub(p.last_reference_time)<=30*86400 {p.last_reference}
   else if auction.clearing_price>0 {auction.clearing_price}else{auction.floor};
@@ -213,9 +230,13 @@ pub fn execute(mut ctx:Context<ExecuteReleaseSale>,kind:u8,amount:u64)->Result<(
  require_keys_eq!(bv,a.base_vault.key(),ErrorCode::Market);require_keys_eq!(qv,a.quote_vault.key(),ErrorCode::Market);
  // Owner decision (V22, finding 4 option B): the 2% depth limit applies to the month total; management
  // releases and direct release sales share epoch.founder.
- let reference=reference_price(&a.policy,now.unix_timestamp)?;let(price,depth)=bid_book(&a.manifest_market.to_account_info(),&now,a.policy.minimum_quote_depth,u64::MAX)?;
- require!(price as u128*100>=reference as u128*98&&price as u128*100<=reference as u128*102&&e.founder.checked_add(amount).ok_or(ErrorCode::Math)?<=depth/50&&(price as u128*depth as u128)/UNIT as u128>=a.policy.minimum_quote_depth as u128,ErrorCode::Market);
+ // Owner decision (V22): 2% of all rested outside bids down to 98% of the reference (not just the first
+ // minimum-depth slice); only bids that rested since the previous observation count, as for management.
+ let reference=reference_price(&a.policy,now.unix_timestamp)?;let market=a.manifest_market.to_account_info();
+ let(price,_)=bid_book(&market,&now,a.policy.minimum_quote_depth,a.policy.sequence_mark)?;
  let floor=(reference as u128*98/100)as u64;require!(floor>0,ErrorCode::Market);
+ let depth=band_depth(&market,&now,a.policy.minimum_quote_depth,a.policy.sequence_mark,floor)?;
+ require!(price as u128*100>=reference as u128*98&&price as u128*100<=reference as u128*102&&e.founder.checked_add(amount).ok_or(ErrorCode::Math)?<=depth/50,ErrorCode::Market);
  let min_out=(amount as u128*floor as u128+UNIT as u128-1)/UNIT as u128;require!(min_out>0&&min_out<=u64::MAX as u128,ErrorCode::Math);
  let before_base=a.base.amount;let before_quote=a.quote.amount;
  outgoing(a.token_program.to_account_info(),a.source.to_account_info(),a.base.to_account_info(),c.to_account_info(),c.bump,amount)?;
