@@ -1,0 +1,712 @@
+{
+  "snapshotDate": "2026-10-04",
+  "version": "V21",
+  "note": "FILE_MANIFEST.json is the unchanged V20 manifest; this file lists the V21 tree.",
+  "files": [
+    {
+      "path": "ARSIV_NOTU.md",
+      "bytes": 611,
+      "sha256": "e25a68cb8e26e52e5ea519c4161da726d9488e5e3627f51ec0df363872459de0"
+    },
+    {
+      "path": "CLAUDE_PROMPT.md",
+      "bytes": 5964,
+      "sha256": "cf028ed7789d05b1c70691183d255cce7c35ca6d2592827dc3512e9de328dee6"
+    },
+    {
+      "path": "CURRENT_STATE.md",
+      "bytes": 6312,
+      "sha256": "4218b8a7730cd26d632871f161d6084729163ce037fc1401b4b1bd95b3eddc01"
+    },
+    {
+      "path": "FILE_MANIFEST.json",
+      "bytes": 19331,
+      "sha256": "6062bf98ace096592c84a78ec67444ecd07120718de3a8c182ff5b7f9ac7867b"
+    },
+    {
+      "path": "FRESH_TEST_OUTPUT.txt",
+      "bytes": 6422,
+      "sha256": "7bb2fb11d5ae4990534746dd6eaf0bd6a94be7adfe7b1ea33b6dc140012d8538"
+    },
+    {
+      "path": "RUN_AND_EVIDENCE.md",
+      "bytes": 4115,
+      "sha256": "efce1480345da03c5d8fcc22ff9ff06a5e6438ce891dbc7c3f1313833fe12b46"
+    },
+    {
+      "path": "SOURCE_FOR_CHAT.md",
+      "bytes": 408052,
+      "sha256": "42bb191f2567f0cf556856116fcdeefbf1dedcb8d06a5b5303a8c7454cc76a01"
+    },
+    {
+      "path": "V21_CODEX_PROMPT.md",
+      "bytes": 2518,
+      "sha256": "c2becb3fe9599019185dc1d7a5102f58429d84fbe7a5c241d5d53f3ea71a106c"
+    },
+    {
+      "path": "V21_DURUM.md",
+      "bytes": 6359,
+      "sha256": "bb0669ef7da02710e192728c62ad6a1e12b39511687caab9b14232271e44d860"
+    },
+    {
+      "path": "application-entry-deployment.json",
+      "bytes": 890,
+      "sha256": "05271f8fb396fdfc41937817e9de37f7342d27de6e20f79125d8912876014284"
+    },
+    {
+      "path": "heli/claim-service/.env.example",
+      "bytes": 1321,
+      "sha256": "7834b5db8c72061c529133b5ee575c23174e213e328de6156d8c78ca1129893d"
+    },
+    {
+      "path": "heli/claim-service/README.md",
+      "bytes": 9892,
+      "sha256": "eeda44f3ec8f044c8ca36c5989dbf659eb7ed96a9e4126af277dedad0048669e"
+    },
+    {
+      "path": "heli/claim-service/admission.mjs",
+      "bytes": 5914,
+      "sha256": "978ab4037d63b046886e936498db0a36ca7171947c9dcb99a76a0159b2958081"
+    },
+    {
+      "path": "heli/claim-service/app.js",
+      "bytes": 11283,
+      "sha256": "b85e1b264d7a0334dac0c4858bb58bead9375634c7f33f5a2b0bbc2b48b6ff97"
+    },
+    {
+      "path": "heli/claim-service/browser-handoff.js",
+      "bytes": 781,
+      "sha256": "9d2ad704c5e8d7bc712f6a88a6609182483a7a002f69e2b6828c657cac9a1d89"
+    },
+    {
+      "path": "heli/claim-service/chain.mjs",
+      "bytes": 1377,
+      "sha256": "cc8b1327a92a4b86bfd713ba68e58753c5e9e8c968932db1969a150e561eb336"
+    },
+    {
+      "path": "heli/claim-service/didit.mjs",
+      "bytes": 5009,
+      "sha256": "07a1f7983d0eb57bbf051d6a2988ad459ee36e4eddc80aaf5f0017bf06e0dc0e"
+    },
+    {
+      "path": "heli/claim-service/identity-connection-report.json",
+      "bytes": 1778,
+      "sha256": "de968642edf7766071e776308a911bf78f764baaf73682bb6c78faa57896d8db"
+    },
+    {
+      "path": "heli/claim-service/index.html",
+      "bytes": 3903,
+      "sha256": "8916ba506937721f3744652088d382387a6f3bcb90a59e711c1356e35f1987b5"
+    },
+    {
+      "path": "heli/claim-service/manual-review.mjs",
+      "bytes": 2151,
+      "sha256": "be6eb1da72b234c64b6dd23ee1bc0df338acd4457288f1330302d5d4805cdf61"
+    },
+    {
+      "path": "heli/claim-service/server.mjs",
+      "bytes": 12667,
+      "sha256": "c912aa07660eca10d22a90f2de3663d5a485185f3b069ba921cf16c6e03eace5"
+    },
+    {
+      "path": "heli/claim-service/start-identity.mjs",
+      "bytes": 1766,
+      "sha256": "f1253cd71bad91495ccc8cce5f66137b95a4a4b9dfa63f62fc5a4c361b5e3768"
+    },
+    {
+      "path": "heli/claim-service/storage.mjs",
+      "bytes": 917,
+      "sha256": "51e40db2779b6ad7473c885b3d133914da7137fe5ee68e864d4d682093c8946d"
+    },
+    {
+      "path": "heli/claim-service/style.css",
+      "bytes": 3717,
+      "sha256": "7994a7bb85aedd9f4e037d984876d04e2a5ff131bb2614bcbf952d736cd23413"
+    },
+    {
+      "path": "heli/claim-service/tests/browser-handoff.test.mjs",
+      "bytes": 7887,
+      "sha256": "6a04c20ae8bd1ed8d487450c5b13e3ca64224bd1cbea20c3c38357c5ad6b3c3a"
+    },
+    {
+      "path": "heli/claim-service/tests/claim.test.mjs",
+      "bytes": 9242,
+      "sha256": "8fceb82bdeb0b8a1908a5c9689ab7108496f7ab35bc11c286579216b2a29e563"
+    },
+    {
+      "path": "heli/claim-service/tests/hardening.test.mjs",
+      "bytes": 5928,
+      "sha256": "858d67e4fa93b666a3eb1d45c7f03478698fa9b7db28eaa4277c4347e726cd83"
+    },
+    {
+      "path": "heli/claim-service/tests/identity.test.mjs",
+      "bytes": 3195,
+      "sha256": "2f18caf45414768822f71eb326b7b0976b29267af362ba80e36dd8d4c9e6a2a1"
+    },
+    {
+      "path": "heli/claim-service/tests/manual-review.test.mjs",
+      "bytes": 4386,
+      "sha256": "ef8d0499ca334f596c6a0ed2735f0b3e35b704d5c42a72a1533ded26323f6595"
+    },
+    {
+      "path": "heli/claim-service/tests/recovery.test.mjs",
+      "bytes": 3582,
+      "sha256": "b91c5a4b3d17cde57badbce041161732dcd468c3c26b6e51896102d6398276e0"
+    },
+    {
+      "path": "heli/claim-service/tests/sponsor-budget.test.mjs",
+      "bytes": 2943,
+      "sha256": "c6e777d3d0dcd8f232ea7a3b8e030823f73bc4528d99cc1d488cbcb524ad011a"
+    },
+    {
+      "path": "heli/claim-service/tests/status-ui-preview.mjs",
+      "bytes": 628,
+      "sha256": "df8369677be536b13c273846a7c95e2d736c4f059dabe5fc65956c9a18f1fc08"
+    },
+    {
+      "path": "heli/claim-service/tests/svm_bridge.py",
+      "bytes": 1651,
+      "sha256": "f03e3a121ade830eac6e2e47e43ff57af5e5318f8b98119c8b218d597955e1f7"
+    },
+    {
+      "path": "heli/claim-service/tests/v20-svm.test.mjs",
+      "bytes": 6193,
+      "sha256": "5f973de8f58a0008c1be284a215ea7909d9b49308999f7e0b85e309f25b6bc46"
+    },
+    {
+      "path": "heli/claim-service/update-pilot.ps1",
+      "bytes": 1456,
+      "sha256": "71a7f2d10a7362e12ded21e3b32c267695ee05bc1677d1a063730895bc4b5432"
+    },
+    {
+      "path": "heli/claim-service/v20-claim-svm-verification.json",
+      "bytes": 657,
+      "sha256": "6698727b3903ba8947117761234a43ea5edabaa5a83847f90b0d619410f3b6a3"
+    },
+    {
+      "path": "heli/claim-service/webhook-queue.mjs",
+      "bytes": 1058,
+      "sha256": "3ca28d921101f06822d4204915dea4b91d84e4f143d07c73fcead4d50a06beb5"
+    },
+    {
+      "path": "heli/keeper/README.md",
+      "bytes": 6729,
+      "sha256": "05c0bc225f06498c62f9daebe40fe085b0f05754979885ed5788bd478fe28853"
+    },
+    {
+      "path": "heli/keeper/V20.md",
+      "bytes": 2811,
+      "sha256": "204d7e0c5aa2a5215968d112ffd15b301915d1dc63094f04ef839d3ceb404c17"
+    },
+    {
+      "path": "heli/keeper/adapter.mjs",
+      "bytes": 10879,
+      "sha256": "650b3d715b7245328277579bb7b70b8b61e71c915ab6b29d0f05797ca023ea83"
+    },
+    {
+      "path": "heli/keeper/calendar.mjs",
+      "bytes": 708,
+      "sha256": "e2c066bde26841dec1c3a1d1fbcab56c7b9fd858cd2dbff0e3c169e3ebd30d7c"
+    },
+    {
+      "path": "heli/keeper/config.example.json",
+      "bytes": 467,
+      "sha256": "c45d83fb997636ed4a62972451192bc55592bb5790d177c385bd62585bf6b539"
+    },
+    {
+      "path": "heli/keeper/engine.mjs",
+      "bytes": 3519,
+      "sha256": "812e913023b12e0d3668c6e760a29f8e826af3e8b804937ea32dab6233cb4446"
+    },
+    {
+      "path": "heli/keeper/generate-key.mjs",
+      "bytes": 709,
+      "sha256": "e4d5733a3e4a2749ff3d239e56247445636524dc872ed2e95dd53db3c8724686"
+    },
+    {
+      "path": "heli/keeper/heli-keeper.service.example",
+      "bytes": 666,
+      "sha256": "b8ebc7b732cdf8561531dc21ee2591afd12de9bc62251ef8fdf913b162e92a9a"
+    },
+    {
+      "path": "heli/keeper/install-startup.ps1",
+      "bytes": 2653,
+      "sha256": "b67ebebc451bc760d2676945817d679ada06f6c66cba5dd1ca5389fae3eb21fa"
+    },
+    {
+      "path": "heli/keeper/planner-bridge.mjs",
+      "bytes": 287,
+      "sha256": "711203fe75bf44ed42896142f93ee1fbf1d410b24cc029e9b02c3ef51734f7f8"
+    },
+    {
+      "path": "heli/keeper/planner.mjs",
+      "bytes": 1338,
+      "sha256": "a19d6755709081aa9be2f780a44f4c1643b25b8dd641eb7dadc58b4eefa2a556"
+    },
+    {
+      "path": "heli/keeper/poll.mjs",
+      "bytes": 894,
+      "sha256": "450106cd8c47321bf1cc03fcc4b77feae26e9b56ea06e198f88710867df19060"
+    },
+    {
+      "path": "heli/keeper/run.mjs",
+      "bytes": 3394,
+      "sha256": "31344b274bc5ba4af3f235112b9e48c259dfc77d865103c72d85b5c81509b5fd"
+    },
+    {
+      "path": "heli/keeper/storage.mjs",
+      "bytes": 416,
+      "sha256": "f31b67bdd4c3be9994e4b149a2c17700c959211d088e4512e4bb9c75c4a96f7f"
+    },
+    {
+      "path": "heli/keeper/telemetry.mjs",
+      "bytes": 1266,
+      "sha256": "0e41332cd013ee8e5e2004781b60b144914ad218d8a3e84fa4d6fc27f8fa8c1c"
+    },
+    {
+      "path": "heli/keeper/tests/keeper.test.mjs",
+      "bytes": 10743,
+      "sha256": "2bde2f89fecaa0ea007c254bed98420efd4adf21b4f4ab6f70fa3dc6956c004f"
+    },
+    {
+      "path": "heli/keeper/tests/test_v20_svm.py",
+      "bytes": 3857,
+      "sha256": "787fc3a5978ceda68054a9f270e6f7aa8e0e1e851d4a65a2b96bb98b783d73b0"
+    },
+    {
+      "path": "heli/keeper/tests/v20-bridge.mjs",
+      "bytes": 775,
+      "sha256": "6c461f92d885c92df1cf31dddecb31e9d29d6cbe3a9167560e97baba513b94a9"
+    },
+    {
+      "path": "heli/keeper/v20-svm-verification.json",
+      "bytes": 415,
+      "sha256": "1535fa7e9561030d4da0a682bc9c29c91dad95fe916e79048011fc527c40a21c"
+    },
+    {
+      "path": "heli/keeper/windows-service.ps1",
+      "bytes": 800,
+      "sha256": "18662a89c06187b6cd2c4c3d31ae94a9eac3b5fcf95b353fe79de222813e01a3"
+    },
+    {
+      "path": "heli/manifest-integration/PROJECT_MARKET_BRIDGE.md",
+      "bytes": 4668,
+      "sha256": "4176ab46ad2b85377ee0f3748f71f131ffc8a07a6710d0846d50498e0d1e5353"
+    },
+    {
+      "path": "heli/manifest-integration/README.md",
+      "bytes": 3654,
+      "sha256": "5dcd76bbda55047cb098e81afee2878f9af69ab994d2e857e971f3e5fd581ab1"
+    },
+    {
+      "path": "heli/manifest-integration/inventory_guard.mjs",
+      "bytes": 3221,
+      "sha256": "4a799716f8d0522ba8dd95bb9bfab3f85cb9c2b8f0633362e0430cf2d0bcb754"
+    },
+    {
+      "path": "heli/manifest-integration/inventory_guard.test.mjs",
+      "bytes": 3011,
+      "sha256": "780a722909ca9c94a18e45a5aa092453d96a4c49bde206542cb6ae1cd139fb31"
+    },
+    {
+      "path": "heli/manifest-integration/market_adapter.mjs",
+      "bytes": 3238,
+      "sha256": "f218428c86dd5da66ed600cff30615e96efb89075d0f8ace7ee369b506345973"
+    },
+    {
+      "path": "heli/manifest-integration/market_adapter.test.mjs",
+      "bytes": 3554,
+      "sha256": "277969fad8cb12ca5e13fc1537b417d5bb054c4a88cc1ec0823b51dd90b603c8"
+    },
+    {
+      "path": "heli/manifest-integration/official-manifest-svm-verification.json",
+      "bytes": 425,
+      "sha256": "840b90556eb33324c763d759b6bb6bfe8d2eebcd02a8b871a72a090ebfababe6"
+    },
+    {
+      "path": "heli/manifest-integration/vendor-manifest/LICENSE",
+      "bytes": 35821,
+      "sha256": "81cbae84a29ce7e770bf2bc7b178e50bda0ce8de6067aba661b0bc7b05b562f8"
+    },
+    {
+      "path": "heli/manifest-integration/vendor-manifest/manifest-release-v3.0.24.so",
+      "bytes": 335040,
+      "sha256": "6d0aa96d34f33266d68b3bb4b3f7495576526ab9cf700db0444d6a66653b3d04"
+    },
+    {
+      "path": "heli/mobile/deps.mjs",
+      "bytes": 393,
+      "sha256": "4812e31a1cc12a6f2c87d3c8bc79ae2ad1abdf4e1ff64994c1b3805601562072"
+    },
+    {
+      "path": "heli/mobile/identity.mjs",
+      "bytes": 4907,
+      "sha256": "eaa30730142e9b5a96290bcc7be1d8fd78ec7845ac41b2657918c8bcf46d7b33"
+    },
+    {
+      "path": "heli/mobile/package.json",
+      "bytes": 223,
+      "sha256": "90b3915b9d6aa9f6a844b5d32adb68aab384ff155f9424c5e69bb6cfc4cbf420"
+    },
+    {
+      "path": "heli/mobile/pnpm-lock.yaml",
+      "bytes": 31410,
+      "sha256": "7b67d1c53918d94e08ad25d93c48d93e02481ff9b5cd0bd06089454304714dac"
+    },
+    {
+      "path": "heli/mobile/solana.mjs",
+      "bytes": 10137,
+      "sha256": "e72cabc0f912f9a351fa978870c8d6071991937e6808bc2f26b17b0f49514924"
+    },
+    {
+      "path": "heli/operations/ISLETIM_PLANI_2026-09-30.md",
+      "bytes": 9462,
+      "sha256": "abe30b86e9c8947020549805e74b2ee9438d4afc96cddf259162b9b565f52bf8"
+    },
+    {
+      "path": "heli/operations/README.md",
+      "bytes": 5893,
+      "sha256": "a0a3321bbda35069a3f77f7dbd6960e68aa6579b39ed686715da1e1cf85c83c6"
+    },
+    {
+      "path": "heli/operations/app.mjs",
+      "bytes": 2453,
+      "sha256": "c83068c5f93412dc54341a6adfaff5e66e2576930c3e64adf9857833ca3fc357"
+    },
+    {
+      "path": "heli/operations/budget-input.example.json",
+      "bytes": 242,
+      "sha256": "0a903bb2a9bdcf85ee6cce3c7c24c07661dd0ca5b0fe982ab72e1d6329a640fa"
+    },
+    {
+      "path": "heli/operations/budget.py",
+      "bytes": 3914,
+      "sha256": "aca050024d2a4f99323578b4fb8221df82bbcf045e8f70312ba55c7411c31e0e"
+    },
+    {
+      "path": "heli/operations/cash-plan.mjs",
+      "bytes": 274,
+      "sha256": "28ec356a46250cba05e496a12fa68e2819ce64756761cf911eb7aac12fa626a2"
+    },
+    {
+      "path": "heli/operations/check-health.mjs",
+      "bytes": 425,
+      "sha256": "70057132a93de04e34af78031aedcffbc733eb523c73356fc463020f2eb83d36"
+    },
+    {
+      "path": "heli/operations/finance.mjs",
+      "bytes": 3491,
+      "sha256": "8ba3142c570f90681a05b34929a87ad8d0377b64e11adaee23c1d3fc3543b2af"
+    },
+    {
+      "path": "heli/operations/health.mjs",
+      "bytes": 3499,
+      "sha256": "96b471c70f5920d9197635db03dec766885da7e891d94aa43716c922b01f5862"
+    },
+    {
+      "path": "heli/operations/index.html",
+      "bytes": 3155,
+      "sha256": "6eac39e69535e3b5cbb2a12e4593b071e382c00984e6def42019e5a0db345131"
+    },
+    {
+      "path": "heli/operations/mainnet-rent-quote.json",
+      "bytes": 639,
+      "sha256": "0536aa05ab39a6ea392f7ada02350c35ff3e1cf9bb1a460348f1e07c7f3cf3a7"
+    },
+    {
+      "path": "heli/operations/server.mjs",
+      "bytes": 1907,
+      "sha256": "daac02c93557804f69f1d662f808dc9b544ce861835bd637c017097854bce0b9"
+    },
+    {
+      "path": "heli/operations/style.css",
+      "bytes": 1408,
+      "sha256": "d4566ff264d3539e87dbd8259a6fbecfe049c269748ed865d7383d70551c0d8b"
+    },
+    {
+      "path": "heli/operations/test_budget.py",
+      "bytes": 1586,
+      "sha256": "92065fea68b1bb4bdd5e080d631aa17e6665ffd8459ff89ae7f00a7dc21058b6"
+    },
+    {
+      "path": "heli/operations/tests/operations.test.mjs",
+      "bytes": 6506,
+      "sha256": "84026031364663ee31b0ad722e0e9eb8c0c33e748c2c7a1c48f7ae5b974318d0"
+    },
+    {
+      "path": "heli/operations/v15-rent-measurement.json",
+      "bytes": 244,
+      "sha256": "9f933a65131f0cec8ea083e851600b90586598d187b2c021610ecb0c32818ca4"
+    },
+    {
+      "path": "heli/operations/verification.json",
+      "bytes": 7274,
+      "sha256": "c63e767e307574c39b1b871d1a02476a16b19b7f75db37efd55c6dddb6ead3b2"
+    },
+    {
+      "path": "heli/solana-v20/.gitignore",
+      "bytes": 8,
+      "sha256": "b53ee26e6ff1da219b0563333a76d2c9ec19eec713d6ee54e11a1edacb0e9f3d"
+    },
+    {
+      "path": "heli/solana-v20/Cargo.lock",
+      "bytes": 65293,
+      "sha256": "9de6fed58e5907cf30cf160021e413cb64f247df2444b465ff583f355e0c1581"
+    },
+    {
+      "path": "heli/solana-v20/Cargo.toml",
+      "bytes": 385,
+      "sha256": "6702520143a2b2557da3766deffcfb3189b6b24d9b952b4e4b78290b6983fbf5"
+    },
+    {
+      "path": "heli/solana-v20/DEPLOYMENT.md",
+      "bytes": 6296,
+      "sha256": "ee65d2358b4d23947ae7263c06b1454dc7c148ebeb52f5d95cd673975228d532"
+    },
+    {
+      "path": "heli/solana-v20/README.md",
+      "bytes": 5184,
+      "sha256": "c793a453eb2566833f5613c30864250c8af41639672911112ae22f6e414484ba"
+    },
+    {
+      "path": "heli/solana-v20/compiled-source.json",
+      "bytes": 229,
+      "sha256": "f4804605e2b74231086d2dea028164bfab28c11a98841c83810358cdc2d92e77"
+    },
+    {
+      "path": "heli/solana-v20/devnet-readiness.json",
+      "bytes": 604,
+      "sha256": "ced43fccda504446e8bf867d09cb20c0209b584cc419fcb2db434fd514952887"
+    },
+    {
+      "path": "heli/solana-v20/entitlement-controls-svm-verification.json",
+      "bytes": 2075,
+      "sha256": "6ff1aff61dd3915bb2384b6379255dd4f4fdea48f0811603813e00e777e2288c"
+    },
+    {
+      "path": "heli/solana-v20/expense-controls-svm-verification.json",
+      "bytes": 1731,
+      "sha256": "ada21ceb21c79cb1f1b073971a51a539336175d9b1375a42bd8f4d0a51974d38"
+    },
+    {
+      "path": "heli/solana-v20/governance-svm-verification.json",
+      "bytes": 2666,
+      "sha256": "cad68ff7c4ca017c32ae8a60f736b1fee3e407eb9c82710f45957a9121568b48"
+    },
+    {
+      "path": "heli/solana-v20/heli_core_v20.so",
+      "bytes": 1408152,
+      "sha256": "1645494a8c02eaa595a1785a21a565605ae7e57d30cf2a74bf776c75a6edd207"
+    },
+    {
+      "path": "heli/solana-v20/idl.json",
+      "bytes": 98042,
+      "sha256": "27d3b87a51202420406c5b3ffa17ddf36e51c8393207fe9651ad13bd0c66683e"
+    },
+    {
+      "path": "heli/solana-v20/market-release-model.json",
+      "bytes": 4796,
+      "sha256": "431443f25591f008e5f2f1933f1b9d4304a52131430e8a6e6dcd50c364ab952b"
+    },
+    {
+      "path": "heli/solana-v20/market-release-svm-verification.json",
+      "bytes": 30634,
+      "sha256": "3e0688a454f137b3a2e1596177b946a99e07cd8d08c0b08a360e197bf2488a2d"
+    },
+    {
+      "path": "heli/solana-v20/observation-controls-svm-verification.json",
+      "bytes": 2896,
+      "sha256": "3e35e268626148012b3c0852b47ba52d164f891463260b1e917fd4541a3c3a45"
+    },
+    {
+      "path": "heli/solana-v20/price-bounds-svm-verification.json",
+      "bytes": 3521,
+      "sha256": "d62b3db02534e433a81d8953258e59ac0bed98b4f2193efa2b849bc2ad89395e"
+    },
+    {
+      "path": "heli/solana-v20/scripts/bootstrap_v15.py",
+      "bytes": 2959,
+      "sha256": "85b151911ca77b34337e908d76578ac702df880c4af797831f8a1fb05ba6c162"
+    },
+    {
+      "path": "heli/solana-v20/scripts/build.py",
+      "bytes": 2246,
+      "sha256": "59efc2ed6322ac5f40963ea9c8873e47ce011c75497fc626389b413e58c60eff"
+    },
+    {
+      "path": "heli/solana-v20/scripts/build_local.sh",
+      "bytes": 1726,
+      "sha256": "82efcfaec931036719e92e3d5c6a5719245104fd61fb2ceaff974707bb929d8f"
+    },
+    {
+      "path": "heli/solana-v20/scripts/devnet_readiness.mjs",
+      "bytes": 1643,
+      "sha256": "9919c98a496d59421b579dbaf6773be419ae7b7f29ff9c3adc8efa6369c5a2ac"
+    },
+    {
+      "path": "heli/solana-v20/scripts/model_release.py",
+      "bytes": 1611,
+      "sha256": "44f93f1f8658b9ecdcb5e8e02c2c60e4c6a3a54a07a9232d3b1e6a863bac7be0"
+    },
+    {
+      "path": "heli/solana-v20/scripts/prepare_acceptance.py",
+      "bytes": 5968,
+      "sha256": "b50beee4aef0f80aa74aa0cb30017694a53e8c40d7eca4f3e9db148fb77f4aea"
+    },
+    {
+      "path": "heli/solana-v20/scripts/release_ref.py",
+      "bytes": 421,
+      "sha256": "245183b38a17fdd2a89318492af1d4a11e19e5f2b7c9dee79002239eec7d4216"
+    },
+    {
+      "path": "heli/solana-v20/scripts/svm_fixture.py",
+      "bytes": 7135,
+      "sha256": "5244755e3f9c643d027bf74d87ad0ff1bef79793f9a061cb317b371eba329434"
+    },
+    {
+      "path": "heli/solana-v20/scripts/test_entitlement_controls_svm.py",
+      "bytes": 5030,
+      "sha256": "71680313f0d68272db085bdffe653b47db23c70647dffd59a832931f825deab6"
+    },
+    {
+      "path": "heli/solana-v20/scripts/test_expense_controls_svm.py",
+      "bytes": 2892,
+      "sha256": "ac596ca9f6280b455252e8ed9fc37fa9c4227bdb20cc63134484deb26530648b"
+    },
+    {
+      "path": "heli/solana-v20/scripts/test_governance_svm.py",
+      "bytes": 7216,
+      "sha256": "3190d6a7cdcd0b1f0467cac9025a3425925392bf3a71bf4e7a426c6307c6c670"
+    },
+    {
+      "path": "heli/solana-v20/scripts/test_market_release_svm.py",
+      "bytes": 15919,
+      "sha256": "b470d9485c13883a37574f8d84e581ff3a405d7821d91b3bf3833b18038320e2"
+    },
+    {
+      "path": "heli/solana-v20/scripts/test_observation_controls_svm.py",
+      "bytes": 8518,
+      "sha256": "589f84fd66205a5e72285fda49352ed0716f35e37869dc6faf806a5500e951f7"
+    },
+    {
+      "path": "heli/solana-v20/scripts/test_price_bounds_svm.py",
+      "bytes": 7957,
+      "sha256": "e090ff25d15b6532c3d3139fb702fed6b73bddc124e101cb0e166474d1d501bf"
+    },
+    {
+      "path": "heli/solana-v20/scripts/test_setup_controls_svm.py",
+      "bytes": 2274,
+      "sha256": "5853d816920dbf3c518971200b7da9d63326c053c519f5944d49601c077d5a85"
+    },
+    {
+      "path": "heli/solana-v20/setup-controls-svm-verification.json",
+      "bytes": 1362,
+      "sha256": "38c1c5ad9a11b2372aa7eb9fb8ec13fdad4f3c24184c62b00064b50bfdc79bdc"
+    },
+    {
+      "path": "heli/solana-v20/src/accounts.rs",
+      "bytes": 44675,
+      "sha256": "b3fb0e09272000f03282782fc92e36497782f9570cf57dd76810fffb7e5c3244"
+    },
+    {
+      "path": "heli/solana-v20/src/auction.rs",
+      "bytes": 10682,
+      "sha256": "16633a3bbd5ec27de9c43de2be463fa85cfa1228388b2dfdd466846d066cd699"
+    },
+    {
+      "path": "heli/solana-v20/src/calendar.rs",
+      "bytes": 1170,
+      "sha256": "fe70370271dde19a0e2c58a620fe0668b71e0662c89ad62500298a1aebe522ea"
+    },
+    {
+      "path": "heli/solana-v20/src/economics.rs",
+      "bytes": 1159,
+      "sha256": "290e93c2439d4b02f878321e7f780fab03b453a964f6c281fe98dfe348886f29"
+    },
+    {
+      "path": "heli/solana-v20/src/identity.rs",
+      "bytes": 2972,
+      "sha256": "56e61bea8fc91c1cddf11ae127c0af4ca59363c6543340aac12712ca37579eae"
+    },
+    {
+      "path": "heli/solana-v20/src/lib.rs",
+      "bytes": 35210,
+      "sha256": "5ac5c35886586d06a441a54ac096c4882467bc78d95ea3a7137e455b10fed9e9"
+    },
+    {
+      "path": "heli/solana-v20/src/management.rs",
+      "bytes": 11786,
+      "sha256": "4aec0105b26ace2693489db7b2afb6b9837b661dc2718b8b1d8b1fea2da0029f"
+    },
+    {
+      "path": "heli/solana-v20/src/manifest_bridge.rs",
+      "bytes": 14912,
+      "sha256": "471add9b081fb12b4aba56dd8df450ef9e8e162daa96224157e7b578cadf6aab"
+    },
+    {
+      "path": "heli/solana-v20/src/market_release.rs",
+      "bytes": 3900,
+      "sha256": "2a0e0360ff983a37cadaf8bd8609529b12e65a898c4e6c77981dc143f4326250"
+    },
+    {
+      "path": "heli/solana-v20/src/release.rs",
+      "bytes": 16409,
+      "sha256": "d4690fada490e18ed167933078e829941dff4793fbfd78abc58855ed79117242"
+    },
+    {
+      "path": "heli/website/README.md",
+      "bytes": 5788,
+      "sha256": "2ca0d2654fbfae192b4a6a6752a1a3d191825a22825baff19cbec41ab1453da2"
+    },
+    {
+      "path": "heli/website/_headers",
+      "bytes": 351,
+      "sha256": "7d810986e6fbad1aa317ce8e04b9af586790237250e75a76b54df769811f9cf4"
+    },
+    {
+      "path": "heli/website/app.js",
+      "bytes": 6090,
+      "sha256": "1bda043d8655fd7159b27fff77e1c7d7207e7042acc859d04bb67143929b4c3f"
+    },
+    {
+      "path": "heli/website/apply.html",
+      "bytes": 2328,
+      "sha256": "4ee7382d0c6c7bb69a3fb1a57703235653332e04135e04281f6470e02e6e7f8a"
+    },
+    {
+      "path": "heli/website/apply.js",
+      "bytes": 1247,
+      "sha256": "31558241cfdd495edc72eb3b1c8ad67e0cef642181422e68f92627b7e0d70eb5"
+    },
+    {
+      "path": "heli/website/favicon.svg",
+      "bytes": 269,
+      "sha256": "e7d557bda878f3f7f29d0a14537bf655bb560643d41dfe9d73ed857937bc5508"
+    },
+    {
+      "path": "heli/website/heli-rules.txt",
+      "bytes": 4798,
+      "sha256": "7de7cbad4ebfe40fde810cc64c12b8c78a193df211a564a8dc34b8a2c53f5640"
+    },
+    {
+      "path": "heli/website/index.html",
+      "bytes": 31171,
+      "sha256": "b5d803c4d6bdeb0f0b0da39d801e734277a3ab5bcd5c5b9aadf80433352bf4c9"
+    },
+    {
+      "path": "heli/website/server.mjs",
+      "bytes": 1393,
+      "sha256": "a213e08158bdd01509fc68cc7dcdf486bc8947681d6c6c319327099cf194727a"
+    },
+    {
+      "path": "heli/website/style.css",
+      "bytes": 27024,
+      "sha256": "67303c0a3a1ef29e3ad6d8625ffdcfd858c5dfe93a75e26184b3b308438fcdb1"
+    },
+    {
+      "path": "package.json",
+      "bytes": 222,
+      "sha256": "b2c155ca3246f640fec4a378250c47b9b6ff3ff4e02cc5dd7871983b8c11d454"
+    }
+  ]
+}
