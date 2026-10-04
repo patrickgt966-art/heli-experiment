@@ -9,7 +9,7 @@ use crate::calendar::boundary;
 #[instruction(number:u16)]
 pub struct OpenMarketEpoch<'info> {
  #[account(seeds=[b"config"],bump=config.bump)] pub config:Box<Account<'info,Config>>,
- #[account(init,payer=payer,space=8+160,seeds=[b"epoch".as_ref(),&number.to_le_bytes()],bump)] pub epoch:Box<Account<'info,Epoch>>,
+ #[account(init,payer=payer,space=8+44,seeds=[b"epoch".as_ref(),&number.to_le_bytes()],bump)] pub epoch:Box<Account<'info,Epoch>>,
  #[account(mut)] pub payer:Signer<'info>,
  pub system_program:Program<'info,System>,
 }
@@ -31,8 +31,7 @@ pub fn open(ctx:Context<OpenMarketEpoch>,number:u16)->Result<()> {
  // between the program's own vaults; pause halts sales, treasury outflows and registrations instead.
  require!(c.live&&!c.closed&&number>=1&&number<=720&&Clock::get()?.unix_timestamp>=boundary(c.start,number-1),ErrorCode::Time);
  let e=&mut ctx.accounts.epoch;e.number=number;e.bump=ctx.bumps.epoch;
- // No monthly person register or claim/reward token accounts are needed.
- e.registry_finalized=true;Ok(())
+ Ok(())
 }
 
 pub fn settle(mut ctx:Context<SettleMarket>)->Result<()> {
@@ -48,7 +47,7 @@ pub fn settle(mut ctx:Context<SettleMarket>)->Result<()> {
  outgoing(a.token_program.to_account_info(),a.release_reserve.to_account_info(),a.market_inventory.to_account_info(),c.to_account_info(),c.bump,market_release)?;
  let c=&mut a.config;c.stocks[0]-=market_release;c.market_remaining=inventory;c.sale_authorized=authorized;c.last_settled_epoch=n;
  let e=&mut a.epoch;e.settled=true;e.capacity=cap;e.human_budget=market_release;e.founder_budget=management_budget;
- e.people=0;e.per_person=0;e.human_remaining=0;e.reward_remaining=0;e.burned=0;e.staking=0;e.liquidity=0;e.liquidity_budget=0;e.founder=0;
+ e.founder=0;
  emit!(MonthlyMarketRelease{number:n,capacity:cap,released:market_release,management_budget});
  Ok(())
 }

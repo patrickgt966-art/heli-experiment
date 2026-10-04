@@ -7,7 +7,7 @@ from bootstrap_v15 import bootstrap,epoch_accounts
 
 f=bootstrap(t,1_000_000,with_policy=True)
 t.check('90M genesis includes 70M market reserve and 15M management',t.cfg()['stocks']==[70_000_000*t.U,0,0,15_000_000*t.U] and t.supply()==90_000_000*t.U)
-t.check('no rewards or independent liquidity allocation',t.amount(t.defaults['rewards'])==0 and t.amount(t.defaults['liquidity'])==0)
+t.check('the former rewards and liquidity vaults do not exist',t.svm.get_account(t.pda(b'vault',bytes([1]))) is None and t.svm.get_account(t.pda(b'vault',bytes([2]))) is None)
 MANIFEST=t.Pubkey.from_string('MNFSTqtC93rEfYHB6hF82sKdZpUDFWkViLByLd1k1Ms')
 TOKEN22=t.Pubkey.from_string('TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb')
 t.svm.add_program_from_file(MANIFEST,t.ROOT.parent/'manifest-integration/vendor-manifest/manifest-release-v3.0.24.so')
@@ -59,7 +59,8 @@ eve=t.outsider;funded(eve,100_000*t.U)
 T=t.boundary(1);t.clock(T)
 t.call('observe_release_market',label='first call arms the series without a sample')
 t.check('armed: no sample yet, mark recorded',pol()['count']==0 and pol()['markTime']==T)
-t.call('observe_release_market',reject='Invalid calendar window',label='no sample within the hour after arming')
+t.call('observe_release_market',label='within the hour after arming the call succeeds but records no sample (review A6)')
+t.check('still no sample within the hour',pol()['count']==0 and pol()['markTime']==T)
 
 # M2: bid, observe and cancel in one transaction (the original PoC5) is refused outright.
 t.clock(T+3600);seq=next_seq()

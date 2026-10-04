@@ -19,13 +19,13 @@ t.check('mint authority revoked after genesis',t.svm.get_account(t.defaults['min
 c=t.cfg();a=t.read(t.defaults['auction'],'OpeningAuction')
 t.check('supply after genesis is 90M (100M minted, 10M burned)',t.supply()==90_000_000*t.U)
 t.check('locked stocks unchanged: 70M market reserve, 15M management treasury',c['stocks']==[70_000_000*t.U,0,0,15_000_000*t.U])
-t.check('free allocation vault holds nothing',t.amount(t.defaults['launch'])==0)
-t.check('no free allocation is recorded or pending',c['launchRemaining']==0 and c['launchPerPerson']==0 and c['launchPeople']==0 and c['launchClaimed']==0 and c['launchFinalized'] is True)
+t.check('no launch transit account exists',t.svm.get_account(t.pda(b'launch-claims')) is None)
+t.check('the config has no free allocation fields any more',not any(k.startswith('launch') for k in c))
 t.check('the whole 5M launch base is market inventory (5M minus the auction sale)',t.amount(t.defaults['market_inventory'])==5_000_000*t.U-a['soldHeli']*t.U and c['marketRemaining']==5_000_000*t.U-a['soldHeli']*t.U)
 t.check('auction sale authorization covers 5M',c['saleAuthorized']==5_000_000*t.U)
 t.check('auction buyer received her HELI',t.amount(f['wallet'])==1000*t.U)
 t.check('no identity credential was created',t.svm.get_account(f['identity']['credential']) is None)
-for name in ['issue_credential','enroll_launch','claim_launch','dispute_launch','restore_launch','set_credential_active','finalize_launch','enroll','dispute_entry','finalize_registry','claim_human','open_stake','stake','checkpoint_stake','request_exit','withdraw','claim_reward','checkpoint_global','schedule_apr','set_liquidity_request','allocate_auction_proceeds']:
+for name in ['issue_credential','enroll_launch','claim_launch','dispute_launch','restore_launch','set_credential_active','finalize_launch','enroll','dispute_entry','finalize_registry','claim_human','open_stake','stake','checkpoint_stake','request_exit','withdraw','claim_reward','checkpoint_global','schedule_apr','set_liquidity_request','allocate_auction_proceeds','calendar_boundary','create_launch_claims','initialize_identity','set_verifier']:
  t.removed(name)
 t.clock(t.boundary(6)+3600);t.removed('finalize_launch','no six-month free allocation reconciliation exists')
 t.check('market inventory unchanged',t.amount(t.defaults['market_inventory'])==5_000_000*t.U-a['soldHeli']*t.U)

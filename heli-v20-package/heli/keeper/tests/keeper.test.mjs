@@ -4,10 +4,10 @@ const start=Date.UTC(2026,0,31,12,34,56)/1000;
 test('V20 observation reserve protects one epoch and two maintenance fees',async()=>{
  const p=web3.Keypair.generate(),pk=p.publicKey.toBase58(),sizes=[];
  const a=new SolanaAdapter({connection:{async getMinimumBalanceForRentExemption(n){sizes.push(n);return 2060160;}},program:'HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv',payer:p,trust:{admin:pk,verifier:pk,heliUpgradeAuthority:null,manifestUpgradeAuthority:null}});
- assert.equal(await a.reserveFor({name:'observe_release_market'},{config:{last_settled_epoch:1}},{fee:5000}),7070160);assert.deepEqual(sizes,[168]);
+ assert.equal(await a.reserveFor({name:'observe_release_market'},{config:{last_settled_epoch:1}},{fee:5000}),7070160);assert.deepEqual(sizes,[52]);
  assert.equal(await a.reserveFor({name:'observe_release_market'},{config:{last_settled_epoch:720}},{fee:5000}),5000000);
 });
-function snapshot(last=0){return {config:{live:true,closed:false,paused:false,start,last_settled_epoch:last,launch_finalized:true,cursor:start,manifest_bound:false},now:boundary(start,last+1),epoch:null,auction:{finalized:true},policy:null};}
+function snapshot(last=0){return {config:{live:true,closed:false,paused:false,start,last_settled_epoch:last,manifest_bound:false},now:boundary(start,last+1),epoch:null,auction:{finalized:true},policy:null};}
 function fixture({dryRun=false,cap=50000}={}){
  let now=1000,prepared=0,sent=[],chainStatus=null,expired=false,complete=false,saved=0;
  const state={pending:null,budgets:{},save(){saved++;}},job={name:'settle',number:1,key:'settle:1'};

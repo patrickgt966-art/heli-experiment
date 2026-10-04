@@ -4,8 +4,8 @@ Tarih: 4 Ekim 2026. V22 = Claude V21 + Codex kimlik karar sırası düzeltmesi (
 
 | | Değer |
 |---|---|
-| Kaynak SHA-256 | `92d9ee99b224e78fe5b00783bcad539ee4f0ee6ba807bc10a611fea0d6b4d6f9` |
-| ELF SHA-256 | `a2507e531597c77748615a334accf215ef6de6196b6d12103d71e959368c0b0f` |
+| Kaynak SHA-256 | `411dd9a87da28c21fb29f4e4d811a10c06072998bfeabf99c637afcef7fb72ca` |
+| ELF SHA-256 | `7676916ae706deaa14a972f55123155d5677aba7eb5043c755f4feae1032d66c` |
 | Derleme | `heli/solana-v20/scripts/build_local.sh` (Agave 2.1.21 / platform-tools v1.43) |
 
 Değişiklikler, kararlar, testler ve çalıştırılamayanlar: `reviews/v22/V22_DUZELTME_2026-10-04.md`.
@@ -17,6 +17,7 @@ Kısaca:
 - Sahibin kararları (pazar ölçümü): asgari derinlik alt sınırı 1.000; projenin kendi emirleri ölçüme girmez; çöküş istisnası (%95 tavan; dış alış ≥24 saat kayıtlı sığ; kayan 30 günde rezervin en fazla %10'u).
 - Bağımsız inceleme düzeltmeleri (bölüm 8): toz emir koruması (192 düğüm), %2 sınırı referansın %98'ine kadar tüm dış alışlar, kapanıştan sonra gözlem sürer, doğrudan satış taze emirleri saymaz. Açık: M4 (Manifest bağımlılığı, ~49. yıl slot alanı), L3.
 - Sahibin kararları (bölüm 9): tüm rezerv alışları (normal + çöküş) kayan 30 günde rezervin %10'u ile sınırlı; iptal edilen alışın dolmamış kısmı geri verilir; rezerv tabanı (`quote_floor`) en az 1.000; çöküş kaydı en fazla 2 saat arayla kesintisiz teyit ister. Tartışılacak: gider tavanına üst sınır.
+- Bağımsız test ajanı ve temizlik (bölüm 14): rezerv tabanı gelir ödemelerinde de korunur, 30 günlük pencereler 31 gün dilimi, alıcı dönüşünü gösteren gözlem geri alınmaz, logo adresi alan adı kontrolü; kimlik, staking geçmişi, launch hesabı, 1/2 numaralı kasalar ve kullanılmayan alanlar silindi. ELF 995 KB (~6,93 SOL). Açık: kendi kendine satışla gelir aklama (A1/A2) ve yönetimin gözlemi durdurması (A8).
 - Token meta verisi (bölüm 13): `create_token_metadata` genesis'ten önce ad/sembol/logo adresini bir kez yazar; meta veri yoksa genesis çalışmaz. İsim henüz seçilmedi (testlerde yer tutucu).
 - Küçültme (bölüm 12): ölü talimatlar silindi, zincir üstü IDL kapalı, `opt-level="z"`; ELF 1,42 MB → 1,04 MB (yükleme kirası ~9,9 → ~7,2 SOL).
 - Gider kuralı (bölüm 11): gider ödenirken rezervden tam tutar çekilir; satış geliri %100 harcanabilir; gelirin ötesinde 30 günde 10 birim sabit teknik taban + rezervin yılda %25'i; rezerv 1.000 birimin altına yalnız sabit taban için iner.

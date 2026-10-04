@@ -12,7 +12,7 @@ pub struct ReleasePolicy {pub minimum_quote_depth:u64,pub count:u8,pub next:u8,p
 pub struct InitializeReleasePolicy<'info>{
  #[account(seeds=[b"config"],bump=config.bump,has_one=admin)] pub config:Box<Account<'info,Config>>,
  #[account(address=config.quote_mint)] pub quote_mint:Box<Account<'info,Mint>>,
- #[account(init,payer=admin,space=8+512,seeds=[b"release-policy"],bump)] pub policy:Box<Account<'info,ReleasePolicy>>,
+ #[account(init,payer=admin,space=8+442,seeds=[b"release-policy"],bump)] pub policy:Box<Account<'info,ReleasePolicy>>,
  #[account(mut)] pub admin:Signer<'info>,pub system_program:Program<'info,System>,
 }
 pub fn initialize(ctx:Context<InitializeReleasePolicy>,minimum_quote_depth:u64)->Result<()> {
@@ -31,7 +31,7 @@ pub struct InitializeReleaseSeat<'info>{
 }
 pub fn initialize_seat(ctx:Context<InitializeReleaseSeat>,kind:u8,rent_lamports:u64)->Result<()> {
  require!(kind==3,ErrorCode::LiquidityDisabled);
- require!((kind==2||kind==3)&&rent_lamports>=1_000_000&&rent_lamports<=100_000_000,ErrorCode::Quota);
+ require!(rent_lamports>=1_000_000&&rent_lamports<=100_000_000,ErrorCode::Quota);
  invoke(&system_instruction::transfer(&ctx.accounts.admin.key(),&ctx.accounts.trader.key(),rent_lamports),&[ctx.accounts.admin.to_account_info(),ctx.accounts.trader.to_account_info(),ctx.accounts.system_program.to_account_info()])?;Ok(())
 }
 #[derive(Accounts)]
@@ -115,10 +115,14 @@ pub(crate) fn band_depth(market:&AccountInfo,now:&Clock,min_quote:u64,before_seq
 }
 /// Whether live outside bids (fresh ones included) are provably below `min_quote`: the whole book was read
 /// and its outside quote value is short. An incomplete scan never counts as shallow.
-pub(crate) fn outside_shallow(market:&AccountInfo,now:&Clock,min_quote:u64)->Result<bool>{
+pub(crate) fn outside_shallow(market:&AccountInfo,now:&Clock,min_quote:u64)->Result<bool>{Ok(outside_depth(market,now,min_quote)?==Depth::Shallow)}
+#[derive(PartialEq)] pub(crate) enum Depth {Shallow,Deep,Unknown}
+/// Shallow: the whole book was read and outside demand is below `min_quote`. Deep: outside demand reaches it.
+/// Unknown: the scan limit ended the walk first.
+pub(crate) fn outside_depth(market:&AccountInfo,now:&Clock,min_quote:u64)->Result<Depth>{
  let mut total=0u128;
  let complete=walk_bids(market,now,min_quote,u64::MAX,|_,_,quote|{total=total.saturating_add(quote);total>=min_quote as u128})?;
- Ok(complete&&total<min_quote as u128)
+ Ok(if total>=min_quote as u128 {Depth::Deep}else if complete {Depth::Shallow}else{Depth::Unknown})
 }
 // Only ComputeBudget and this observation may share the transaction, so a bid cannot be placed and
 // cancelled around the observation atomically (it would also fail the resting-order rule above).
@@ -141,16 +145,20 @@ pub fn observe(ctx:Context<ObserveReleaseMarket>)->Result<()>{
  // A shallow market yields no price sample; the call still succeeds so the condition is recorded.
  // The record restarts unless the previous shallow observation is at most two hours old, so the 24-hour
  // wait needs continuous confirmation and cannot be bridged by a gap without observations.
- if outside_shallow(&market,&now,p.minimum_quote_depth)? {
+ let demand=outside_depth(&market,&now,p.minimum_quote_depth)?;
+ if demand==Depth::Shallow {
   if p.shallow_since==0||now.unix_timestamp.saturating_sub(p.shallow_seen)>7200 {p.shallow_since=now.unix_timestamp;}
   p.shallow_seen=now.unix_timestamp;return Ok(());
  }
- p.shallow_since=0;
+ // Review A6: proven outside demand clears the crash record, and the call then succeeds even when no price
+ // sample is due or possible, so a failed sample can never roll the clearing back.
+ let deep=demand==Depth::Deep;if deep {p.shallow_since=0;}
  // Arm (or re-arm after a gap): record which orders already rest; the first sample follows an hour later.
  if p.mark_time==0||now.unix_timestamp-p.mark_time>7200 {p.count=0;p.next=0;p.sequence_mark=sequence;p.mark_time=now.unix_timestamp;return Ok(());}
+ if deep&&now.unix_timestamp-p.mark_time<3600 {return Ok(());}
  require!(now.unix_timestamp-p.mark_time>=3600,ErrorCode::Time);
- let(price,depth)=bid_book(&market,&now,p.minimum_quote_depth,p.sequence_mark)?;
- require!((depth as u128*price as u128)/UNIT as u128>=p.minimum_quote_depth as u128,ErrorCode::Market);
+ let(price,depth)=match bid_book(&market,&now,p.minimum_quote_depth,p.sequence_mark) {Ok(x)=>x,Err(e)=>{if deep {return Ok(());} return Err(e);}};
+ if ((depth as u128*price as u128)/UNIT as u128)<(p.minimum_quote_depth as u128) {if deep {return Ok(());} return err!(ErrorCode::Market);}
  let i=p.next as usize;p.prices[i]=price;p.times[i]=now.unix_timestamp;p.next=((i+1)%24)as u8;p.count=(p.count+1).min(24);
  // Remembered for the crash exception: the last reference built from outside demand.
  if let Ok(r)=reference_price(p,now.unix_timestamp) {p.last_reference=r;p.last_reference_time=now.unix_timestamp;}
@@ -161,7 +169,8 @@ pub fn observe(ctx:Context<ObserveReleaseMarket>)->Result<()>{
 /// announced floor if the auction sold nothing) and 95% of the last outside reference if that is at most
 /// 30 days old, and reserve-funded bids only through the crash exception (management::order with
 /// crash_ceiling). Owner decision (V22, Grok finding 2): stalling observations, e.g. with a book full of
-/// skipped dust, therefore cannot lower the sale floor.
+/// skipped dust, cannot lower the sale floor for 30 days after the last reference; then the floor is the
+/// opening auction price again.
 pub(crate) fn order_bounds(p:&ReleasePolicy,auction:&OpeningAuction,now:i64)->(u64,Option<u64>){
  match reference_price(p,now) {
   Ok(r)=>((r as u128*95/100)as u64,Some((r as u128*105/100)as u64)),
@@ -252,11 +261,10 @@ pub struct ExecuteReleaseSale<'info>{
 pub fn execute(mut ctx:Context<ExecuteReleaseSale>,kind:u8,amount:u64)->Result<()>{
  require!(kind==3,ErrorCode::LiquidityDisabled);
  let a=&mut ctx.accounts;let now=Clock::get()?;let c=&a.config;let e=&a.epoch;
- require!(c.live&&!c.closed&&!c.paused&&c.manifest_bound&&e.settled&&e.number<720&&e.number==c.last_settled_epoch&&now.unix_timestamp>=boundary(c.start,e.number)&&now.unix_timestamp<boundary(c.start,e.number+1)&&amount>0&&(kind==2||kind==3),ErrorCode::Time);
- let left=if kind==2 {e.liquidity_budget.checked_sub(e.liquidity)}else {require!(now.unix_timestamp>=boundary(c.start,12),ErrorCode::Time);e.founder_budget.checked_sub(e.founder)}.ok_or(ErrorCode::Quota)?;
+ require!(c.live&&!c.closed&&!c.paused&&c.manifest_bound&&e.settled&&e.number<720&&e.number==c.last_settled_epoch&&now.unix_timestamp>=boundary(c.start,e.number)&&now.unix_timestamp<boundary(c.start,e.number+1)&&amount>0,ErrorCode::Time);
+ require!(now.unix_timestamp>=boundary(c.start,12),ErrorCode::Time);let left=e.founder_budget.checked_sub(e.founder).ok_or(ErrorCode::Quota)?;
  require!(amount<=left&&amount<=c.stocks[kind as usize]&&a.source.amount>=c.stocks[kind as usize],ErrorCode::Quota);
- if kind==2 {let dest=Pubkey::find_program_address(&[b"auction-proceeds"],&crate::ID).0;require!(a.destination.key()==dest&&a.destination.owner==c.key(),ErrorCode::Market);}
- else {let dest=Pubkey::find_program_address(&[b"auction-proceeds"],&crate::ID).0;require!(a.destination.key()==dest&&a.destination.owner==c.key(),ErrorCode::Market);let allowance=(e.human_budget as u128)/4;require!(e.founder as u128+amount as u128<=allowance,ErrorCode::Quota);}
+ {let dest=Pubkey::find_program_address(&[b"auction-proceeds"],&crate::ID).0;require!(a.destination.key()==dest&&a.destination.owner==c.key(),ErrorCode::Market);let allowance=(e.human_budget as u128)/4;require!(e.founder as u128+amount as u128<=allowance,ErrorCode::Quota);}
  let (bv,qv)=check_market(&a.manifest_market.to_account_info(),&a.manifest_program.to_account_info(),&c.mint,&c.quote_mint)?;
  require_keys_eq!(bv,a.base_vault.key(),ErrorCode::Market);require_keys_eq!(qv,a.quote_vault.key(),ErrorCode::Market);
  // Owner decision (V22, finding 4 option B): the 2% depth limit applies to the month total; management
@@ -285,9 +293,8 @@ pub fn execute(mut ctx:Context<ExecuteReleaseSale>,kind:u8,amount:u64)->Result<(
  }
  a.config.revenue_total=a.config.revenue_total.checked_add(earned).ok_or(ErrorCode::Math)?;
  let e=&mut a.epoch;
- if kind==2 {e.liquidity=e.liquidity.checked_add(filled).ok_or(ErrorCode::Math)?;e.quote_lp=e.quote_lp.checked_add(earned).ok_or(ErrorCode::Math)?;}
- else {e.founder=e.founder.checked_add(filled).ok_or(ErrorCode::Math)?;e.quote_founder=e.quote_founder.checked_add(earned).ok_or(ErrorCode::Math)?;}
- require!(e.human_budget as u128+e.staking as u128+e.liquidity as u128+e.founder as u128<=e.capacity as u128&&e.founder<=e.capacity/5&&4*e.founder as u128<=e.human_budget as u128,ErrorCode::Quota);
+ e.founder=e.founder.checked_add(filled).ok_or(ErrorCode::Math)?;e.quote_founder=e.quote_founder.checked_add(earned).ok_or(ErrorCode::Math)?;
+ require!(e.human_budget as u128+e.founder as u128<=e.capacity as u128&&e.founder<=e.capacity/5&&4*e.founder as u128<=e.human_budget as u128,ErrorCode::Quota);
  a.config.stocks[kind as usize]=a.config.stocks[kind as usize].checked_sub(filled).ok_or(ErrorCode::Math)?;Ok(())
 }
 

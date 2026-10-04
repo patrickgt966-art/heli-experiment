@@ -6,7 +6,6 @@
  "reserveLamports":5000000,
  "trust":{
   "admin":"SET_VERIFIED_ADMIN_PUBLIC_KEY",
-  "verifier":"SET_VERIFIED_IDENTITY_PUBLIC_KEY",
   "heliUpgradeAuthority":null,
   "manifestUpgradeAuthority":null,
   "manifestHash":"SET_VERIFIED_MANIFEST_ELF_SHA256",

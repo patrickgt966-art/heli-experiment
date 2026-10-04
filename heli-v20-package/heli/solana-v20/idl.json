@@ -3,22 +3,6 @@
   "name": "heli_core_v20",
   "instructions": [
     {
-      "name": "calendarBoundary",
-      "accounts": [
-        {
-          "name": "config",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "number",
-          "type": "u16"
-        }
-      ]
-    },
-    {
       "name": "initialize",
       "accounts": [
         {
@@ -44,11 +28,6 @@
         {
           "name": "quoteMint",
           "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "history",
-          "isMut": true,
           "isSigner": false
         },
         {
@@ -78,47 +57,6 @@
           "type": "i64"
         }
       ]
-    },
-    {
-      "name": "createLaunchClaims",
-      "accounts": [
-        {
-          "name": "config",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "mint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "launch",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "admin",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rent",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
     },
     {
       "name": "createMarketInventory",
@@ -679,19 +617,9 @@
           "isSigner": false
         },
         {
-          "name": "identityPolicy",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "admin",
           "isMut": false,
           "isSigner": true
-        },
-        {
-          "name": "launch",
-          "isMut": true,
-          "isSigner": false
         },
         {
           "name": "marketInventory",
@@ -700,16 +628,6 @@
         },
         {
           "name": "human",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "rewards",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "liquidity",
           "isMut": true,
           "isSigner": false
         },
@@ -725,37 +643,6 @@
         }
       ],
       "args": []
-    },
-    {
-      "name": "initializeIdentity",
-      "accounts": [
-        {
-          "name": "config",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "identityPolicy",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "admin",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "verifier",
-          "type": "publicKey"
-        }
-      ]
     },
     {
       "name": "prepareAuctionQuote",
@@ -2643,32 +2530,6 @@
       "args": []
     },
     {
-      "name": "setVerifier",
-      "accounts": [
-        {
-          "name": "config",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "identityPolicy",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "admin",
-          "isMut": false,
-          "isSigner": true
-        }
-      ],
-      "args": [
-        {
-          "name": "verifier",
-          "type": "publicKey"
-        }
-      ]
-    },
-    {
       "name": "openEpoch",
       "accounts": [
         {
@@ -2775,22 +2636,7 @@
           "isSigner": false
         },
         {
-          "name": "launch",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "human",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "rewards",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "liquidity",
           "isMut": true,
           "isSigner": false
         },
@@ -2900,18 +2746,6 @@
       }
     },
     {
-      "name": "IdentityPolicy",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "verifier",
-            "type": "publicKey"
-          }
-        ]
-      }
-    },
-    {
       "name": "ManagementBook",
       "type": {
         "kind": "struct",
@@ -2945,7 +2779,7 @@
             "type": {
               "array": [
                 "u64",
-                30
+                31
               ]
             }
           },
@@ -3036,15 +2870,7 @@
             "type": "publicKey"
           },
           {
-            "name": "history",
-            "type": "publicKey"
-          },
-          {
             "name": "start",
-            "type": "i64"
-          },
-          {
-            "name": "cursor",
             "type": "i64"
           },
           {
@@ -3055,26 +2881,6 @@
                 4
               ]
             }
-          },
-          {
-            "name": "principal",
-            "type": "u64"
-          },
-          {
-            "name": "lpRequested",
-            "type": "u64"
-          },
-          {
-            "name": "aprBps",
-            "type": "u16"
-          },
-          {
-            "name": "pendingApr",
-            "type": "u16"
-          },
-          {
-            "name": "aprEffective",
-            "type": "u16"
           },
           {
             "name": "bump",
@@ -3101,26 +2907,6 @@
             "type": "u16"
           },
           {
-            "name": "launchPeople",
-            "type": "u32"
-          },
-          {
-            "name": "launchClaimed",
-            "type": "u32"
-          },
-          {
-            "name": "launchFinalized",
-            "type": "bool"
-          },
-          {
-            "name": "launchPerPerson",
-            "type": "u64"
-          },
-          {
-            "name": "launchRemaining",
-            "type": "u64"
-          },
-          {
             "name": "marketRemaining",
             "type": "u64"
           },
@@ -3131,67 +2917,6 @@
           {
             "name": "saleTotalSold",
             "type": "u64"
-          },
-          {
-            "name": "saleOrder",
-            "type": "publicKey"
-          },
-          {
-            "name": "meteoraInstructionHash",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "meteoraCommittedAt",
-            "type": "i64"
-          },
-          {
-            "name": "meteoraPool",
-            "type": "publicKey"
-          },
-          {
-            "name": "meteoraListed",
-            "type": "bool"
-          },
-          {
-            "name": "dlmmPair",
-            "type": "publicKey"
-          },
-          {
-            "name": "dlmmCommittedAt",
-            "type": "i64"
-          },
-          {
-            "name": "dlmmFloorBin",
-            "type": "i32"
-          },
-          {
-            "name": "dlmmHeliIsX",
-            "type": "bool"
-          },
-          {
-            "name": "dlmmListed",
-            "type": "bool"
-          },
-          {
-            "name": "dlmmActiveId",
-            "type": "i32"
-          },
-          {
-            "name": "dlmmBinStep",
-            "type": "u16"
-          },
-          {
-            "name": "dlmmBaseFactor",
-            "type": "u16"
-          },
-          {
-            "name": "dlmmPoolCreated",
-            "type": "bool"
           },
           {
             "name": "manifestMarket",
@@ -3242,14 +2967,6 @@
             "type": "u64"
           },
           {
-            "name": "window",
-            "type": "u16"
-          },
-          {
-            "name": "spentInWindow",
-            "type": "u64"
-          },
-          {
             "name": "earnedTotal",
             "type": "u64"
           },
@@ -3282,7 +2999,7 @@
             "type": {
               "array": [
                 "u64",
-                30
+                31
               ]
             }
           }
@@ -3344,22 +3061,6 @@
             "type": "u16"
           },
           {
-            "name": "people",
-            "type": "u32"
-          },
-          {
-            "name": "perPerson",
-            "type": "u64"
-          },
-          {
-            "name": "humanRemaining",
-            "type": "u64"
-          },
-          {
-            "name": "rewardRemaining",
-            "type": "u64"
-          },
-          {
             "name": "capacity",
             "type": "u64"
           },
@@ -3368,23 +3069,7 @@
             "type": "u64"
           },
           {
-            "name": "staking",
-            "type": "u64"
-          },
-          {
-            "name": "liquidity",
-            "type": "u64"
-          },
-          {
             "name": "founder",
-            "type": "u64"
-          },
-          {
-            "name": "burned",
-            "type": "u64"
-          },
-          {
-            "name": "quoteLp",
             "type": "u64"
           },
           {
@@ -3396,291 +3081,12 @@
             "type": "bool"
           },
           {
-            "name": "registryFinalized",
-            "type": "bool"
-          },
-          {
             "name": "bump",
             "type": "u8"
           },
           {
-            "name": "liquidityBudget",
-            "type": "u64"
-          },
-          {
             "name": "founderBudget",
             "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "Credential",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "owner",
-            "type": "publicKey"
-          },
-          {
-            "name": "nullifier",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "proofDigest",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "active",
-            "type": "bool"
-          },
-          {
-            "name": "reason",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "DlmmOrderReceipt",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "order",
-            "type": "publicKey"
-          },
-          {
-            "name": "binId",
-            "type": "i32"
-          },
-          {
-            "name": "amount",
-            "type": "u64"
-          },
-          {
-            "name": "placedAt",
-            "type": "i64"
-          },
-          {
-            "name": "closed",
-            "type": "bool"
-          }
-        ]
-      }
-    },
-    {
-      "name": "WalletIdentity",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "credential",
-            "type": "publicKey"
-          }
-        ]
-      }
-    },
-    {
-      "name": "Receipt",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "owner",
-            "type": "publicKey"
-          },
-          {
-            "name": "valid",
-            "type": "bool"
-          },
-          {
-            "name": "claimed",
-            "type": "bool"
-          }
-        ]
-      }
-    },
-    {
-      "name": "LaunchReceipt",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "owner",
-            "type": "publicKey"
-          },
-          {
-            "name": "valid",
-            "type": "bool"
-          },
-          {
-            "name": "claimed",
-            "type": "bool"
-          },
-          {
-            "name": "eligibleAt",
-            "type": "i64"
-          },
-          {
-            "name": "reason",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "StakePosition",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "owner",
-            "type": "publicKey"
-          },
-          {
-            "name": "history",
-            "type": "publicKey"
-          },
-          {
-            "name": "principal",
-            "type": "u64"
-          },
-          {
-            "name": "cursor",
-            "type": "i64"
-          },
-          {
-            "name": "exitAt",
-            "type": "i64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "Market",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "seeded",
-            "type": "bool"
-          },
-          {
-            "name": "last",
-            "type": "i64"
-          },
-          {
-            "name": "cumulative",
-            "type": "u128"
-          },
-          {
-            "name": "samples",
-            "type": {
-              "vec": {
-                "defined": "Observation"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "GlobalBook",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "low",
-            "type": {
-              "array": [
-                "u64",
-                720
-              ]
-            }
-          },
-          {
-            "name": "high",
-            "type": {
-              "array": [
-                "u64",
-                720
-              ]
-            }
-          },
-          {
-            "name": "cutoff",
-            "type": {
-              "array": [
-                "i64",
-                720
-              ]
-            }
-          },
-          {
-            "name": "rate",
-            "type": {
-              "array": [
-                "u64",
-                720
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "UserBook",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "low",
-            "type": {
-              "array": [
-                "u64",
-                720
-              ]
-            }
-          },
-          {
-            "name": "high",
-            "type": {
-              "array": [
-                "u64",
-                720
-              ]
-            }
-          },
-          {
-            "name": "claimed",
-            "type": {
-              "array": [
-                "u64",
-                12
-              ]
-            }
           }
         ]
       }
@@ -3722,24 +3128,7 @@
       }
     }
   ],
-  "types": [
-    {
-      "name": "Observation",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "time",
-            "type": "i64"
-          },
-          {
-            "name": "cumulative",
-            "type": "u128"
-          }
-        ]
-      }
-    }
-  ],
+  "types": [],
   "events": [
     {
       "name": "MonthlyMarketRelease",
@@ -3830,31 +3219,6 @@
           "index": false
         }
       ]
-    },
-    {
-      "name": "AuctionProceedsAllocated",
-      "fields": [
-        {
-          "name": "amount",
-          "type": "u64",
-          "index": false
-        }
-      ]
-    },
-    {
-      "name": "CalendarBoundary",
-      "fields": [
-        {
-          "name": "number",
-          "type": "u16",
-          "index": false
-        },
-        {
-          "name": "timestamp",
-          "type": "i64",
-          "index": false
-        }
-      ]
     }
   ],
   "errors": [
@@ -3875,81 +3239,46 @@
     },
     {
       "code": 6003,
-      "name": "Identity",
-      "msg": "Invalid credential"
-    },
-    {
-      "code": 6004,
       "name": "Math",
       "msg": "Arithmetic error"
     },
     {
-      "code": 6005,
+      "code": 6004,
       "name": "Collateral",
       "msg": "Collateral deficit"
     },
     {
-      "code": 6006,
-      "name": "Checkpoint",
-      "msg": "Checkpoint required"
-    },
-    {
-      "code": 6007,
+      "code": 6005,
       "name": "Market",
       "msg": "Market guard rejected"
     },
     {
-      "code": 6008,
-      "name": "FixedStakingPolicy",
-      "msg": "Staking policy is fixed"
-    },
-    {
-      "code": 6009,
-      "name": "StakingDisabled",
-      "msg": "Staking is disabled"
-    },
-    {
-      "code": 6010,
+      "code": 6006,
       "name": "LiquidityDisabled",
       "msg": "Liquidity inventory is disabled"
     },
     {
-      "code": 6011,
-      "name": "MonthlyDividendDisabled",
-      "msg": "Monthly free dividends are disabled"
-    },
-    {
-      "code": 6012,
+      "code": 6007,
       "name": "InitializerNotAuthorized",
       "msg": "Only the program upgrade authority can initialize"
     },
     {
-      "code": 6013,
+      "code": 6008,
       "name": "PriceOutsideBand",
       "msg": "Order price outside the permitted band"
     },
     {
-      "code": 6014,
+      "code": 6009,
       "name": "Unauthorized",
       "msg": "Signer is not authorized for this governance action"
     },
     {
-      "code": 6015,
+      "code": 6010,
       "name": "ExpenseDestination",
       "msg": "Expense destination must be outside the program treasury"
     },
     {
-      "code": 6016,
-      "name": "FreeAllocationDisabled",
-      "msg": "There is no free initial allocation"
-    },
-    {
-      "code": 6017,
-      "name": "ExpenseFundedOnPayment",
-      "msg": "Reserve funds move only when an approved expense is paid"
-    },
-    {
-      "code": 6018,
+      "code": 6011,
       "name": "TokenMetadata",
       "msg": "Invalid or missing token metadata"
     }

@@ -7,14 +7,14 @@ use anchor_spl::token::{self,Mint,Token,TokenAccount,Transfer};
 use crate::{Config,Epoch,ErrorCode,OpeningAuction,boundary,outgoing,manifest_bridge::check_market,release::{ReleasePolicy,reference_price,bid_book,band_depth,order_bounds,check_order_price,order_expiry,outside_shallow,crash_ceiling,order_quote,own_bid_quote}};
 
 #[account]
-pub struct ManagementBook {pub quote_floor:u64,pub total_released:u64,pub quote_funded:u64,pub quote_returned:u64,pub trader_bump:u8,pub bid_day:i64,pub bid_days:[u64;30],pub revenue_counted:u64}
+pub struct ManagementBook {pub quote_floor:u64,pub total_released:u64,pub quote_funded:u64,pub quote_returned:u64,pub trader_bump:u8,pub bid_day:i64,pub bid_days:[u64;31],pub revenue_counted:u64}
 
 #[derive(Accounts)]
 pub struct InitializeManagement<'info>{
  #[account(seeds=[b"config"],bump=config.bump,has_one=admin)] pub config:Box<Account<'info,Config>>,
  #[account(address=config.mint)] pub mint:Box<Account<'info,Mint>>,
  #[account(address=config.quote_mint)] pub quote_mint:Box<Account<'info,Mint>>,
- #[account(init,payer=admin,space=8+320,seeds=[b"management-book"],bump)] pub management_book:Box<Account<'info,ManagementBook>>,
+ #[account(init,payer=admin,space=8+297,seeds=[b"management-book"],bump)] pub management_book:Box<Account<'info,ManagementBook>>,
  /// CHECK: Fixed System-owned signer PDA; Manifest seat is claimed by CPI.
  #[account(init,payer=admin,space=0,owner=system_program.key(),seeds=[b"management-trader"],bump)] pub management_trader:UncheckedAccount<'info>,
  /// CHECK: Bound market, owner, mints, program and header checked before CPI.
@@ -68,9 +68,10 @@ fn market(a:&ManagementAction)->Result<()> {
 }
 // Owner decision (V22): every reserve-funded bid, normal or crash exception, shares one rolling 30-day
 // window of placed quote (bid_days, one slot per UTC day). Cancelling a live bid gives back its unfilled part.
+// 31 daily slots: the current day plus the 30 before it, so any two bids less than 30 days apart share the window.
 fn roll(b:&mut ManagementBook,day:i64){
- if day.saturating_sub(b.bid_day)>=30 {b.bid_days=[0;30];}
- else {let mut d=b.bid_day+1;while d<=day {b.bid_days[d.rem_euclid(30) as usize]=0;d+=1;}}
+ if day.saturating_sub(b.bid_day)>=31 {b.bid_days=[0;31];}
+ else {let mut d=b.bid_day+1;while d<=day {b.bid_days[d.rem_euclid(31) as usize]=0;d+=1;}}
  b.bid_day=b.bid_day.max(day);
 }
 fn active(a:&ManagementAction)->Result<()> {require!(a.config.live&&!a.config.closed&&!a.config.paused,ErrorCode::State);market(a)}
@@ -108,7 +109,7 @@ pub fn release(mut ctx:Context<ManagementAction>,amount:u64)->Result<()> {
  require!(price as u128*100>=ref_price as u128*98&&price as u128*100<=ref_price as u128*102&&used<=depth/50,ErrorCode::Market);
  outgoing(a.token_program.to_account_info(),a.management_stock.to_account_info(),a.management_base.to_account_info(),c.to_account_info(),c.bump,amount)?;
  a.config.stocks[3]-=amount;a.epoch.founder=used;
- require!(a.epoch.human_budget as u128+a.epoch.staking as u128+a.epoch.liquidity as u128+used as u128<=a.epoch.capacity as u128,ErrorCode::Quota);
+ require!(a.epoch.human_budget as u128+used as u128<=a.epoch.capacity as u128,ErrorCode::Quota);
  a.management_book.total_released=a.management_book.total_released.checked_add(amount).ok_or(ErrorCode::Math)?;
  // Withdrawal/cancellation never reverses this release or refills this epoch's budget.
  Ok(())
@@ -133,7 +134,7 @@ pub fn order(mut ctx:Context<ManagementAction>,amount:u64,base_deposit:u64,manti
    let window:u64=b.bid_days.iter().try_fold(0u64,|s,x|s.checked_add(*x)).ok_or(ErrorCode::Math)?;
    let cost=order_quote(amount,mantissa,exponent)?;
    require!(window.checked_add(cost).ok_or(ErrorCode::Math)?<=a.project_quote.amount/10,ErrorCode::Quota);
-   let slot=b.bid_day.rem_euclid(30) as usize;b.bid_days[slot]=b.bid_days[slot].checked_add(cost).ok_or(ErrorCode::Math)?;
+   let slot=b.bid_day.rem_euclid(31) as usize;b.bid_days[slot]=b.bid_days[slot].checked_add(cost).ok_or(ErrorCode::Math)?;
   }}
  let a=&ctx.accounts;let expiry=order_expiry(&now)?;
  if base_deposit>0 {require!(base_deposit<=a.management_base.amount,ErrorCode::Collateral);deposit_or_withdraw(a,true,base_deposit,2)?;}
@@ -147,7 +148,7 @@ pub fn cancel(mut ctx:Context<ManagementAction>,sequence:u64)->Result<()> {
   // Give back the unfilled part of a live bid to the rolling window, newest days first.
   let mut credit=own_bid_quote(&a.manifest_market.to_account_info(),&now,sequence,&a.management_trader.key())?;
   if credit>0 {roll(&mut a.management_book,now.unix_timestamp.div_euclid(86_400));let b=&mut a.management_book;let mut d=b.bid_day;
-   for _ in 0..30 {let s=d.rem_euclid(30) as usize;let x=credit.min(b.bid_days[s]);b.bid_days[s]-=x;credit-=x;if credit==0 {break;}d-=1;}}}
+   for _ in 0..31 {let s=d.rem_euclid(31) as usize;let x=credit.min(b.bid_days[s]);b.bid_days[s]-=x;credit-=x;if credit==0 {break;}d-=1;}}}
  let a=&ctx.accounts;let mut data=vec![6,0];data.extend_from_slice(&1u32.to_le_bytes());data.extend_from_slice(&sequence.to_le_bytes());data.push(0);data.extend_from_slice(&0u32.to_le_bytes());
  invoke_management(a,data,vec![AccountMeta::new(a.management_trader.key(),true),AccountMeta::new(a.manifest_market.key(),false),AccountMeta::new_readonly(a.system_program.key(),false)],vec![a.management_trader.to_account_info(),a.manifest_market.to_account_info(),a.system_program.to_account_info()])
 }

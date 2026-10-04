@@ -19,7 +19,6 @@ Kurallar (programda zorlanır):
 - **Kurtarma anahtarı değişimi:** Kurtarma anahtarı kendini anında değiştirir. Yönetici ise ancak 7 gün bekleyen ve eski kurtarma anahtarının iptal edebildiği bir öneriyle değiştirir. Yeni anahtarın kabul için imza atması gerekir.
 - **Kurtarma anahtarı yönetici olamaz, yönetici de kurtarma anahtarı olamaz.**
 - **Savunma:** Kurtarma anahtarı `recovery_cancel_expense` ile bekleyen bir gideri durdurabilir.
-- **Doğrulayıcı:** `set_verifier` ile yönetici tarafından anında değiştirilir. Eski doğrulayıcının imzaları o andan itibaren geçersizdir.
 
 Bilinen sınır: Yönetici anahtarını çalan kişi sizden önce davranıp yöneticiyi kendine devrederse, kurtarma anahtarının önerisini her seferinde iptal edebilir. Bu yüzden yönetici anahtarını iyi koruyun ve şüphe anında hemen olağan devri yapın. Satışlar fiyat bandıyla sınırlıdır; giderleri kurtarma anahtarı durdurabilir; aylık arz kuralı duraklatmadan etkilenmez.
 
@@ -29,9 +28,9 @@ Bilinen sınır: Yönetici anahtarını çalan kişi sizden önce davranıp yön
 
 1. `solana program deploy` — upgrade yetkisi: yönetici anahtarı.
 2. `initialize(start)` — `start` 7–30 gün sonrası olmalı.
-3. `create_launch_claims`, `create_market_inventory`
-4. `initialize_identity(verifier)`, `initialize_release_policy(minimum_quote_depth)` — ikisi de `genesis`'ten **önce** olmalı; sonradan oluşturulamaz.
-5. `create_vault(0..3)`
+3. `create_market_inventory`
+4. `initialize_release_policy(minimum_quote_depth)` — `genesis`'ten **önce** olmalı; sonradan oluşturulamaz.
+5. `create_vault(0)` ve `create_vault(3)` (70M aylık arz kasası ve 15M yönetim hazinesi; başka kasa yoktur)
 6. `create_token_metadata(name, symbol, uri)` — cüzdanlarda görünecek ad (≤32 bayt), sembol (≤10 bayt) ve logo/JSON adresi (`https://`, ≤200 bayt). **Bir kez** yazılır; güncelleme yetkisi config PDA'sıdır ve programda güncelleme talimatı yoktur (upgrade anahtarı kaldırılınca kalıcı). Meta veri olmadan `genesis` çalışmaz. Adres, sitedeki bir JSON dosyasını göstermelidir (ör. `{"name":…,"symbol":…,"description":…,"image":"https://…/logo.png"}`); alan adı süresi dolarsa logo kaybolur, kalıcı barındırma (ör. Arweave) düşünülebilir.
 7. `genesis` — 100M basılır, 10M yakılır, basma yetkisi kalıcı olarak kaldırılır.
 8. `prepare_auction_quote`, `prepare_auction_proceeds`
@@ -43,13 +42,13 @@ Bilinen sınır: Yönetici anahtarını çalan kişi sizden önce davranıp yön
 14. `create_fee_base`, `create_fee_quote`, `initialize_fee_vaults(monthly_cap, reserve)` — `monthly_cap` (tek teklif üst sınırı) sonradan değiştirilemez.
 15. Upgrade yetkisini kurtarma anahtarına devredin:
     `solana program set-upgrade-authority <PROGRAM_ID> --new-upgrade-authority <KURTARMA_ANAHTARI.json>`
-16. Keeper yapılandırmasındaki pinleri güncelleyin: `admin`, `verifier`, `heliUpgradeAuthority` (kurtarma anahtarının açık anahtarı) ve Manifest ikili hash'i.
+16. Keeper yapılandırmasındaki pinleri güncelleyin: `admin`, `heliUpgradeAuthority` (kurtarma anahtarının açık anahtarı) ve Manifest ikili hash'i.
 
-Sonradan yönetici veya doğrulayıcı değiştirildiğinde keeper bilinçli olarak durur ("Administrator or verifier pin changed"). Yeni değerleri yapılandırmaya elle girin.
+Sonradan yönetici değiştirildiğinde keeper bilinçli olarak durur ("Administrator pin changed"). Yeni değerleri yapılandırmaya elle girin.
 
 ## Yükleme maliyeti (4 Ekim 2026)
 
-- ELF 1.036.232 bayt: program verisi kirası ≈ **7,21 SOL** (yaklaşık 6.960 lamport/bayt). Yükleme sırasında aynı boyutta geçici bir tampon hesabı için bir o kadar daha gerekir; yükleme bitince iade edilir.
+- ELF 995.032 bayt: program verisi kirası ≈ **6,93 SOL** (yaklaşık 6.960 lamport/bayt). Yükleme sırasında aynı boyutta geçici bir tampon hesabı için bir o kadar daha gerekir; yükleme bitince iade edilir.
 - Upgrade anahtarı kalıcı olarak kaldırıldığında bu kira geri alınamaz. Önceki sürümler büyürse `solana program extend` ile alan eklenir; yüklemede gereksiz boş alan ayırmayın (kullandığınız CLI sürümünün `--max-len` varsayılanını kontrol edin).
 - Program `no-idl` ile derlenir: zincir üstü IDL hesabı yoktur (`anchor idl init` kullanılamaz). IDL depoda (`idl.json`) yayımlanır.
 
@@ -97,6 +96,6 @@ O ayki yönetim release'leri ve doğrudan release satışlarının **toplamı** 
 - Başlangıç tabanı 5M'nin tamamı açılış ihalesi ve piyasa envanterine gider (`genesis`), ihalede 5M satışa çıkar (`OFFER_HELI`).
 - Ücretsiz pay kasası 0'dır ve başlangıçta kapanmış sayılır (`launch_finalized=true`); keeper 6. ay işini planlamaz.
 - `issue_credential`, `enroll_launch`, `claim_launch`, `dispute_launch`, `restore_launch`, `set_credential_active`, `finalize_launch` IDL uyumluluğu için duruyor ama her zaman `FreeAllocationDisabled` döner.
-- `initialize_identity` kurulum adımı olarak kaldı; doğrulayıcı anahtarı hiç kullanılmaz. Kurulumda kimsenin elinde olmayan, rastgele üretilip atılmış bir anahtar verilmesi yeterli.
+- Kimlik ve doğrulayıcı (`initialize_identity`, `set_verifier`) programdan tamamen kaldırıldı (bölüm 14).
 - Kimlik servisi (`heli/claim-service`) ve canlı test kayıtları arşivdir; lansmanda çalıştırılmaz.
 
