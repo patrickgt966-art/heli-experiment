@@ -1,0 +1,12 @@
+{
+  "mode": "expense",
+  "self_payment": {
+    "cash_before": 90000,
+    "cash_after": 90000,
+    "spent_increase": 10000
+  },
+  "post_horizon_window": 721,
+  "later_month_payment_rejected": true,
+  "source_sha256": "5b4bd88704b8fbe4298c7f75efc15b3c3df7c275cf633b68c9b82eabaa65b03d",
+  "binary_sha256": "1645494a8c02eaa595a1785a21a565605ae7e57d30cf2a74bf776c75a6edd207"
+}
