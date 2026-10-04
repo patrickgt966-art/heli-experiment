@@ -1,6 +1,6 @@
 {
   "date": "2026-10-04",
-  "deploymentUrl": "https://390e7d50.heli-experiment.pages.dev",
+  "deploymentUrl": "https://4a070042.heli-experiment.pages.dev",
   "productionUrl": "https://heli-experiment.pages.dev",
   "branch": "main (Cloudflare Pages production)",
   "sourceCommit": "see git log (V22 rules text)",
@@ -15,12 +15,12 @@
     "heli-rules.txt"
   ],
   "verifiedFromOutside": {
-    "heliRules": "200, contains outside-bid, 1,000 minimum and crash-exception lines",
-    "index": "200, contains project's own orders never count"
+    "heliRules": "200, contains team trading commitment",
+    "index": "200, contains team trading commitment"
   },
   "pilotOrigin": "https://practical-wallet-magnet-months.trycloudflare.com",
   "pilotServerVersion": "previous claim-service (no CORS header; review fixes N1/H4/M5 not yet running)",
   "tokenDelivery": false,
-  "previousDeploymentUrl": "https://637407fa.heli-experiment.pages.dev",
-  "change": "V22 market measurement rules: outside bids only, 1,000 quote minimum depth, crash exception (95% of last outside reference, 30 days, 10% of reserve per month)"
+  "previousDeploymentUrl": "https://390e7d50.heli-experiment.pages.dev",
+  "change": "Team trading commitment: founder and team trade only from publicly declared wallets"
 }

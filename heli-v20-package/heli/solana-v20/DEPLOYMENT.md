@@ -68,6 +68,10 @@ Sonradan yönetici veya doğrulayıcı değiştirildiğinde keeper bilinçli ola
 - **Projenin kendi emirleri sayılmaz:** Yönetim, proje envanteri ve release satış hesaplarının Manifest koltuklarındaki alış emirleri referans fiyata ve derinliğe katılmaz. Not: kişisel cüzdanlardan verilen emirleri kod ayırt edemez; buna karşı koruma asgari derinlik ve şeffaflıktır.
 - **Çöküş istisnası:** Geçerli referans yok **ve** o anda dışarıdaki alış emirleri asgari derinliğin altındaysa, rezervle alış emri verilebilir. Tavan: son dış referansın %95'i (en fazla 30 gün eski; değilse açılış ihale fiyatının %95'i). Aylık sınır: ayın ilk çöküş alımındaki proje quote rezervinin %10'u. Gözlemler (keeper) durdurulup referans eskitilse bile dışarıda alıcı varsa istisna açılmaz.
 
+## Ekip işlem taahhüdü (sahibin kararı, 4 Ekim 2026)
+
+Kurucu ve ekip HELI pazarında yalnız **ilan edilmiş** cüzdanlardan işlem yapar; beyan edilmemiş hesap kullanılmaz. Ekip ve varsa piyasa yapıcı cüzdan adresleri lansmandan önce sitede yayınlanır. Program kişisel cüzdanları ayırt edemediği için bu bir kod kuralı değil, kamuya açık taahhüttür. Lansman kontrol listesine: cüzdan adreslerini yayınla.
+
 ## Yönetim release sınırı (V22, sahibin kararı, bulgu 4-B)
 
 O ayki yönetim release'leri ve doğrudan release satışlarının **toplamı** (`epoch.founder`) çağrı anındaki alış derinliğinin %2'sini (`depth/50`) aşamaz. Aylık bütçe sınırları (kapasitenin %20'si, insan bütçesinin ¼'ü) ayrıca geçerlidir. İnce pazarda payın kullanılmayan kısmı o ay kullanılamaz.

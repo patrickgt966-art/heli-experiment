@@ -41,6 +41,8 @@ Sales: at least 95% of the reference price (without a reference: at least the op
 Reserve-funded bids: at most 105% of the reference price, and none without a reference. Orders expire after about 24 hours.
 Sale revenue returns to the project reserve. Bid liquidity needs actual quote funds. Expenses wait seven days, can be cancelled and can never be paid back into project accounts.
 An offline recovery key can replace a lost administrator key after a seven-day window.
+Team trading commitment: the founder and team trade HELI only from publicly declared wallets, never from undisclosed accounts.
+Team and any market-maker wallet addresses will be published before launch; the code cannot tell personal wallets apart.
 Released working HELI, cancelled orders and bought HELI never refill locked treasury stock or reset release quotas.
 The current V22 draft passes its local test suites using real program binaries in a local Solana simulator,
 including all 720 monthly periods, initial free claims, monthly unlocks, market trades and treasury controls,
