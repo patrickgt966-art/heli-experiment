@@ -1,0 +1,1 @@
+AnchorError thrown in src/lib.rs:149. Error Code: ExpenseDestination. Error Number: 6015. Error Message: Expense destination must be outside the program treasury.

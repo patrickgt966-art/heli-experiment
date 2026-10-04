@@ -4,7 +4,7 @@
   "months": 720,
   "jobs": 1442,
   "checks_and_transactions": 4353,
-  "source_sha256": "5b4bd88704b8fbe4298c7f75efc15b3c3df7c275cf633b68c9b82eabaa65b03d",
-  "binary_sha256": "1645494a8c02eaa595a1785a21a565605ae7e57d30cf2a74bf776c75a6edd207",
+  "source_sha256": "c39535f58dbfd74ac7815ea62d5aacc28cab31308e2d56725332ac04a30938ee",
+  "binary_sha256": "6af0f12b51a4d651a25e16a549e8a844fe36f08880d9bf2167fa7eb93bc8eabb",
   "scope": "Local LiteSVM; actual JS planner and adapter plus compiled V20 ELF; synthetic quote/identity, no public deployment"
 }

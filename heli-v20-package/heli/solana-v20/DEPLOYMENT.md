@@ -56,6 +56,12 @@ Sonradan yönetici veya doğrulayıcı değiştirildiğinde keeper bilinçli ola
 
 `pause` satışları, yönetim işlemlerini, giderleri, ücretsiz paya kayıtları ve ihaleyi durdurur. Aylık arz (`open_epoch`, `settle`) ve 60. yıl kapanışı duraklatmadan **etkilenmez** (H2-B). Bunları herkes tetikleyebilir.
 
+## Giderler (V22)
+
+- Gider hedefi programın kendi hazinesindeki bir token hesabı olamaz: `fee-quote`, ihale/satış geliri hesabı (`auction-proceeds`) ve config, manifest, yönetim, release ve DLMM PDA'larına ait hesaplar reddedilir (`ExpenseDestination`). Kural hem teklifte hem ödemede uygulanır; V22'den önce yazılmış böyle bir teklif ödenemez, iptal edilmelidir.
+- Aylık gider tavanı takvim ayına göre sıfırlanır. Bu ay sayacı 720. aydan sonra da saymaya devam eder; arz takvimi (720 ay, 60. yıl kapanışı) değişmedi.
+- 60. yıl kapanışından sonra hazineye yeni gelir aktarma (`allocate_auction_proceeds`, `contribute_quote`) ve yönetim emirleri kapalıdır. Bu bir politika konusudur; seçenekler `reviews/v22/V22_DUZELTME_2026-10-04.md` içindedir.
+
 ## Ücretsiz pay: iptal, itiraz ve kimlik durumu
 
 - **İptal penceresi:** `dispute_launch(reason)` yalnız kaydın 7 günlük bekleme süresi içinde ve ilk 6 ay içinde çalışır. Bekleme süresi dolan hak kesinleşir; hiçbir anahtar onu geri alamaz.

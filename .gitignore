@@ -1,0 +1,6 @@
+.private/
+.state/
+**/.private/
+**/.state/
+*.sqlite
+.env

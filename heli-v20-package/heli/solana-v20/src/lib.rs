@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self,Mint,Token,TokenAccount,MintTo,Transfer,Burn,SetAuthority};
 use anchor_spl::token::spl_token::instruction::AuthorityType;
 mod calendar; mod economics; mod auction; mod manifest_bridge; mod identity; mod release; mod management; mod market_release;
-use calendar::{DAY,boundary,epoch}; use economics::*;
+use calendar::{DAY,boundary,epoch,month_index}; use economics::*;
 use auction::*;
 use manifest_bridge::*; use identity::*; use release::*;
 use management::*; use market_release::*;
@@ -146,6 +146,7 @@ pub mod heli_core_v20 {
  pub fn propose_expense(ctx:Context<ProposeExpense>,nonce:u64,amount:u64,purpose:[u8;32])->Result<()> {
   let o=&mut ctx.accounts.operations;
   require!(ctx.accounts.proposer.key()==ctx.accounts.config.admin&&nonce==o.next_nonce&&amount>0&&amount<=o.monthly_cap&&purpose!=[0;32],ErrorCode::Quota);
+  require!(!treasury_owned(&ctx.accounts.destination.owner,&ctx.accounts.config.key(),ctx.program_id),ErrorCode::ExpenseDestination);
   let now=Clock::get()?.unix_timestamp;
   let p=&mut ctx.accounts.expense;p.destination=ctx.accounts.destination.key();p.proposer=ctx.accounts.proposer.key();p.purpose=purpose;p.amount=amount;
   p.ready_at=now.checked_add(7*DAY).ok_or(ErrorCode::Math)?;p.nonce=nonce;
@@ -156,7 +157,10 @@ pub mod heli_core_v20 {
   // A pause halts treasury outflows; a cancelled proposal can never be executed.
   require!(!a.config.paused,ErrorCode::State);
   require!(!a.expense.paid&&!a.expense.cancelled&&now>=a.expense.ready_at,ErrorCode::Time);
-  let window=epoch(a.config.start,now);
+  // Checked again at payment: a proposal written before this rule existed must not pay the treasury itself.
+  require!(a.destination.key()!=a.fee_quote.key()&&!treasury_owned(&a.destination.owner,&a.config.key(),ctx.program_id),ErrorCode::ExpenseDestination);
+  // Expense months keep counting after month 720; the supply calendar (epoch) stops there.
+  let window=month_index(a.config.start,now);
   if a.operations.window!=window {a.operations.window=window;a.operations.spent_in_window=0;}
   let amount=a.expense.amount;
   require!(a.operations.spent_in_window.checked_add(amount).ok_or(ErrorCode::Math)?<=a.operations.monthly_cap,ErrorCode::Quota);
@@ -283,6 +287,13 @@ pub mod heli_core_v20 {
 
 fn incoming<'a>(program:AccountInfo<'a>,from:AccountInfo<'a>,to:AccountInfo<'a>,owner:AccountInfo<'a>,amount:u64)->Result<()> {if amount>0 {token::transfer(CpiContext::new(program,Transfer{from,to,authority:owner}),amount)?;}Ok(())}
 fn launch_reserved(c:&Config)->Result<u64>{let n=c.launch_people.checked_sub(c.launch_claimed).ok_or(ErrorCode::Math)?;Ok(c.launch_per_person.checked_mul(n as u64).ok_or(ErrorCode::Math)?)}
+// Quote paid to a token account controlled by the program would stay in the treasury while
+// spent_total grows (fee-quote), or could be counted as revenue again (auction proceeds).
+fn treasury_owned(owner:&Pubkey,config:&Pubkey,program:&Pubkey)->bool {
+ if owner==config {return true;}
+ let seeds:[&[&[u8]];5]=[&[b"manifest-trader"],&[b"management-trader"],&[b"dlmm-funder"],&[b"release-trader",&[2]],&[b"release-trader",&[3]]];
+ seeds.iter().any(|s|Pubkey::find_program_address(s,program).0==*owner)
+}
 fn outgoing<'a>(program:AccountInfo<'a>,from:AccountInfo<'a>,to:AccountInfo<'a>,authority:AccountInfo<'a>,bump:u8,amount:u64)->Result<()> {if amount>0 {let b=[bump];let seeds:&[&[u8]]=&[b"config",&b];token::transfer(CpiContext::new_with_signer(program,Transfer{from,to,authority},&[seeds]),amount)?;}Ok(())}
 fn weight(lo:&[u64;720],hi:&[u64;720],i:usize)->u128 {lo[i] as u128|((hi[i] as u128)<<64)}
 fn add_weight(lo:&mut[u64;720],hi:&mut[u64;720],i:usize,a:u128)->Result<()> {let w=weight(lo,hi,i).checked_add(a).ok_or(ErrorCode::Math)?;lo[i]=w as u64;hi[i]=(w>>64)as u64;Ok(())}
@@ -338,7 +349,7 @@ pub const GOVERNANCE_DELAY:i64=7*DAY;
 // Large histories use external rent-funded zero accounts and in-place access. No 10KB CPI allocation.
 #[account(zero_copy(unsafe))] #[repr(C)] pub struct GlobalBook {pub low:[u64;720],pub high:[u64;720],pub cutoff:[i64;720],pub rate:[u64;720]}
 #[account(zero_copy(unsafe))] #[repr(C)] pub struct UserBook {pub low:[u64;720],pub high:[u64;720],pub claimed:[u64;12]}
-#[error_code] pub enum ErrorCode {#[msg("Invalid state")]State,#[msg("Invalid calendar window")]Time,#[msg("Quota exceeded")]Quota,#[msg("Invalid credential")]Identity,#[msg("Arithmetic error")]Math,#[msg("Collateral deficit")]Collateral,#[msg("Checkpoint required")]Checkpoint,#[msg("Market guard rejected")]Market,#[msg("Staking policy is fixed")]FixedStakingPolicy,#[msg("Staking is disabled")]StakingDisabled,#[msg("Liquidity inventory is disabled")]LiquidityDisabled,#[msg("Monthly free dividends are disabled; only the initial allocation is free")]MonthlyDividendDisabled,#[msg("Only the program upgrade authority can initialize")]InitializerNotAuthorized,#[msg("Order price outside the permitted band")]PriceOutsideBand,#[msg("Signer is not authorized for this governance action")]Unauthorized}
+#[error_code] pub enum ErrorCode {#[msg("Invalid state")]State,#[msg("Invalid calendar window")]Time,#[msg("Quota exceeded")]Quota,#[msg("Invalid credential")]Identity,#[msg("Arithmetic error")]Math,#[msg("Collateral deficit")]Collateral,#[msg("Checkpoint required")]Checkpoint,#[msg("Market guard rejected")]Market,#[msg("Staking policy is fixed")]FixedStakingPolicy,#[msg("Staking is disabled")]StakingDisabled,#[msg("Liquidity inventory is disabled")]LiquidityDisabled,#[msg("Monthly free dividends are disabled; only the initial allocation is free")]MonthlyDividendDisabled,#[msg("Only the program upgrade authority can initialize")]InitializerNotAuthorized,#[msg("Order price outside the permitted band")]PriceOutsideBand,#[msg("Signer is not authorized for this governance action")]Unauthorized,#[msg("Expense destination must be outside the program treasury")]ExpenseDestination}
 
 // Account validation is kept in one source file for reproducible Playground builds.
 include!("accounts.rs");

@@ -24,3 +24,13 @@ pub fn epoch(start:i64,now:i64)->u16 {
  while lo+1<hi {let mid=lo+(hi-lo)/2;if boundary(start,mid)<=now{lo=mid;}else{hi=mid;}}
  lo+1
 }
+// Uncapped month number for recurring limits that outlive the 720-month supply calendar.
+// Equals epoch() for months 1..=720 and keeps counting afterwards (saturates at u16::MAX).
+pub fn month_index(start:i64,now:i64)->u16 {
+ if now<start{return 0;}
+ let (y0,m0,_)=civil(start.div_euclid(DAY));let (y,m,_)=civil(now.div_euclid(DAY));
+ let mut k=((y-y0)*12+(m-m0)).clamp(0,u16::MAX as i64-1);
+ if k>0&&boundary(start,k as u16)>now {k-=1;}
+ if k<u16::MAX as i64-1&&boundary(start,(k+1) as u16)<=now {k+=1;}
+ (k+1).min(u16::MAX as i64) as u16
+}
