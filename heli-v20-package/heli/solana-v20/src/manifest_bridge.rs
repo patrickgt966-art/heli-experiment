@@ -52,8 +52,6 @@ pub struct BindManifestMarket<'info> {
  pub manifest_program:UncheckedAccount<'info>,
  /// CHECK: Seeds and System owner create a zero-data PDA used only as a Manifest CPI signer.
  #[account(init,payer=admin,space=0,owner=system_program.key(),seeds=[b"manifest-trader"],bump)] pub trader:UncheckedAccount<'info>,
- #[account(init,payer=admin,token::mint=mint,token::authority=trader,seeds=[b"manifest-heli"],bump)] pub manifest_base:Box<Account<'info,TokenAccount>>,
- #[account(init,payer=admin,token::mint=quote_mint,token::authority=trader,seeds=[b"manifest-quote"],bump)] pub manifest_quote:Box<Account<'info,TokenAccount>>,
  #[account(mut)] pub admin:Signer<'info>,
  pub token_program:Program<'info,Token>,pub system_program:Program<'info,System>,pub rent:Sysvar<'info,Rent>,
 }

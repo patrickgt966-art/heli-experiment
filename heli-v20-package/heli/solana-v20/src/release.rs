@@ -25,8 +25,6 @@ pub struct InitializeReleaseSeat<'info>{
  #[account(address=config.quote_mint)] pub quote_mint:Box<Account<'info,Mint>>,
  /// CHECK: System-owned signer PDA, funded only for Manifest account rent.
  #[account(init,payer=admin,space=0,owner=system_program.key(),seeds=[b"release-trader".as_ref(),&[kind]],bump)] pub trader:UncheckedAccount<'info>,
- #[account(init,payer=admin,token::mint=mint,token::authority=trader,seeds=[b"release-base".as_ref(),&[kind]],bump)] pub base:Box<Account<'info,TokenAccount>>,
- #[account(init,payer=admin,token::mint=quote_mint,token::authority=trader,seeds=[b"release-quote".as_ref(),&[kind]],bump)] pub quote:Box<Account<'info,TokenAccount>>,
  #[account(mut)] pub admin:Signer<'info>,pub token_program:Program<'info,Token>,pub system_program:Program<'info,System>,pub rent:Sysvar<'info,Rent>,
 }
 pub fn initialize_seat(ctx:Context<InitializeReleaseSeat>,kind:u8,rent_lamports:u64)->Result<()> {

@@ -17,8 +17,6 @@ pub struct InitializeManagement<'info>{
  #[account(init,payer=admin,space=8+33,seeds=[b"management-book"],bump)] pub management_book:Box<Account<'info,ManagementBook>>,
  /// CHECK: Fixed System-owned signer PDA; Manifest seat is claimed by CPI.
  #[account(init,payer=admin,space=0,owner=system_program.key(),seeds=[b"management-trader"],bump)] pub management_trader:UncheckedAccount<'info>,
- #[account(init,payer=admin,token::mint=mint,token::authority=management_trader,seeds=[b"management-base"],bump)] pub management_base:Box<Account<'info,TokenAccount>>,
- #[account(init,payer=admin,token::mint=quote_mint,token::authority=management_trader,seeds=[b"management-quote"],bump)] pub management_quote:Box<Account<'info,TokenAccount>>,
  /// CHECK: Bound market, owner, mints, program and header checked before CPI.
  #[account(mut,address=config.manifest_market)] pub manifest_market:UncheckedAccount<'info>,
  /// CHECK: Executable pinned Manifest program checked by check_market.

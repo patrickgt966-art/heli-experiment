@@ -30,7 +30,6 @@ pub struct PrepareAuctionQuote<'info> {
  #[account(seeds=[b"config"],bump=config.bump,has_one=admin)] pub config:Box<Account<'info,Config>>,
  #[account(address=config.quote_mint)] pub quote_mint:Box<Account<'info,Mint>>,
  #[account(init,payer=admin,token::mint=quote_mint,token::authority=config,seeds=[b"auction-quote"],bump)] pub quote_escrow:Box<Account<'info,TokenAccount>>,
- #[account(init,payer=admin,token::mint=quote_mint,token::authority=config,seeds=[b"auction-proceeds"],bump)] pub sale_proceeds:Box<Account<'info,TokenAccount>>,
  #[account(mut)] pub admin:Signer<'info>,pub token_program:Program<'info,Token>,pub system_program:Program<'info,System>,pub rent:Sysvar<'info,Rent>,
 }
 #[derive(Accounts)]

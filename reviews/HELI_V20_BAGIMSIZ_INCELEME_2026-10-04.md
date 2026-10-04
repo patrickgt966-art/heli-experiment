@@ -454,3 +454,37 @@ poc3: rezerv 66_000_000 → 26_000_000, anlaşmalı satıcı +40_000_000 (1 HELI
 poc4: rezervin tamamı (26_000_000) yöneticinin özel hesabına, paused=true iken
 poc5: önceki örnekler 1_000_000; flash örnek 5_000_000; teminat tamamen geri çekildi
 ```
+
+---
+
+## Düzeltme durumu (bu daldaki commit'ler)
+
+| Bulgu | Durum | Kanıt |
+|---|---|---|
+| N1 oturum sabitleme | **Düzeltildi** | `claim-service/app.js`. Yabancı link yalnız cüzdan adresi gösterilip onaylanırsa kabul ediliyor. 3 yeni test. |
+| H4 hız sınırı, çökme, maliyet | **Düzeltildi (kısmen)** | İstemci bazlı limit, oturum açma limiti, eksik dosyada 404, günlük Didit tavanı, oturum temizliği. 7 yeni test. Tüm durumu tek JSON olarak yazan depolama hâlâ O(N); bu ayrı bir iş. Günlük Didit tavanı çok sayıda IP'den gelen bir saldırgan tarafından doldurulabilir; bu bilinçli bir maliyet/erişim dengesi. |
+| N3 webhook'un engellenmesi | **Düzeltildi** | Ayrı webhook kotası. |
+| L6 `.env.example` workflow ID | **Düzeltildi** | |
+| C2b gider pause/iptal | **Düzeltildi ve doğrulandı** | `execute_expense` pause'u kontrol ediyor, `cancel_expense` eklendi. `test_expense_controls_svm.py`: 45 kontrol/işlem. Hedef beyaz listesi ve ikinci onaylayıcı hâlâ sahibin kararı. |
+| M9 yeniden üretilebilir derleme | **Yerelde çözüldü** | Birden fazla token hesabı açan kurulum talimatları, her biri tek `init` yapacak şekilde bölündü. 11 yeni kurulum talimatı eklendi; kurulum sırası değişti. Agave 2.1.21 / platform-tools v1.43 ile temiz derleme iki kez aynı ELF hash'ini verdi (`2361b6da…`). Komut: `scripts/build_local.sh`. Sabit Docker imajı ve `solana-verify` hâlâ gerekli. |
+
+Yeni ELF üzerinde yeniden çalıştırılan testler:
+
+| Test | Sonuç |
+|---|---|
+| `test_market_release_svm.py` | 1.615 kontrol/işlem (eski 1.606 + 9 yeni kurulum çağrısı), 720 ay |
+| Keeper | 4.351 kontrol/işlem, 1.442 iş |
+| Claim SVM | 1/1 |
+| Node paketi | 80/80 |
+
+`reviews/poc_review.py` orijinal paket ve ikili içindir. Yeni kurulum sırasıyla çalışmaz.
+
+Açık kalan başlıca konular:
+- **C1 ve C2a:** fiyat sınırları.
+- **H1:** `initialize` erişimi.
+- **H2:** pause kapsamı.
+- **H3:** kimlik tekrarının canlı testi.
+- **M2, N2, M3:** gözlem manipülasyonu.
+- **M5:** başvuru kurtarma.
+- **M6:** sponsor bütçesi.
+- Bağımsız denetim.

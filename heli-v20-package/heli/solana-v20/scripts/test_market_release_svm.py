@@ -14,9 +14,11 @@ t.svm.add_program_from_file(MANIFEST,t.ROOT.parent/'manifest-integration/vendor-
 m=t.allocate(256,MANIFEST);q=t.defaults['quote_mint'];bv=t.Pubkey.find_program_address([b'vault',bytes(m),bytes(t.defaults['mint'])],MANIFEST)[0];qv=t.Pubkey.find_program_address([b'vault',bytes(m),bytes(q)],MANIFEST)[0]
 t.send('initialize bound Manifest market',[t.Instruction(MANIFEST,b'\x00',[t.meta(t.admin.pubkey(),True,True),t.meta(m,True),t.meta(t.SYSTEM),t.meta(t.defaults['mint']),t.meta(q),t.meta(bv,True),t.meta(qv,True),t.meta(t.TOKEN),t.meta(TOKEN22)])])
 t.defaults.update(manifest_market=m,manifest_program=MANIFEST,trader=t.pda(b'manifest-trader'),manifest_base=t.pda(b'manifest-heli'),manifest_quote=t.pda(b'manifest-quote'),base_vault=bv,quote_vault=qv)
+t.call('create_manifest_base');t.call('create_manifest_quote')
 t.call('bind_manifest_market',{'market_rent_lamports':10_000_000})
 t.defaults['release_reserve']=t.defaults['human']
 ma={'management_book':t.pda(b'management-book'),'management_trader':t.pda(b'management-trader'),'management_base':t.pda(b'management-base'),'management_quote':t.pda(b'management-quote'),'project_quote':t.defaults['sale_proceeds'],'management_stock':t.defaults['founder']}
+t.call('create_management_base',acc=ma);t.call('create_management_quote',acc=ma)
 t.call('initialize_management',{'quote_floor':5*t.U,'rent_lamports':10_000_000},ma)
 ea=epoch_accounts(t,1);t.call('open_epoch',{'number':1},ea);act=ma|ea
 t.call('management_release',{'amount':t.U},act,reject='calendar',label='management cannot release in first twelve months')
@@ -113,6 +115,7 @@ for h in range(24):t.clock(t.boundary(12)+h*3600);t.call('observe_release_market
 t.call('management_release',{'amount':t.U},act)
 t.check('new working capital consumes management quota once',t.cfg()['stocks'][3]==15_000_000*t.U-t.U and t.read(ea['epoch'],'Epoch')['founder']==t.U)
 rs={'source':t.defaults['founder'],'trader':t.pda(b'release-trader',bytes([3])),'base':t.pda(b'release-base',bytes([3])),'quote':t.pda(b'release-quote',bytes([3])),'destination':t.defaults['sale_proceeds']}|ea
+t.call('create_release_base',{'kind':3},rs);t.call('create_release_quote',{'kind':3},rs)
 t.call('initialize_release_seat',{'kind':3,'rent_lamports':10_000_000},rs)
 t.call('execute_release_sale',{'kind':3,'amount':t.U},rs|{'destination':private},reject='Market',label='legacy sale cannot bypass project revenue custody')
 t.call('execute_release_sale',{'kind':3,'amount':t.U},rs)

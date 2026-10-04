@@ -20,6 +20,17 @@ pub mod heli_core_v20 {
   c.stocks=[70_000_000*UNIT,0,0,15_000_000*UNIT];c.apr_bps=0;c.launch_per_person=1_000*UNIT;c.launch_remaining=1_000_000*UNIT;c.market_remaining=4_000_000*UNIT;c.sale_authorized=4_000_000*UNIT;
   ctx.accounts.history.load_init()?;Ok(())
  }
+ pub fn create_launch_claims(ctx:Context<CreateLaunchClaims>)->Result<()> {require!(!ctx.accounts.config.live&&!ctx.accounts.config.closed,ErrorCode::State);Ok(())}
+ pub fn create_market_inventory(ctx:Context<CreateMarketInventory>)->Result<()> {require!(!ctx.accounts.config.live&&!ctx.accounts.config.closed,ErrorCode::State);Ok(())}
+ pub fn prepare_auction_proceeds(ctx:Context<PrepareAuctionProceeds>)->Result<()> {require!(!ctx.accounts.config.closed,ErrorCode::State);Ok(())}
+ pub fn create_manifest_base(ctx:Context<CreateManifestBase>)->Result<()> {require!(!ctx.accounts.config.closed,ErrorCode::State);Ok(())}
+ pub fn create_manifest_quote(ctx:Context<CreateManifestQuote>)->Result<()> {require!(!ctx.accounts.config.closed,ErrorCode::State);Ok(())}
+ pub fn create_release_base(ctx:Context<CreateReleaseBase>,kind:u8)->Result<()> {require!(kind==3,ErrorCode::LiquidityDisabled);require!(!ctx.accounts.config.closed,ErrorCode::State);Ok(())}
+ pub fn create_release_quote(ctx:Context<CreateReleaseQuote>,kind:u8)->Result<()> {require!(kind==3,ErrorCode::LiquidityDisabled);require!(!ctx.accounts.config.closed,ErrorCode::State);Ok(())}
+ pub fn create_management_base(ctx:Context<CreateManagementBase>)->Result<()> {require!(!ctx.accounts.config.closed,ErrorCode::State);Ok(())}
+ pub fn create_management_quote(ctx:Context<CreateManagementQuote>)->Result<()> {require!(!ctx.accounts.config.closed,ErrorCode::State);Ok(())}
+ pub fn create_fee_base(ctx:Context<CreateFeeBase>)->Result<()> {require!(!ctx.accounts.config.closed,ErrorCode::State);Ok(())}
+ pub fn create_fee_quote(ctx:Context<CreateFeeQuote>)->Result<()> {require!(!ctx.accounts.config.closed,ErrorCode::State);Ok(())}
  pub fn create_vault(ctx:Context<CreateVault>,kind:u8)->Result<()> {require!(kind<4&&!ctx.accounts.config.live&&!ctx.accounts.config.closed,ErrorCode::State);ctx.accounts.config.vault_mask|=1<<kind;Ok(())}
  pub fn genesis(ctx:Context<Genesis>)->Result<()> {
   let c=&ctx.accounts.config;require!(!c.live&&!c.closed&&c.vault_mask==15&&ctx.accounts.mint.supply==0,ErrorCode::State);

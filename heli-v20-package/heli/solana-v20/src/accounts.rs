@@ -4,10 +4,6 @@ pub struct Initialize<'info> {
  pub config:Box<Account<'info,Config>>,
  #[account(init,payer=admin,mint::decimals=6,mint::authority=config,seeds=[b"mint".as_ref()],bump)]
  pub mint:Box<Account<'info,Mint>>,
- #[account(init,payer=admin,token::mint=mint,token::authority=config,seeds=[b"launch-claims".as_ref()],bump)]
- pub launch:Box<Account<'info,TokenAccount>>,
- #[account(init,payer=admin,token::mint=mint,token::authority=config,seeds=[b"market-inventory".as_ref()],bump)]
- pub market_inventory:Box<Account<'info,TokenAccount>>,
  pub quote_mint:Box<Account<'info,Mint>>,
  #[account(zero)]
  pub history:AccountLoader<'info,GlobalBook>,
@@ -18,6 +14,193 @@ pub struct Initialize<'info> {
  pub rent:Sysvar<'info,Rent>,
 }
 
+// One token-account init per instruction: several Anchor `init` token accounts in one
+// try_accounts frame exceed the 4 KB SBF stack frame with standard toolchains.
+#[derive(Accounts)]
+pub struct CreateLaunchClaims<'info> {
+ #[account(seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
+ pub config:Box<Account<'info,Config>>,
+ #[account(address=config.mint)]
+ pub mint:Box<Account<'info,Mint>>,
+ #[account(init,payer=admin,token::mint=mint,token::authority=config,seeds=[b"launch-claims".as_ref()],bump)]
+ pub launch:Box<Account<'info,TokenAccount>>,
+ #[account(mut)]
+ pub admin:Signer<'info>,
+ pub token_program:Program<'info,Token>,
+ pub system_program:Program<'info,System>,
+ pub rent:Sysvar<'info,Rent>,
+}
+
+#[derive(Accounts)]
+pub struct CreateMarketInventory<'info> {
+ #[account(seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
+ pub config:Box<Account<'info,Config>>,
+ #[account(address=config.mint)]
+ pub mint:Box<Account<'info,Mint>>,
+ #[account(init,payer=admin,token::mint=mint,token::authority=config,seeds=[b"market-inventory".as_ref()],bump)]
+ pub market_inventory:Box<Account<'info,TokenAccount>>,
+ #[account(mut)]
+ pub admin:Signer<'info>,
+ pub token_program:Program<'info,Token>,
+ pub system_program:Program<'info,System>,
+ pub rent:Sysvar<'info,Rent>,
+}
+
+// Token accounts for later setup steps, one Anchor `init` each (see CreateLaunchClaims).
+#[derive(Accounts)]
+pub struct PrepareAuctionProceeds<'info> {
+ #[account(seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
+ pub config:Box<Account<'info,Config>>,
+ #[account(address=config.quote_mint)]
+ pub quote_mint:Box<Account<'info,Mint>>,
+ #[account(init,payer=admin,token::mint=quote_mint,token::authority=config,seeds=[b"auction-proceeds"],bump)]
+ pub sale_proceeds:Box<Account<'info,TokenAccount>>,
+ #[account(mut)]
+ pub admin:Signer<'info>,
+ pub token_program:Program<'info,Token>,
+ pub system_program:Program<'info,System>,
+ pub rent:Sysvar<'info,Rent>,
+}
+
+#[derive(Accounts)]
+pub struct CreateManifestBase<'info> {
+ #[account(seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
+ pub config:Box<Account<'info,Config>>,
+ #[account(address=config.mint)]
+ pub mint:Box<Account<'info,Mint>>,
+ /// CHECK: signer PDA only used as the token account authority; created by its own setup instruction.
+ #[account(seeds=[b"manifest-trader"],bump)]
+ pub trader:UncheckedAccount<'info>,
+ #[account(init,payer=admin,token::mint=mint,token::authority=trader,seeds=[b"manifest-heli"],bump)]
+ pub manifest_base:Box<Account<'info,TokenAccount>>,
+ #[account(mut)]
+ pub admin:Signer<'info>,
+ pub token_program:Program<'info,Token>,
+ pub system_program:Program<'info,System>,
+ pub rent:Sysvar<'info,Rent>,
+}
+
+#[derive(Accounts)]
+pub struct CreateManifestQuote<'info> {
+ #[account(seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
+ pub config:Box<Account<'info,Config>>,
+ #[account(address=config.quote_mint)]
+ pub quote_mint:Box<Account<'info,Mint>>,
+ /// CHECK: signer PDA only used as the token account authority; created by its own setup instruction.
+ #[account(seeds=[b"manifest-trader"],bump)]
+ pub trader:UncheckedAccount<'info>,
+ #[account(init,payer=admin,token::mint=quote_mint,token::authority=trader,seeds=[b"manifest-quote"],bump)]
+ pub manifest_quote:Box<Account<'info,TokenAccount>>,
+ #[account(mut)]
+ pub admin:Signer<'info>,
+ pub token_program:Program<'info,Token>,
+ pub system_program:Program<'info,System>,
+ pub rent:Sysvar<'info,Rent>,
+}
+
+#[derive(Accounts)]
+#[instruction(kind:u8)]
+pub struct CreateReleaseBase<'info> {
+ #[account(seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
+ pub config:Box<Account<'info,Config>>,
+ #[account(address=config.mint)]
+ pub mint:Box<Account<'info,Mint>>,
+ /// CHECK: signer PDA only used as the token account authority; created by its own setup instruction.
+ #[account(seeds=[b"release-trader".as_ref(),&[kind]],bump)]
+ pub trader:UncheckedAccount<'info>,
+ #[account(init,payer=admin,token::mint=mint,token::authority=trader,seeds=[b"release-base".as_ref(),&[kind]],bump)]
+ pub base:Box<Account<'info,TokenAccount>>,
+ #[account(mut)]
+ pub admin:Signer<'info>,
+ pub token_program:Program<'info,Token>,
+ pub system_program:Program<'info,System>,
+ pub rent:Sysvar<'info,Rent>,
+}
+
+#[derive(Accounts)]
+#[instruction(kind:u8)]
+pub struct CreateReleaseQuote<'info> {
+ #[account(seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
+ pub config:Box<Account<'info,Config>>,
+ #[account(address=config.quote_mint)]
+ pub quote_mint:Box<Account<'info,Mint>>,
+ /// CHECK: signer PDA only used as the token account authority; created by its own setup instruction.
+ #[account(seeds=[b"release-trader".as_ref(),&[kind]],bump)]
+ pub trader:UncheckedAccount<'info>,
+ #[account(init,payer=admin,token::mint=quote_mint,token::authority=trader,seeds=[b"release-quote".as_ref(),&[kind]],bump)]
+ pub quote:Box<Account<'info,TokenAccount>>,
+ #[account(mut)]
+ pub admin:Signer<'info>,
+ pub token_program:Program<'info,Token>,
+ pub system_program:Program<'info,System>,
+ pub rent:Sysvar<'info,Rent>,
+}
+
+#[derive(Accounts)]
+pub struct CreateManagementBase<'info> {
+ #[account(seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
+ pub config:Box<Account<'info,Config>>,
+ #[account(address=config.mint)]
+ pub mint:Box<Account<'info,Mint>>,
+ /// CHECK: signer PDA only used as the token account authority; created by its own setup instruction.
+ #[account(seeds=[b"management-trader"],bump)]
+ pub management_trader:UncheckedAccount<'info>,
+ #[account(init,payer=admin,token::mint=mint,token::authority=management_trader,seeds=[b"management-base"],bump)]
+ pub management_base:Box<Account<'info,TokenAccount>>,
+ #[account(mut)]
+ pub admin:Signer<'info>,
+ pub token_program:Program<'info,Token>,
+ pub system_program:Program<'info,System>,
+ pub rent:Sysvar<'info,Rent>,
+}
+
+#[derive(Accounts)]
+pub struct CreateManagementQuote<'info> {
+ #[account(seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
+ pub config:Box<Account<'info,Config>>,
+ #[account(address=config.quote_mint)]
+ pub quote_mint:Box<Account<'info,Mint>>,
+ /// CHECK: signer PDA only used as the token account authority; created by its own setup instruction.
+ #[account(seeds=[b"management-trader"],bump)]
+ pub management_trader:UncheckedAccount<'info>,
+ #[account(init,payer=admin,token::mint=quote_mint,token::authority=management_trader,seeds=[b"management-quote"],bump)]
+ pub management_quote:Box<Account<'info,TokenAccount>>,
+ #[account(mut)]
+ pub admin:Signer<'info>,
+ pub token_program:Program<'info,Token>,
+ pub system_program:Program<'info,System>,
+ pub rent:Sysvar<'info,Rent>,
+}
+
+#[derive(Accounts)]
+pub struct CreateFeeBase<'info> {
+ #[account(seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
+ pub config:Box<Account<'info,Config>>,
+ #[account(address=config.mint)]
+ pub mint:Box<Account<'info,Mint>>,
+ #[account(init,payer=admin,token::mint=mint,token::authority=config,seeds=[b"fee-base"],bump)]
+ pub fee_base:Box<Account<'info,TokenAccount>>,
+ #[account(mut)]
+ pub admin:Signer<'info>,
+ pub token_program:Program<'info,Token>,
+ pub system_program:Program<'info,System>,
+ pub rent:Sysvar<'info,Rent>,
+}
+
+#[derive(Accounts)]
+pub struct CreateFeeQuote<'info> {
+ #[account(seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
+ pub config:Box<Account<'info,Config>>,
+ #[account(address=config.quote_mint)]
+ pub quote_mint:Box<Account<'info,Mint>>,
+ #[account(init,payer=admin,token::mint=quote_mint,token::authority=config,seeds=[b"fee-quote"],bump)]
+ pub fee_quote:Box<Account<'info,TokenAccount>>,
+ #[account(mut)]
+ pub admin:Signer<'info>,
+ pub token_program:Program<'info,Token>,
+ pub system_program:Program<'info,System>,
+ pub rent:Sysvar<'info,Rent>,
+}
 #[derive(Accounts)]
 #[instruction(kind:u8)]
 pub struct CreateVault<'info> {
@@ -365,10 +548,6 @@ pub struct InitializeFeeVaults<'info> {
  pub mint:Box<Account<'info,Mint>>,
  #[account(address=config.quote_mint)]
  pub quote_mint:Box<Account<'info,Mint>>,
- #[account(init,payer=payer,token::mint=mint,token::authority=config,seeds=[b"fee-base".as_ref()],bump)]
- pub fee_base:Box<Account<'info,TokenAccount>>,
- #[account(init,payer=payer,token::mint=quote_mint,token::authority=config,seeds=[b"fee-quote".as_ref()],bump)]
- pub fee_quote:Box<Account<'info,TokenAccount>>,
  #[account(init,payer=payer,space=8+96,seeds=[b"operations".as_ref()],bump)]
  pub operations:Box<Account<'info,Operations>>,
  pub admin:Signer<'info>,

@@ -13,6 +13,7 @@ no-log-ix-name = []
 [dependencies]
 anchor-lang = "=0.29.0"
 anchor-spl = "=0.29.0"
+solana-program = "=1.18.26"
 [profile.release]
 overflow-checks = true
 lto = "fat"
