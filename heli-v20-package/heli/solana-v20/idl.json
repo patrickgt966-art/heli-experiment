@@ -1610,6 +1610,11 @@
           "name": "manifestProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "instructions",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": []
@@ -3456,6 +3461,14 @@
                 24
               ]
             }
+          },
+          {
+            "name": "sequenceMark",
+            "type": "u64"
+          },
+          {
+            "name": "markTime",
+            "type": "i64"
           }
         ]
       }

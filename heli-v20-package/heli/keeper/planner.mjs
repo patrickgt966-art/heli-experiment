@@ -15,8 +15,9 @@ export function plan(s){
  }
  if(last===720&&now>=boundary(start,720))return {name:'close_constitution',key:'constitution'};
  if(c.manifest_bound&&!c.paused&&s.policy){
-  const p=s.policy,lastIndex=(Number(p.next)+23)%24;
-  if(Number(p.count)===0||now-Number(p.times[lastIndex])>=3600)return {name:'observe_release_market',key:'observe:'+Math.floor(now/3600)};
+  // The program arms on the first call and samples hourly after its mark (only bids that rested since then count).
+  const mark=Number(s.policy.mark_time);
+  if(mark===0||now-mark>=3600)return {name:'observe_release_market',key:'observe:'+Math.floor(now/3600)};
  }
  return null;
 }

@@ -1,7 +1,7 @@
 {
-  "source_sha256": "c3bc34c14df8a9a4eefe41a84ab3b3f2572a7a31c289430bf31b7ee93749b1aa",
-  "binary_sha256": "c31c9d58378773d7692ef16fe1bbeeccc9091422256fa47234b5fb25f3cb13a8",
-  "checks_and_transactions": 1615,
+  "source_sha256": "722eff5d01b84062bd38e2edf325dd2d929cb7a8773c0baa89734e6fe67e66d9",
+  "binary_sha256": "dae3a6b7999e435bfacad2677a4886e4f6f089f164b66c2405975e41fc4af747",
+  "checks_and_transactions": 1616,
   "checks": [
     "allocate 82",
     "TEST quote mint",
@@ -147,6 +147,7 @@
     "withdraw_project_heli",
     "unsold inventory survives cancel and return without restoring locked reserve",
     "all twelve unlocks occurred without any monthly participants",
+    "arm price observations",
     "observe_release_market",
     "observe_release_market",
     "observe_release_market",

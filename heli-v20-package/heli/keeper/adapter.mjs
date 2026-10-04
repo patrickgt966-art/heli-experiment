@@ -43,7 +43,7 @@ export class SolanaAdapter{
  epoch(n){const seed=Buffer.alloc(2);seed.writeUInt16LE(n);return {epoch:this.pda('epoch',seed)};}
  instruction(job,s){
   if(!allowed.has(job.name))throw Error('Instruction outside keeper allowlist');
-  const c=s.config,a={config:this.pda('config'),mint:c.mint,history:c.history,launch:this.pda('launch-claims'),market_inventory:this.pda('market-inventory'),auction:this.pda('opening-auction'),policy:this.pda('release-policy'),manifest_market:c.manifest_market,manifest_program:MANIFEST,token_program:spl.TOKEN_PROGRAM_ID,system_program:web3.SystemProgram.programId,rent:web3.SYSVAR_RENT_PUBKEY,payer:this.payer?.publicKey};
+  const c=s.config,a={config:this.pda('config'),mint:c.mint,history:c.history,launch:this.pda('launch-claims'),market_inventory:this.pda('market-inventory'),auction:this.pda('opening-auction'),policy:this.pda('release-policy'),manifest_market:c.manifest_market,manifest_program:MANIFEST,instructions:web3.SYSVAR_INSTRUCTIONS_PUBKEY,token_program:spl.TOKEN_PROGRAM_ID,system_program:web3.SystemProgram.programId,rent:web3.SYSVAR_RENT_PUBKEY,payer:this.payer?.publicKey};
   for(const [i,n]of ['human','rewards','liquidity','founder'].entries())a[n]=this.pda('vault',Buffer.from([i]));
   a.release_reserve=a.human;a.management_stock=a.founder;
   if(job.number)Object.assign(a,this.epoch(job.number));
@@ -71,7 +71,7 @@ export class SolanaAdapter{
  async status(signature){return (await this.connection.getSignatureStatuses([signature],{searchTransactionHistory:true})).value[0];}
  async height(){return this.connection.getBlockHeight('confirmed');}
  async balance(){return this.connection.getBalance(this.payer.publicKey,'confirmed');}
- async completed(job){const s=await this.snapshot();if(job.name==='open_epoch')return Boolean(await this.account(this.epoch(job.number).epoch,'Epoch'));if(job.name==='settle')return Number(s.config.last_settled_epoch)>=job.number;if(job.name==='finalize_launch')return s.config.launch_finalized;if(job.name==='finalize_auction')return Boolean(s.auction?.finalized);if(job.name==='close_constitution')return s.config.closed;if(job.name==='observe_release_market'&&s.policy&&Number(s.policy.count)>0)return Number(s.policy.times[(Number(s.policy.next)+23)%24])>=Number(job.key.split(':')[1])*3600;return false;}
+ async completed(job){const s=await this.snapshot();if(job.name==='open_epoch')return Boolean(await this.account(this.epoch(job.number).epoch,'Epoch'));if(job.name==='settle')return Number(s.config.last_settled_epoch)>=job.number;if(job.name==='finalize_launch')return s.config.launch_finalized;if(job.name==='finalize_auction')return Boolean(s.auction?.finalized);if(job.name==='close_constitution')return s.config.closed;if(job.name==='observe_release_market'&&s.policy)return Number(s.policy.mark_time)>=Number(job.key.split(':')[1])*3600;return false;}
  // Only maintenance operations may be replaced after blockhash expiry. All
  // financial/user/admin instructions are excluded. Init/settle/finalize guards
  // prevent duplicate allocations; cursor/observations advance monotonically.

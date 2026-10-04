@@ -111,6 +111,7 @@ t.call('withdraw_project_heli',{'amount':20*t.U})
 t.check('unsold inventory survives cancel and return without restoring locked reserve',t.amount(t.defaults['market_inventory'])==inv_before and t.cfg()['stocks'][0]==reserve_before and t.read(ea['epoch'],'Epoch')['humanBudget']==epoch_before)
 t.check('all twelve unlocks occurred without any monthly participants',t.read(ea['epoch'],'Epoch')['people']==0)
 act=ma|ea
+t.clock(t.boundary(12)-3600);t.call('observe_release_market',label='arm price observations')
 for h in range(24):t.clock(t.boundary(12)+h*3600);t.call('observe_release_market')
 t.call('management_release',{'amount':t.U},act)
 t.check('new working capital consumes management quota once',t.cfg()['stocks'][3]==15_000_000*t.U-t.U and t.read(ea['epoch'],'Epoch')['founder']==t.U)
