@@ -35,7 +35,18 @@ Tarih: ______  Didit'teki uyarı türü (ör. "duplicate face"): ______
 - Daha temiz kanıt için (isteğe bağlı): Yeni fotoğraflı başka bir belgeyle tekrar; beklenen sonuç yalnız "duplicated" uyarısı.
 - Not: Pilot bu sırada önceki claim-service sürümüyle çalışıyordu. H3 karar mantığı (`didit.mjs`) bu oturumda değişmedi, sonuç geçerli.
 
-**Ortaya çıkan politika konusu:** Eski fotoğraflı belgeler (ör. 10 yıl geçerli kimlik kartları) gerçek başvuranlarda da "low similarity" ile `review`'a düşürebilir. Şu an bunları onaylamanın bir yolu yok; kayıtlı bir manuel inceleme politikası gerekiyor.
+**Ortaya çıkan politika konusu:** Eski fotoğraflı belgeler (ör. 10 yıl geçerli kimlik kartları) gerçek başvuranlarda da "low similarity" ile `review`'a düşürebilir. **Sahibin kararı (4 Ekim):** Bu başvurular manuel incelemeyle onaylanabilir. Yeni fotoğraflı bir belge, örneğin pasaport, de önerilebilir; proje sahibinin pasaport denemesi onay almıştı.
+
+Uygulama: `claim-service/manual-review.mjs`.
+1. Didit konsolunda oturumu inceleyip "Approved" yapın.
+2. Kimlik servisini durdurun.
+3. `node manual-review.mjs <başvuru-id> "<yazılı gerekçe>"` komutunu çalıştırın.
+
+Kurallar:
+- Yalnız gerekçenin SHA-256 özeti saklanır; metni kendi kayıtlarınızda tutun.
+- Canlılık kontrolü ve 18 yaş şartı aynen geçerli.
+- "Duplicated" uyarısı ancak `--allow-duplicate-face` ile aşılır. Bunu yalnız farklı kişi olduğu doğrulanmış ikiz veya kardeşler için kullanın.
+- Aynı belge veya kişisel numara başka bir başvurudaysa hiçbir şekilde onaylanmaz.
 
 ## Test 2 — İki ayrı aile üyesi
 

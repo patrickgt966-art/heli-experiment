@@ -16,17 +16,29 @@ export class Didit {
  async create(id){const r=await this.request('/v3/session/',{workflow_id:this.workflowId,vendor_data:id,callback:this.callback,language:'en'});const u=new URL(r.url);if(u.origin!=='https://verify.didit.me'||u.username||u.password||r.vendor_data!==id||r.workflow_id!==this.workflowId||typeof r.session_id!=='string')throw Error('Invalid provider session');return {id:r.session_id,url:u.href};}
  decision(id){if(!/^[a-f0-9-]{36}$/i.test(id))throw Error('Invalid provider ID');return this.request('/v3/session/'+id+'/decision/');}
 }
-export function evaluateDecision(d,{sessionId,vendorData,workflowId,personSecret}) {
+// Any cross-session match, or a warning that names a duplicate, is a possible second application by the same person.
+export function hasDuplicateSignal(d){
+ const all=['id_verifications','liveness_checks','face_matches'].flatMap(k=>Array.isArray(d[k])?d[k]:[]);
+ return all.some(x=>Array.isArray(x.matches)&&x.matches.length)||/duplicat/i.test(JSON.stringify([d.warnings??[],all.map(x=>x.warnings??[])]));
+}
+// `manual`: the operator approved the session in the Didit console after review and recorded a written reason
+// (manual-review.mjs). Warnings such as low face similarity are then accepted; a duplicate signal still holds the
+// application in review unless `allowDuplicateFace` is set. Age, document fields and HELI's own document/person
+// keys are always enforced.
+export function evaluateDecision(d,{sessionId,vendorData,workflowId,personSecret,manual=false,allowDuplicateFace=false}) {
  if(d.session_id!==sessionId||d.vendor_data!==vendorData||d.workflow_id!==workflowId)throw Error('Decision does not match application');
  const states={'Not Started':'verifying','In Progress':'verifying','Awaiting User':'verifying','Resubmitted':'verifying','In Review':'review','Declined':'declined','Abandoned':'expired','Expired':'expired','Kyc Expired':'expired'};
  if(d.status!=='Approved')return {status:states[d.status]??'review'};
  const groups=['id_verifications','liveness_checks','face_matches'];
+ if(manual){if(!Array.isArray(d.id_verifications)||!d.id_verifications.length||!Array.isArray(d.liveness_checks)||!d.liveness_checks.length||(hasDuplicateSignal(d)&&!allowDuplicateFace))return {status:'review'};}
+ else {
  if(groups.some(k=>!Array.isArray(d[k])||!d[k].length||d[k].some(x=>x.status!=='Approved'||!Array.isArray(x.warnings)||!Array.isArray(x.matches??[]))))return {status:'review'};
  if([...d.id_verifications,...d.liveness_checks].some(x=>!Array.isArray(x.matches)))return {status:'review'};
  const checks=groups.flatMap(k=>d[k]);
  // Conservative duplicate handling: review ANY cross-session match or warning.
  // No guessed similarity threshold and no invented provider-wide person ID.
  if(checks.some(x=>x.warnings.length||(x.matches??[]).length)|| (Array.isArray(d.warnings)&&d.warnings.length))return {status:'review'};
+ }
  const keys=[];
  for(const id of d.id_verifications){
   if(!Number.isInteger(id.age)||id.age<18||typeof id.issuing_state!=='string'||!id.issuing_state.trim()||typeof id.document_number!=='string'||!id.document_number.trim()||typeof id.document_type!=='string')return {status:'review'};

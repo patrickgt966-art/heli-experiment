@@ -16,12 +16,23 @@ export class ClaimAdmission {
   if(s.creating)throw Error('Verification session is being created');const day=Math.floor(this.now()/86400).toString(),created=(this.data.providerSessions??={})[day]??0;if(created>=this.dailyProviderSessions)throw Error('Identity checks are paused for today. Please try again tomorrow.');this.data.providerSessions[day]=created+1;s.creating=true;
   try{const r=await this.provider.create(s.id);s.providerId=r.id;s.verificationUrl=r.url;s.status='verifying';this.data.save();return {verificationUrl:r.url};}finally{delete s.creating;}
  }
- apply(s,d){const r=evaluateDecision(d,{sessionId:s.providerId,vendorData:s.id,workflowId:this.workflowId,personSecret:this.personSecret});
+ apply(s,d){const r=evaluateDecision(d,{sessionId:s.providerId,vendorData:s.id,workflowId:this.workflowId,personSecret:this.personSecret,manual:!!s.manual,allowDuplicateFace:!!s.manual?.allowDuplicateFace});
   if(r.status==='verified'){
    if(r.keys.some(k=>this.data.people[k]&&this.data.people[k]!==s.id&&this.data.sessions[this.data.people[k]]?.wallet!==s.wallet)){s.status='duplicate';}
    else {for(const k of r.keys)this.data.people[k]=s.id;Object.assign(s,{status:'verified',nullifier:r.nullifier,digest:r.digest});}
   }else s.status=r.status;
   this.data.save();return s;
+ }
+ // Operator decision for an application held in review (e.g. an old document photo). Requires the Didit session to be
+ // approved in the Didit console and a written reason; only its hash is stored. Duplicate document/person keys always win.
+ async manualApprove(s,reason,{allowDuplicateFace=false}={}){
+  if(typeof reason!=='string'||reason.trim().length<10)throw Error('A written reason of at least 10 characters is required');
+  if(!s.providerId)throw Error('Application has no identity session');
+  const d=await this.provider.decision(s.providerId);if(d.status!=='Approved')throw Error('Approve the session in the Didit console first');
+  const record={session:s.id,at:this.now(),reason:hash(Buffer.from(reason.trim())),allowDuplicateFace:!!allowDuplicateFace};
+  s.manual=record;this.apply(s,d);
+  if(s.status!=='verified'){const status=s.status;delete s.manual;this.apply(s,d);throw Error('Manual approval refused: application is '+status);}
+  (this.data.manualReviews??=[]).push(record);this.data.save();return record;
  }
  async refresh(s){if(!s.providerId)return s;return this.apply(s,await this.provider.decision(s.providerId));}
  validateWebhook(e){if(!['status.updated','data.updated'].includes(e.webhook_type)||e.environment!==this.environment||e.application_id!==this.applicationId||e.sandbox_scenario||e.session_kind==='business')throw Error('Unexpected webhook');const s=this.data.sessions[e.vendor_data];if(!s||s.providerId!==e.session_id||e.workflow_id!==this.workflowId)throw Error('Webhook application mismatch');if(typeof e.event_id!=='string'||!e.event_id||e.event_id.length>128)throw Error('Missing event ID');return s;}
