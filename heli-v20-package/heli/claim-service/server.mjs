@@ -12,18 +12,18 @@ const PROGRAM=readFileSync(new URL('../solana-v20/src/lib.rs',import.meta.url),'
 // Rate limits: [max requests, window seconds]. Per-client buckets stop one client exhausting everyone's quota;
 // session creation is the expensive path (provider sessions); signed webhooks get their own bucket.
 export const LIMITS=Object.freeze({global:[600,60],client:[30,60],create:[5,600],webhook:[300,60]});
-export function createClaimServer({origin,admission,chain,data,mode='demo',webhookSecret,queue,trustProxy=false,limits=LIMITS,now=()=>Math.floor(Date.now()/1000)}){
+export function createClaimServer({origin,admission,chain,data,mode='demo',webhookSecret,queue,trustProxy=false,limits=LIMITS,siteOrigin=null,now=()=>Math.floor(Date.now()/1000)}){
  const publicOrigin=new URL(origin);if(publicOrigin.origin!==origin||publicOrigin.username||publicOrigin.password|| (mode!=='demo'&&publicOrigin.protocol!=='https:')||(mode==='identity'&&chain))throw Error('Invalid public origin or identity-only chain');
  const counts=new Map(),statusTimes=new Map();
  const limited=(name,key)=>{const [max,window]=limits[name],k=name+':'+key,bucket=Math.floor(now()/window),c=counts.get(k);if(counts.size>20000)for(const [x,v] of counts)if(v.bucket!==Math.floor(now()/limits[x.split(':')[0]][1]))counts.delete(x);if(!c||c.bucket!==bucket)counts.set(k,{bucket,n:0});return ++counts.get(k).n>max;};
  const files={'/':['index.html','text/html; charset=utf-8'],'/browser-handoff.js':['browser-handoff.js','text/javascript; charset=utf-8'],'/app.js':['app.js','text/javascript; charset=utf-8'],'/style.css':['style.css','text/css; charset=utf-8'],'/web3.js':['../solana/node_modules/@solana/web3.js/lib/index.iife.min.js','text/javascript']};
  return createServer(async(req,res)=>{
-  const send=(code,value)=>{if(res.headersSent)return res.end();res.writeHead(code,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(value));};
+  const send=(code,value,extra={})=>{if(res.headersSent)return res.end();res.writeHead(code,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff',...extra});res.end(JSON.stringify(value));};
   try{
    if(req.headers.host!==publicOrigin.host)return send(403,{error:'Unexpected host'});
    const path=new URL(req.url,origin).pathname;
    if(req.method==='GET'){
-    if(path==='/api/config')return send(200,{mode,provider:'Didit',program:admission.program,amount:1000,waitDays:7,chainEnabled:!!chain});
+    if(path==='/api/config')return send(200,{mode,provider:'Didit',program:admission.program,amount:1000,waitDays:7,chainEnabled:!!chain},siteOrigin?{'Access-Control-Allow-Origin':siteOrigin,'Vary':'Origin'}:{});
     const file=files[path];if(!file)return send(404,{error:'Not found'});
     let body;try{body=readFileSync(new URL(file[0],import.meta.url));}catch{return send(404,{error:'Not found'});}
     res.writeHead(200,{'Content-Type':file[1],'Cache-Control':'no-store','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"});return res.end(body);
@@ -87,5 +87,5 @@ if(process.argv[1]===fileURLToPath(import.meta.url)){
  const queue=mode==='demo'?null:new WebhookQueue({admission,data});
  const timer=queue?setInterval(()=>queue.step().catch(()=>{}),1000):null;
  // Only trust Cloudflare's client IP header when the service is reachable solely through the tunnel (loopback bind).
- const server=createClaimServer({origin,admission,chain,data,mode,queue,webhookSecret:env.DIDIT_WEBHOOK_SECRET,trustProxy:env.HELI_TRUST_CF_CONNECTING_IP==='true'});server.listen(port,'127.0.0.1',()=>console.log('HELI V20 claim service '+mode+' '+origin));for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{if(timer)clearInterval(timer);server.close(()=>{data.close();process.exit(0);});});
+ const server=createClaimServer({origin,admission,chain,data,mode,queue,webhookSecret:env.DIDIT_WEBHOOK_SECRET,trustProxy:env.HELI_TRUST_CF_CONNECTING_IP==='true',siteOrigin:env.HELI_SITE_ORIGIN??'https://heli-experiment.pages.dev'});server.listen(port,'127.0.0.1',()=>console.log('HELI V20 claim service '+mode+' '+origin));for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{if(timer)clearInterval(timer);server.close(()=>{data.close();process.exit(0);});});
 }

@@ -21,3 +21,8 @@ nav .nav-claim{color:var(--mint);font-weight:650}nav .nav-claim span{margin-left
 @media(max-width:950px){.claim-page-heading{gap:30px}.claim-callout{flex-wrap:wrap}.claim-callout .button{margin-left:84px}.claim-page-heading h1{font-size:43px}}
 @media(max-width:760px){.claim-page-heading{grid-template-columns:1fr;padding-top:32px;gap:24px}.claim-page-heading h1{font-size:42px}.claim-amount-card{padding:26px}.claim-amount-card strong{font-size:52px}.claim-summary{gap:14px}.claim-summary strong{font-size:13px}.claim-summary span{font-size:11px}.claim-callout{padding:24px;gap:18px;text-align:left}.claim-callout h2{font-size:27px}.claim-callout .button{margin-left:0;width:100%}.claim-icon{width:48px;height:48px}.claim-callout-copy{flex-basis:calc(100% - 66px)}.application-heading{display:block}.application-heading .pill{margin-bottom:18px}.application-card .application-heading h2{font-size:27px}}
 @media(max-width:420px){.claim-page-heading h1{font-size:35px}.claim-summary{grid-template-columns:1fr;gap:15px}.claim-summary>div{display:flex;justify-content:space-between;align-items:baseline;gap:15px}.claim-summary span{margin:0}.claim-callout{padding:20px}.claim-callout h2{font-size:24px}}
+
+.pilot-state{margin:1rem 0 .5rem;font-weight:600}
+.pilot-state.online{color:#5fd39a}
+.pilot-state.offline{color:#ff8a80}
+.button.disabled{opacity:.45;pointer-events:none}

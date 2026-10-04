@@ -1,5 +1,5 @@
 HELI — experiment rules and status
-October 2, 2026. Design summary; not a live distribution or investment commitment.
+October 4, 2026. Design summary; not a live distribution or investment commitment.
 
 Initial mint: 100 million HELI. Initial burn: 10 million. Maximum remaining supply: 90 million.
 Initial release base: 5 million. 1 million for the initial free allocation; 4 million for the market.
@@ -8,6 +8,8 @@ Individual family members may apply separately. One person may not claim multipl
 Registration during the first six months, closing seven days before the end.
 A seven-day waiting period is planned for valid registrations.
 Unassigned initial free inventory moves to sale inventory; earned but unclaimed allocations stay protected.
+A registration can be disputed only during its seven-day waiting period, with a recorded reason;
+after that the right is final. Disputed registrations can be reinstated on appeal within six months.
 
 Locked allocations: Monthly Market Release Reserve 70 million and HELI Management Treasury 15 million.
 The Management Treasury combines the former founder 5M, market-support 5M and staking 5M allocations.
@@ -21,16 +23,22 @@ The first monthly cap is 20,112.368685 HELI. Management, once unlocked, shares t
 The unlocked part moves to the fixed project market inventory. Matching funded orders are needed for a sale.
 Unsold released tokens wait for buyers and are not burned monthly. Cancelling an order does not re-lock stock.
 Monthly settlement requires a transaction; anyone can trigger the fixed amount and destination.
+An administrative pause halts sales, treasury operations and expenses, but never the monthly release rule.
 Delayed periods are settled in order. Unused management permissions expire.
 At the 60-year close, only still-locked stock follows the existing final burn rule; unsold released inventory is protected.
 New Management Treasury HELI releases are locked for the first 12 months.
 Afterward, sales and newly released liquidity inventory share at most 20% of monthly capacity
-and one quarter of actual releases outside the Management Treasury, with market checks.
+and one quarter of actual releases outside the Management Treasury, checked against a 24-hour
+reference price built only from bids that rested at least an hour.
 The single manager can direct funded limit buy/sell orders, cancel orders and return assets to project accounts.
-Sale revenue stays in the project reserve. Bid liquidity needs actual quote funds.
+Sales: at least 95% of the reference price (without a reference: at least the opening auction price).
+Reserve-funded bids: at most 105% of the reference price, and none without a reference. Orders expire after about 24 hours.
+Sale revenue returns to the project reserve. Bid liquidity needs actual quote funds. Expenses wait seven days and can be cancelled.
+An offline recovery key can replace a lost administrator key after a seven-day window.
 Released working HELI, cancelled orders and bought HELI never refill locked treasury stock or reset release quotas.
-V20 passed 1,606 checks/transactions using real program binaries in a local Solana simulator,
-including all 720 monthly periods, initial free claims, monthly unlocks, market trades and treasury controls.
+The current V20 draft passes its local test suites using real program binaries in a local Solana simulator,
+including all 720 monthly periods, initial free claims, monthly unlocks, market trades and treasury controls,
+and builds reproducibly with a public toolchain. It has not been independently audited.
 It is not deployed, live trading, guaranteed liquidity or buybacks.
 
 The opening auction's minimum price and parameters will be announced.

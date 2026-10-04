@@ -74,3 +74,11 @@ test('expired unauthenticated challenges are pruned; verified applications are k
  assert.equal(data.sessions.old,undefined);assert(data.sessions.kept);
  data.close();
 });
+
+test('only the configured site may read the public pilot status',async()=>{
+ const {a,data}=admission(),server=await serve({admission:a,data,siteOrigin:'https://heli-experiment.pages.dev'});
+ try{
+  const r=await new Promise((resolve,reject)=>{const req=request('http://127.0.0.1:'+server.address().port+'/api/config',{headers:{Host:'pilot.example',Origin:'https://heli-experiment.pages.dev'}},res=>{res.resume();res.on('end',()=>resolve(res));});req.on('error',reject);req.end();});
+  assert.equal(r.statusCode,200);assert.equal(r.headers['access-control-allow-origin'],'https://heli-experiment.pages.dev');
+ }finally{await new Promise(r=>server.close(r));data.close();}
+});
