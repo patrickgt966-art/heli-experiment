@@ -5,7 +5,7 @@ use anchor_lang::solana_program::{instruction::{AccountMeta,Instruction},program
 use anchor_lang::Discriminator;
 const COMPUTE_BUDGET:Pubkey=pubkey!("ComputeBudget111111111111111111111111111111");
 use anchor_spl::token::{self,Mint,Token,TokenAccount,Transfer};
-use crate::{Config,Epoch,ErrorCode,UNIT,SCALE,boundary,outgoing,manifest_bridge::check_market};
+use crate::{Config,Epoch,ErrorCode,OpeningAuction,UNIT,SCALE,boundary,outgoing,manifest_bridge::check_market};
 #[account]
 pub struct ReleasePolicy {pub minimum_quote_depth:u64,pub count:u8,pub next:u8,pub prices:[u64;24],pub times:[i64;24],pub sequence_mark:u64,pub mark_time:i64}
 #[derive(Accounts)]
@@ -102,6 +102,26 @@ pub fn observe(ctx:Context<ObserveReleaseMarket>)->Result<()>{
  let i=p.next as usize;p.prices[i]=price;p.times[i]=now.unix_timestamp;p.next=((i+1)%24)as u8;p.count=(p.count+1).min(24);
  p.sequence_mark=sequence;p.mark_time=now.unix_timestamp;Ok(())
 }
+/// Owner policy for project and management orders (quote atoms per HELI): with a live reference price,
+/// asks >= 95% and bids <= 105% of it; without one, asks >= the opening auction price (the announced
+/// floor if the auction sold nothing) and no reserve-funded bids.
+pub(crate) fn order_bounds(p:&ReleasePolicy,auction:&OpeningAuction,now:i64)->(u64,Option<u64>){
+ match reference_price(p,now) {
+  Ok(r)=>((r as u128*95/100)as u64,Some((r as u128*105/100)as u64)),
+  Err(_)=>(if auction.clearing_price>0 {auction.clearing_price}else{auction.floor},None),
+ }
+}
+/// Manifest prices are mantissa*10^exponent quote atoms per base atom; HELI has 6 decimals.
+pub(crate) fn check_order_price(mantissa:u32,exponent:i8,is_bid:bool,bounds:(u64,Option<u64>))->Result<()>{
+ let e=exponent as i32+6;
+ let(num,den)=if e>=0 {(mantissa as u128*10u128.pow(e as u32),1u128)}else{(mantissa as u128,10u128.pow((-e) as u32))};
+ if is_bid {let ceiling=bounds.1.ok_or(error!(ErrorCode::PriceOutsideBand))?;require!(num<=ceiling as u128*den,ErrorCode::PriceOutsideBand);}
+ else {require!(bounds.0>0&&num>=bounds.0 as u128*den,ErrorCode::PriceOutsideBand);}
+ Ok(())
+}
+/// Project and management orders expire after about 24 hours (216,000 slots at ~400 ms), so a resting
+/// order cannot become a gift after the market moves.
+pub(crate) fn order_expiry(now:&Clock)->Result<u32>{u32::try_from(now.slot.checked_add(216_000).ok_or(ErrorCode::Math)?).map_err(|_|error!(ErrorCode::Math))}
 pub fn reference_price(p:&ReleasePolicy,now:i64)->Result<u64>{
  require!(p.count==24,ErrorCode::Market);let first=p.next as usize;let last=(first+23)%24;
  require!(now>=p.times[last]&&now-p.times[last]<=3600&&p.times[last]-p.times[first]>=23*3600,ErrorCode::Time);

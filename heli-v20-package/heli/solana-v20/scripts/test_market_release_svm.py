@@ -41,10 +41,9 @@ def management_order(amount,is_bid,deposit_base=0,mantissa=1,exponent=0):
  t.call('management_order',{'amount':amount,'base_deposit':deposit_base,'price_mantissa':mantissa,'price_exponent':exponent,'is_bid':is_bid},act)
 
 seat(t.alice);deposit(t.alice,f['wallet'],bv,t.defaults['mint'],10*t.U);order(t.alice,10*t.U,False)
-management_order(10*t.U,True)
-t.call('management_withdraw',{'amount':10*t.U,'is_base':True},act)
-t.check('management funded bid buys real HELI into working account',t.amount(ma['management_base'])==10*t.U)
-t.check('buying existing HELI does not unlock treasury allocation',t.cfg()['stocks'][3]==15_000_000*t.U)
+t.call('management_order',{'amount':10*t.U,'base_deposit':0,'price_mantissa':1,'price_exponent':0,'is_bid':True},act,reject='Order price outside the permitted band',label='no reserve-funded bid without a market reference price')
+t.transfer(f['wallet'],ma['management_base'],10*t.U,owner=t.alice)
+t.check('working HELI arrives without unlocking treasury allocation',t.amount(ma['management_base'])==10*t.U and t.cfg()['stocks'][3]==15_000_000*t.U)
 seat(t.bob);bq=t.token_account(q,t.bob.pubkey())
 t.send('synthetic user quote collateral',[t.Instruction(t.TOKEN,b'\x07'+struct.pack('<Q',20_000*t.U),[t.meta(q,True),t.meta(bq,True),t.meta(t.admin.pubkey(),False,True)])])
 deposit(t.bob,bq,qv,q,20_000*t.U);order(t.bob,10_000*t.U,True)

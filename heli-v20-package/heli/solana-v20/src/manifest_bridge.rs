@@ -3,7 +3,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::{instruction::{AccountMeta,Instruction},program::{invoke,invoke_signed},pubkey,system_instruction};
 use anchor_spl::token::{self,Mint,Token,TokenAccount,Transfer};
-use crate::{Config,ErrorCode,OpeningAuction,UNIT,outgoing};
+use crate::{Config,ErrorCode,OpeningAuction,UNIT,outgoing,release::{ReleasePolicy,order_bounds,check_order_price,order_expiry}};
 
 const MANIFEST:Pubkey=pubkey!("MNFSTqtC93rEfYHB6hF82sKdZpUDFWkViLByLd1k1Ms");
 const MARKET_DISCRIMINANT:u64=4859840929024028656;
@@ -28,15 +28,15 @@ fn cpi<'a>(program:AccountInfo<'a>,accounts:&[AccountInfo<'a>],metas:Vec<Account
 }
 
 fn manifest_data(tag:u8,amount:u64)->Vec<u8>{let mut d=vec![tag];d.extend_from_slice(&amount.to_le_bytes());d.push(0);d}
-fn update_data(cancel:Option<u64>,order:Option<(u64,u32,i8)>)->Vec<u8>{
+fn update_data(cancel:Option<u64>,order:Option<(u64,u32,i8,u32)>)->Vec<u8>{
  let mut d=vec![6,0]; // BatchUpdate, no trader-index hint.
  d.extend_from_slice(&(if cancel.is_some(){1u32}else{0}).to_le_bytes());
  if let Some(s)=cancel {d.extend_from_slice(&s.to_le_bytes());d.push(0);}
  d.extend_from_slice(&(if order.is_some(){1u32}else{0}).to_le_bytes());
- if let Some((amount,mantissa,exponent))=order {
+ if let Some((amount,mantissa,exponent,last_valid_slot))=order {
   d.extend_from_slice(&amount.to_le_bytes());d.extend_from_slice(&mantissa.to_le_bytes());
   d.push(exponent as u8);d.push(0); // Ask; is_bid=false.
-  d.extend_from_slice(&0u32.to_le_bytes());d.push(0); // No expiry; limit order.
+  d.extend_from_slice(&last_valid_slot.to_le_bytes());d.push(0); // Expiring limit order.
  }
  d
 }
@@ -76,6 +76,7 @@ pub struct PlaceProjectAsk<'info> {
  #[account(mut,seeds=[b"config"],bump=config.bump,has_one=admin)] pub config:Box<Account<'info,Config>>,
  #[account(address=config.mint)] pub mint:Box<Account<'info,Mint>>,
  #[account(seeds=[b"opening-auction"],bump)] pub auction:Box<Account<'info,OpeningAuction>>,
+ #[account(seeds=[b"release-policy"],bump)] pub policy:Box<Account<'info,ReleasePolicy>>,
  #[account(mut,seeds=[b"market-inventory"],bump,token::mint=mint,token::authority=config)] pub market_inventory:Box<Account<'info,TokenAccount>>,
  #[account(mut,seeds=[b"manifest-heli"],bump,token::mint=mint,token::authority=trader)] pub manifest_base:Box<Account<'info,TokenAccount>>,
  #[account(mut,seeds=[b"manifest-trader"],bump=config.manifest_trader_bump)] pub trader:SystemAccount<'info>,
@@ -96,6 +97,7 @@ pub fn place_ask(ctx:Context<PlaceProjectAsk>,amount:u64,mantissa:u32,exponent:i
    a.market_inventory.amount>=c.market_remaining,ErrorCode::Market);
  let (base,_)=check_market(&a.manifest_market.to_account_info(),&a.manifest_program.to_account_info(),&c.mint,&c.quote_mint)?;
  require_keys_eq!(a.base_vault.key(),base,ErrorCode::Market);
+ let now=Clock::get()?;check_order_price(mantissa,exponent,false,order_bounds(&a.policy,&a.auction,now.unix_timestamp))?;let expiry=order_expiry(&now)?;
  let unclaimed=a.auction.reserved_atoms;
  // Anyone can send SPL tokens here. Gifts must neither halt trading nor
  // enlarge constitutionally authorized inventory.
@@ -112,7 +114,7 @@ pub fn place_ask(ctx:Context<PlaceProjectAsk>,amount:u64,mantissa:u32,exponent:i
  let update=vec![AccountMeta::new(a.trader.key(),true),AccountMeta::new(a.manifest_market.key(),false),
    AccountMeta::new_readonly(a.system_program.key(),false)];
  cpi(a.manifest_program.to_account_info(),&[a.trader.to_account_info(),a.manifest_market.to_account_info(),
-   a.system_program.to_account_info()],update,update_data(None,Some((amount,mantissa,exponent))),c.manifest_trader_bump)?;
+   a.system_program.to_account_info()],update,update_data(None,Some((amount,mantissa,exponent,expiry))),c.manifest_trader_bump)?;
  let c=&mut ctx.accounts.config;c.market_remaining=c.market_remaining.checked_sub(amount).ok_or(ErrorCode::Math)?;
  c.manifest_base_deposited=c.manifest_base_deposited.checked_add(amount).ok_or(ErrorCode::Math)?;Ok(())
 }

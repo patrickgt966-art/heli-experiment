@@ -472,6 +472,8 @@ poc5: önceki örnekler 1_000_000; flash örnek 5_000_000; teminat tamamen geri 
 | M2 flash gözlem | **Düzeltildi ve doğrulandı** | Gözlem yalnız ComputeBudget ile aynı işlemde olabiliyor. Ayrıca yalnız önceki gözlemden önce konmuş, yani en az bir saat sermaye riskiyle defterde beklemiş emirler sayılıyor (Manifest sıra numarası). İlk çağrı seriyi "kuruyor", ilk örnek bir saat sonra alınıyor. Böylece Jito paketiyle art arda "koy → gözle → iptal" da işe yaramıyor. |
 | N2 toz bid ile DoS / tek emir derinliği | **Düzeltildi ve doğrulandı** | Derinlik ve fiyat, en iyi fiyattan aşağı en çok 64 düğüm gezilerek toplanıyor; asgari derinliğe ulaşılan marjinal fiyat kullanılıyor. Toz emir gözlemi engellemiyor ve fiyatı belirlemiyor. Yönetim release'i de aynı "beklemiş emir" kuralını kullanıyor. Satış (`execute_release_sale`) gerçek eşleşme yaptığı için yaş filtresi uygulamıyor. |
 | M3 süresi dolmuş top-bid | **Düzeltildi ve doğrulandı** | Süresi dolmuş ve global (teminatsız) emirler atlanıyor. |
+| C1 fiyatsız proje satışı | **Düzeltildi ve doğrulandı (sahibin kararıyla)** | `place_project_ask` ve yönetimin satış emirleri: referans fiyat varken ≥ %95'i, yokken ≥ ihale fiyatı (ihale satış yapmadıysa ilan edilen taban). Emirler ~24 saat (216.000 slot) geçerli. C1 PoC'si reddediliyor. |
+| C2a fiyatsız yönetim alışı | **Düzeltildi ve doğrulandı (sahibin kararıyla)** | Rezervle fonlanan alış emri yalnız referans fiyat varken ve ≤ %105'iyle; ~24 saat geçerli. Referans yokken alış yok. C2a PoC'si reddediliyor. `test_price_bounds_svm.py`: 91 kontrol/işlem (%94 ret / %95 kabul, %106 ret / %105 kabul, süre alanı). Anlaşmalı işlem hâlâ mümkün ama kayıp en çok yaklaşık %5 ile sınırlı. |
 | M9 yeniden üretilebilir derleme | **Yerelde çözüldü** | Birden fazla token hesabı açan kurulum talimatları, her biri tek `init` yapacak şekilde bölündü. 11 yeni kurulum talimatı eklendi; kurulum sırası değişti. Agave 2.1.21 / platform-tools v1.43 ile temiz derleme iki kez aynı ELF hash'ini verdi (`2361b6da…`). Komut: `scripts/build_local.sh`. Sabit Docker imajı ve `solana-verify` hâlâ gerekli. |
 
 Yeni ELF üzerinde yeniden çalıştırılan testler:
@@ -484,16 +486,16 @@ Yeni ELF üzerinde yeniden çalıştırılan testler:
 | `test_setup_controls_svm.py` | 33 kontrol/işlem |
 | `test_expense_controls_svm.py` | 45 kontrol/işlem |
 | `test_observation_controls_svm.py` | 74 kontrol/işlem (flash, beklememiş emir, toz, süresi dolmuş emir, boşlukta yeniden kurma) |
+| `test_price_bounds_svm.py` | 91 kontrol/işlem |
 | Node paketi | 89/89 |
 
-Piyasa testi, gözlem kurulum çağrısıyla birlikte 1.616 kontrol/işlem. Keeper SVM testi Manifest piyasası bağlamadığı için gözlem yolunu çalıştırmıyor; keeper'ın yeni gözlem planlaması yalnız birim testleriyle doğrulandı.
+Piyasa testi 1.615 kontrol/işlem: gözlem kurulumu eklendi, 1. aydaki referanssız yönetim alışı artık ret kontrolü. Keeper SVM testi Manifest piyasası bağlamadığı için gözlem yolunu çalıştırmıyor; keeper'ın yeni gözlem planlaması yalnız birim testleriyle doğrulandı.
 
-Son ELF: `dae3a6b7…`. Depodaki kaynak `build_local.sh` ile sıfırdan derlendiğinde aynı ELF'i veriyor.
+Son ELF: `8349ceb7…`. Depodaki kaynak `build_local.sh` ile sıfırdan derlendiğinde aynı ELF'i veriyor.
 
 `reviews/poc_review.py` orijinal paket ve ikili içindir. Yeni kurulum sırasıyla çalışmaz.
 
 Açık kalan başlıca konular:
-- **C1 ve C2a:** fiyat sınırları.
 - **H2:** pause kapsamı.
 - **H3:** kimlik tekrarının canlı testi.
 - **Gözlem manipülasyonu (kalan):** bir saatten uzun gerçek sermayeyle yapılan wash trade ve proje veya yönetimin kendi fonladığı bid'in derinlik sayılması. Bu ikisi politika kararı.

@@ -4,7 +4,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::{instruction::{AccountMeta,Instruction},program::{invoke,invoke_signed},system_instruction};
 use anchor_spl::token::{self,Mint,Token,TokenAccount,Transfer};
-use crate::{Config,Epoch,ErrorCode,UNIT,boundary,outgoing,manifest_bridge::check_market,release::{ReleasePolicy,reference_price,bid_book}};
+use crate::{Config,Epoch,ErrorCode,OpeningAuction,UNIT,boundary,outgoing,manifest_bridge::check_market,release::{ReleasePolicy,reference_price,bid_book,order_bounds,check_order_price,order_expiry}};
 
 #[account]
 pub struct ManagementBook {pub quote_floor:u64,pub total_released:u64,pub quote_funded:u64,pub quote_returned:u64,pub trader_bump:u8}
@@ -47,6 +47,7 @@ pub struct ManagementAction<'info>{
  #[account(mut,seeds=[b"vault",&[3u8]],bump,token::mint=mint,token::authority=config)] pub management_stock:Box<Account<'info,TokenAccount>>,
  #[account(mut,seeds=[b"epoch",&epoch.number.to_le_bytes()],bump=epoch.bump)] pub epoch:Box<Account<'info,Epoch>>,
  #[account(seeds=[b"release-policy"],bump)] pub policy:Box<Account<'info,ReleasePolicy>>,
+ #[account(seeds=[b"opening-auction"],bump)] pub auction:Box<Account<'info,OpeningAuction>>,
  /// CHECK: Bound market and its canonical vaults are checked for every operation.
  #[account(mut,address=config.manifest_market)] pub manifest_market:UncheckedAccount<'info>,
  /// CHECK: Pinned Manifest executable checked by check_market.
@@ -100,9 +101,10 @@ pub fn release(mut ctx:Context<ManagementAction>,amount:u64)->Result<()> {
 
 pub fn order(ctx:Context<ManagementAction>,amount:u64,base_deposit:u64,mantissa:u32,exponent:i8,is_bid:bool)->Result<()> {
  let a=&ctx.accounts;active(a)?;require!(amount>0&&mantissa>0&&exponent>=-18&&exponent<=18&&(!is_bid||base_deposit==0),ErrorCode::Quota);
+ let now=Clock::get()?;check_order_price(mantissa,exponent,is_bid,order_bounds(&a.policy,&a.auction,now.unix_timestamp))?;let expiry=order_expiry(&now)?;
  if base_deposit>0 {require!(base_deposit<=a.management_base.amount,ErrorCode::Collateral);deposit_or_withdraw(a,true,base_deposit,2)?;}
  let mut data=vec![6,0];data.extend_from_slice(&0u32.to_le_bytes());data.extend_from_slice(&1u32.to_le_bytes());
- data.extend_from_slice(&amount.to_le_bytes());data.extend_from_slice(&mantissa.to_le_bytes());data.push(exponent as u8);data.push(is_bid as u8);data.extend_from_slice(&0u32.to_le_bytes());data.push(0);
+ data.extend_from_slice(&amount.to_le_bytes());data.extend_from_slice(&mantissa.to_le_bytes());data.push(exponent as u8);data.push(is_bid as u8);data.extend_from_slice(&expiry.to_le_bytes());data.push(0);
  invoke_management(a,data,vec![AccountMeta::new(a.management_trader.key(),true),AccountMeta::new(a.manifest_market.key(),false),AccountMeta::new_readonly(a.system_program.key(),false)],vec![a.management_trader.to_account_info(),a.manifest_market.to_account_info(),a.system_program.to_account_info()])
 }
 pub fn cancel(ctx:Context<ManagementAction>,sequence:u64)->Result<()> {
