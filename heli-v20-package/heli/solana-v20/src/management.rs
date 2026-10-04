@@ -89,8 +89,10 @@ pub fn release(mut ctx:Context<ManagementAction>,amount:u64)->Result<()> {
  let used=e.founder.checked_add(amount).ok_or(ErrorCode::Math)?;
  let non_management=e.human_budget as u128;
  require!(used<=e.founder_budget&&used<=e.capacity/5&&used as u128*4<=non_management&&amount<=c.stocks[3]&&a.management_stock.amount>=c.stocks[3],ErrorCode::Quota);
+ // Owner decision (V22, finding 4 option B): the 2% depth limit applies to the month total; management
+ // releases and direct release sales share epoch.founder.
  let ref_price=reference_price(&a.policy,now.unix_timestamp)?;let(price,depth)=bid_book(&a.manifest_market.to_account_info(),&now,a.policy.minimum_quote_depth,a.policy.sequence_mark)?;
- require!(price as u128*100>=ref_price as u128*98&&price as u128*100<=ref_price as u128*102&&amount<=depth/50&&price as u128*depth as u128/UNIT as u128>=a.policy.minimum_quote_depth as u128,ErrorCode::Market);
+ require!(price as u128*100>=ref_price as u128*98&&price as u128*100<=ref_price as u128*102&&used<=depth/50&&price as u128*depth as u128/UNIT as u128>=a.policy.minimum_quote_depth as u128,ErrorCode::Market);
  outgoing(a.token_program.to_account_info(),a.management_stock.to_account_info(),a.management_base.to_account_info(),c.to_account_info(),c.bump,amount)?;
  a.config.stocks[3]-=amount;a.epoch.founder=used;
  require!(a.epoch.human_budget as u128+a.epoch.staking as u128+a.epoch.liquidity as u128+used as u128<=a.epoch.capacity as u128,ErrorCode::Quota);

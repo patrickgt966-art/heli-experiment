@@ -162,8 +162,10 @@ pub fn execute(mut ctx:Context<ExecuteReleaseSale>,kind:u8,amount:u64)->Result<(
  else {let dest=Pubkey::find_program_address(&[b"auction-proceeds"],&crate::ID).0;require!(a.destination.key()==dest&&a.destination.owner==c.key(),ErrorCode::Market);let allowance=(e.human_budget as u128)/4;require!(e.founder as u128+amount as u128<=allowance,ErrorCode::Quota);}
  let (bv,qv)=check_market(&a.manifest_market.to_account_info(),&a.manifest_program.to_account_info(),&c.mint,&c.quote_mint)?;
  require_keys_eq!(bv,a.base_vault.key(),ErrorCode::Market);require_keys_eq!(qv,a.quote_vault.key(),ErrorCode::Market);
+ // Owner decision (V22, finding 4 option B): the 2% depth limit applies to the month total; management
+ // releases and direct release sales share epoch.founder.
  let reference=reference_price(&a.policy,now.unix_timestamp)?;let(price,depth)=bid_book(&a.manifest_market.to_account_info(),&now,a.policy.minimum_quote_depth,u64::MAX)?;
- require!(price as u128*100>=reference as u128*98&&price as u128*100<=reference as u128*102&&amount<=depth/50&&(price as u128*depth as u128)/UNIT as u128>=a.policy.minimum_quote_depth as u128,ErrorCode::Market);
+ require!(price as u128*100>=reference as u128*98&&price as u128*100<=reference as u128*102&&e.founder.checked_add(amount).ok_or(ErrorCode::Math)?<=depth/50&&(price as u128*depth as u128)/UNIT as u128>=a.policy.minimum_quote_depth as u128,ErrorCode::Market);
  let floor=(reference as u128*98/100)as u64;require!(floor>0,ErrorCode::Market);
  let min_out=(amount as u128*floor as u128+UNIT as u128-1)/UNIT as u128;require!(min_out>0&&min_out<=u64::MAX as u128,ErrorCode::Math);
  let before_base=a.base.amount;let before_quote=a.quote.amount;

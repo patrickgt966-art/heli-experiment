@@ -60,7 +60,11 @@ Sonradan yönetici veya doğrulayıcı değiştirildiğinde keeper bilinçli ola
 
 - Gider hedefi programın kendi hazinesindeki bir token hesabı olamaz: `fee-quote`, ihale/satış geliri hesabı (`auction-proceeds`) ve config, manifest, yönetim, release ve DLMM PDA'larına ait hesaplar reddedilir (`ExpenseDestination`). Kural hem teklifte hem ödemede uygulanır; V22'den önce yazılmış böyle bir teklif ödenemez, iptal edilmelidir.
 - Aylık gider tavanı takvim ayına göre sıfırlanır. Bu ay sayacı 720. aydan sonra da saymaya devam eder; arz takvimi (720 ay, 60. yıl kapanışı) değişmedi.
-- 60. yıl kapanışından sonra hazineye yeni gelir aktarma (`allocate_auction_proceeds`, `contribute_quote`) ve yönetim emirleri kapalıdır. Bu bir politika konusudur; seçenekler `reviews/v22/V22_DUZELTME_2026-10-04.md` içindedir.
+- 60. yıl kapanışından sonra (sahibin kararı, bulgu 3-B): satış geliri `allocate_auction_proceeds` ile gider kasasına aktarılabilir, `contribute_quote` ile bağış alınabilir; giderler aynı aylık tavan, 7 gün bekleme, pause ve kurtarma iptaliyle sürer. Yeni arz yoktur. Yönetim emirleri kapanıştan sonra kapalıdır.
+
+## Yönetim release sınırı (V22, sahibin kararı, bulgu 4-B)
+
+O ayki yönetim release'leri ve doğrudan release satışlarının **toplamı** (`epoch.founder`) çağrı anındaki alış derinliğinin %2'sini (`depth/50`) aşamaz. Aylık bütçe sınırları (kapasitenin %20'si, insan bütçesinin ¼'ü) ayrıca geçerlidir. İnce pazarda payın kullanılmayan kısmı o ay kullanılamaz.
 
 ## Ücretsiz pay: iptal, itiraz ve kimlik durumu
 

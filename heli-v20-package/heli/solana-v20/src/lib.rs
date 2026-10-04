@@ -123,7 +123,8 @@ pub mod heli_core_v20 {
   Ok(())
  }
  pub fn contribute_quote(ctx:Context<ContributeQuote>,amount:u64)->Result<()> {
-  require!(ctx.accounts.config.live&&!ctx.accounts.config.closed&&amount>0,ErrorCode::State);
+  // Owner decision (V22, finding 3 option B): treasury funding stays open after the 60-year close; no new supply.
+  require!((ctx.accounts.config.live||ctx.accounts.config.closed)&&amount>0,ErrorCode::State);
   let o=&mut ctx.accounts.operations;
   let next_earned=o.earned_total.checked_add(amount).ok_or(ErrorCode::Math)?;
   let next_donated=o.donated_total.checked_add(amount).ok_or(ErrorCode::Math)?;
@@ -133,7 +134,7 @@ pub mod heli_core_v20 {
   emit!(QuoteContribution{contributor:ctx.accounts.contributor.key(),amount});Ok(())
  }
  pub fn allocate_auction_proceeds(ctx:Context<AllocateAuctionProceeds>,amount:u64)->Result<()> {
-  require!(ctx.accounts.config.live&&!ctx.accounts.config.closed&&ctx.accounts.auction.finalized&&amount>0,ErrorCode::State);
+  require!((ctx.accounts.config.live||ctx.accounts.config.closed)&&ctx.accounts.auction.finalized&&amount>0,ErrorCode::State);
   let o=&mut ctx.accounts.operations;
   let next_earned=o.earned_total.checked_add(amount).ok_or(ErrorCode::Math)?;
   let next_allocated=o.sale_allocated_total.checked_add(amount).ok_or(ErrorCode::Math)?;

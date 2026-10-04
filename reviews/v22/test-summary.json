@@ -1,39 +1,47 @@
 [
   {
     "script": "test_entitlement_controls_svm",
-    "tail": "{\n  \"source_sha256\": \"c39535f58dbfd74ac7815ea62d5aacc28cab31308e2d56725332ac04a30938ee\",\n  \"binary_sha256\": \"6af0f12b51a4d651a25e16a549e8a844fe36f08880d9bf2167fa7eb93bc8eabb\",\n  \"checks_and_transactions\": 51,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 ELF in local LiteSVM, synthetic identities; free-allocation dispute/appeal/credential status only. Not a deployment or audit.\"\n}\n"
+    "tail": "{\n  \"source_sha256\": \"cdeecadeb45e3d50f974060d95f7ad613472d19583f7d55d2bb8f11e57e47209\",\n  \"binary_sha256\": \"44ab14e46a2c80e9b437c4e41a8046c89203ae7c22139d2e5bd043c5ef4f9f42\",\n  \"checks_and_transactions\": 51,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 ELF in local LiteSVM, synthetic identities; free-allocation dispute/appeal/credential status only. Not a deployment or audit.\"\n}\n"
   },
   {
     "script": "test_expense_controls_svm",
-    "tail": "{\n  \"source_sha256\": \"c39535f58dbfd74ac7815ea62d5aacc28cab31308e2d56725332ac04a30938ee\",\n  \"binary_sha256\": \"6af0f12b51a4d651a25e16a549e8a844fe36f08880d9bf2167fa7eb93bc8eabb\",\n  \"checks_and_transactions\": 45,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 ELF in local LiteSVM, synthetic quote/keys; expense pause/cancel controls only. Not a deployment or audit.\"\n}\n"
+    "tail": "{\n  \"source_sha256\": \"cdeecadeb45e3d50f974060d95f7ad613472d19583f7d55d2bb8f11e57e47209\",\n  \"binary_sha256\": \"44ab14e46a2c80e9b437c4e41a8046c89203ae7c22139d2e5bd043c5ef4f9f42\",\n  \"checks_and_transactions\": 45,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 ELF in local LiteSVM, synthetic quote/keys; expense pause/cancel controls only. Not a deployment or audit.\"\n}\n"
   },
   {
     "script": "test_expense_v22_svm",
-    "tail": "{\n  \"source_sha256\": \"c39535f58dbfd74ac7815ea62d5aacc28cab31308e2d56725332ac04a30938ee\",\n  \"binary_sha256\": \"6af0f12b51a4d651a25e16a549e8a844fe36f08880d9bf2167fa7eb93bc8eabb\",\n  \"checks_and_transactions\": 83,\n  \"all_passed\": true,\n  \"scope\": \"Compiled ELF in local LiteSVM, synthetic quote/keys; V22 expense destination and post-horizon month fixes only. Not a deployment or audit.\"\n}\n"
+    "tail": "{\n  \"source_sha256\": \"cdeecadeb45e3d50f974060d95f7ad613472d19583f7d55d2bb8f11e57e47209\",\n  \"binary_sha256\": \"44ab14e46a2c80e9b437c4e41a8046c89203ae7c22139d2e5bd043c5ef4f9f42\",\n  \"checks_and_transactions\": 83,\n  \"all_passed\": true,\n  \"scope\": \"Compiled ELF in local LiteSVM, synthetic quote/keys; V22 expense destination and post-horizon month fixes only. Not a deployment or audit.\"\n}\n"
   },
   {
     "script": "test_governance_svm",
-    "tail": "{\n  \"source_sha256\": \"c39535f58dbfd74ac7815ea62d5aacc28cab31308e2d56725332ac04a30938ee\",\n  \"binary_sha256\": \"6af0f12b51a4d651a25e16a549e8a844fe36f08880d9bf2167fa7eb93bc8eabb\",\n  \"checks_and_transactions\": 68,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 ELF in local LiteSVM, synthetic keys; admin/recovery/verifier governance only. Not a deployment or audit.\"\n}\n"
+    "tail": "{\n  \"source_sha256\": \"cdeecadeb45e3d50f974060d95f7ad613472d19583f7d55d2bb8f11e57e47209\",\n  \"binary_sha256\": \"44ab14e46a2c80e9b437c4e41a8046c89203ae7c22139d2e5bd043c5ef4f9f42\",\n  \"checks_and_transactions\": 68,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 ELF in local LiteSVM, synthetic keys; admin/recovery/verifier governance only. Not a deployment or audit.\"\n}\n"
   },
   {
     "script": "test_market_release_svm",
-    "tail": "{\n  \"source_sha256\": \"c39535f58dbfd74ac7815ea62d5aacc28cab31308e2d56725332ac04a30938ee\",\n  \"binary_sha256\": \"6af0f12b51a4d651a25e16a549e8a844fe36f08880d9bf2167fa7eb93bc8eabb\",\n  \"checks_and_transactions\": 1615,\n  \"all_passed\": true,\n  \"calendar_months\": 720,\n  \"scope\": \"Real V20 and Manifest ELFs in local LiteSVM, synthetic quote/provider; not public deployment or audit.\"\n}\n"
+    "tail": "{\n  \"source_sha256\": \"cdeecadeb45e3d50f974060d95f7ad613472d19583f7d55d2bb8f11e57e47209\",\n  \"binary_sha256\": \"44ab14e46a2c80e9b437c4e41a8046c89203ae7c22139d2e5bd043c5ef4f9f42\",\n  \"checks_and_transactions\": 1615,\n  \"all_passed\": true,\n  \"calendar_months\": 720,\n  \"scope\": \"Real V20 and Manifest ELFs in local LiteSVM, synthetic quote/provider; not public deployment or audit.\"\n}\n"
   },
   {
     "script": "test_observation_controls_svm",
-    "tail": "{\n  \"source_sha256\": \"c39535f58dbfd74ac7815ea62d5aacc28cab31308e2d56725332ac04a30938ee\",\n  \"binary_sha256\": \"6af0f12b51a4d651a25e16a549e8a844fe36f08880d9bf2167fa7eb93bc8eabb\",\n  \"checks_and_transactions\": 74,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 and Manifest ELFs in local LiteSVM, synthetic quote/keys; price-observation controls only. Not a deployment or audit.\"\n}\n"
+    "tail": "{\n  \"source_sha256\": \"cdeecadeb45e3d50f974060d95f7ad613472d19583f7d55d2bb8f11e57e47209\",\n  \"binary_sha256\": \"44ab14e46a2c80e9b437c4e41a8046c89203ae7c22139d2e5bd043c5ef4f9f42\",\n  \"checks_and_transactions\": 74,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 and Manifest ELFs in local LiteSVM, synthetic quote/keys; price-observation controls only. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_policy_closure_svm",
+    "tail": "{\n  \"mode\": \"closure\",\n  \"source_sha256\": \"cdeecadeb45e3d50f974060d95f7ad613472d19583f7d55d2bb8f11e57e47209\",\n  \"binary_sha256\": \"44ab14e46a2c80e9b437c4e41a8046c89203ae7c22139d2e5bd043c5ef4f9f42\",\n  \"checks_and_transactions\": 1638,\n  \"all_passed\": true,\n  \"post_closure_allocated_atoms\": 67000000,\n  \"post_closure_expense_atoms\": 40000,\n  \"scope\": \"Compiled ELF in local LiteSVM, synthetic quote/keys; V22 owner-decision checks on top of the 720-month market scenario. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_policy_depth_svm",
+    "tail": "{\n  \"mode\": \"depth\",\n  \"source_sha256\": \"cdeecadeb45e3d50f974060d95f7ad613472d19583f7d55d2bb8f11e57e47209\",\n  \"binary_sha256\": \"44ab14e46a2c80e9b437c4e41a8046c89203ae7c22139d2e5bd043c5ef4f9f42\",\n  \"checks_and_transactions\": 187,\n  \"all_passed\": true,\n  \"depth_atoms\": 9984000000,\n  \"month_total_atoms\": 199680000,\n  \"scope\": \"Compiled ELF in local LiteSVM, synthetic quote/keys; V22 owner-decision checks on top of the 720-month market scenario. Not a deployment or audit.\"\n}\n"
   },
   {
     "script": "test_price_bounds_svm",
-    "tail": "{\n  \"source_sha256\": \"c39535f58dbfd74ac7815ea62d5aacc28cab31308e2d56725332ac04a30938ee\",\n  \"binary_sha256\": \"6af0f12b51a4d651a25e16a549e8a844fe36f08880d9bf2167fa7eb93bc8eabb\",\n  \"checks_and_transactions\": 91,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 and Manifest ELFs in local LiteSVM, synthetic quote/keys; order price bounds and expiry only. Not a deployment or audit.\"\n}\n"
+    "tail": "{\n  \"source_sha256\": \"cdeecadeb45e3d50f974060d95f7ad613472d19583f7d55d2bb8f11e57e47209\",\n  \"binary_sha256\": \"44ab14e46a2c80e9b437c4e41a8046c89203ae7c22139d2e5bd043c5ef4f9f42\",\n  \"checks_and_transactions\": 91,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 and Manifest ELFs in local LiteSVM, synthetic quote/keys; order price bounds and expiry only. Not a deployment or audit.\"\n}\n"
   },
   {
     "script": "test_setup_controls_svm",
-    "tail": "{\n  \"source_sha256\": \"c39535f58dbfd74ac7815ea62d5aacc28cab31308e2d56725332ac04a30938ee\",\n  \"binary_sha256\": \"6af0f12b51a4d651a25e16a549e8a844fe36f08880d9bf2167fa7eb93bc8eabb\",\n  \"checks_and_transactions\": 33,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 ELF in local LiteSVM, synthetic keys; initialization access only. Not a deployment or audit.\"\n}\n"
+    "tail": "{\n  \"source_sha256\": \"cdeecadeb45e3d50f974060d95f7ad613472d19583f7d55d2bb8f11e57e47209\",\n  \"binary_sha256\": \"44ab14e46a2c80e9b437c4e41a8046c89203ae7c22139d2e5bd043c5ef4f9f42\",\n  \"checks_and_transactions\": 33,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 ELF in local LiteSVM, synthetic keys; initialization access only. Not a deployment or audit.\"\n}\n"
   },
   {
     "script": "keeper",
-    "tail": "V20 keeper months: 120\nV20 keeper months: 240\nV20 keeper months: 360\nV20 keeper months: 480\nV20 keeper months: 600\nV20 keeper months: 720\n{\"version\": \"v20\", \"all_passed\": true, \"months\": 720, \"jobs\": 1442, \"checks_and_transactions\": 4353, \"source_sha256\": \"c39535f58dbfd74ac7815ea62d5aacc28cab31308e2d56725332ac04a30938ee\", \"binary_sha256\": \"6af0f12b51a4d651a25e16a549e8a844fe36f08880d9bf2167fa7eb93bc8eabb\", \"scope\": \"Local LiteSVM; actual JS planner and adapter plus compiled V20 ELF; synthetic quote/identity, no public deployment\"}\n"
+    "tail": "V20 keeper months: 120\nV20 keeper months: 240\nV20 keeper months: 360\nV20 keeper months: 480\nV20 keeper months: 600\nV20 keeper months: 720\n{\"version\": \"v20\", \"all_passed\": true, \"months\": 720, \"jobs\": 1442, \"checks_and_transactions\": 4353, \"source_sha256\": \"cdeecadeb45e3d50f974060d95f7ad613472d19583f7d55d2bb8f11e57e47209\", \"binary_sha256\": \"44ab14e46a2c80e9b437c4e41a8046c89203ae7c22139d2e5bd043c5ef4f9f42\", \"scope\": \"Local LiteSVM; actual JS planner and adapter plus compiled V20 ELF; synthetic quote/identity, no public deployment\"}\n"
   },
   {
     "script": "node --test (claim-service, keeper, operations, manifest-integration)",
@@ -44,11 +52,19 @@
     ]
   },
   {
-    "script": "test_expense_v22_svm.py against V21 ELF 1645494a (negative control)",
+    "script": "test_expense_v22_svm.py on V21 ELF 1645494a (negative control)",
     "result": "failed as expected: fee-quote cannot pay itself unexpectedly succeeded"
   },
   {
+    "script": "test_policy_v22_svm.py depth/closure on previous V22 ELF 6af0f12b (negative control)",
+    "result": "failed as expected: second 100 HELI release unexpectedly succeeded / post-closure allocation rejected"
+  },
+  {
+    "script": "reviews/v21-recheck/check_remaining.py expense|depth|closure on this ELF",
+    "result": "all three V21 reproductions now fail: ExpenseDestination, Market guard, post-closure allocation succeeds"
+  },
+  {
     "script": "clean rebuild",
-    "binary_sha256": "6af0f12b51a4d651a25e16a549e8a844fe36f08880d9bf2167fa7eb93bc8eabb"
+    "binary_sha256": "44ab14e46a2c80e9b437c4e41a8046c89203ae7c22139d2e5bd043c5ef4f9f42"
   }
 ]
