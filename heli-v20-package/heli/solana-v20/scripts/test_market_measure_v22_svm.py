@@ -2,9 +2,10 @@
 Fresh local LiteSVM ledger, synthetic quote/keys; no public transactions.
 1. Minimum quote depth code floor lowered from 5,000 to 1,000 quote units.
 2. The project's own Manifest seats never count toward the reference price or depth.
-3. Crash exception: with no reference AND outside bids below the minimum depth, reserve-funded bids are
-   allowed at most at 95% of the last outside reference (<= 30 days old, else the opening auction price),
-   capped at 10% of the project quote reserve per calendar month.
+3. Crash exception: with no reference AND outside bids recorded below the minimum depth for 24 hours,
+   reserve-funded bids are allowed at most at 95% of the last outside reference (<= 30 days old, else the
+   opening auction price), capped at 10% of the project quote reserve over any rolling 30 days.
+4. Dust bids cannot crowd out real demand in the measurement.
 """
 import json,struct
 import svm_fixture as t
@@ -60,27 +61,43 @@ def last_sample():p=pol();return p['prices'][(p['next']-1)%24]
 clearing=t.read(t.defaults['auction'],'OpeningAuction')['clearingPrice']
 t.check('opening auction cleared at 100 quote atoms per HELI',clearing==100)
 
-# --- Crash exception without any outside buyers and without any reference (month 1).
-T=t.start+3600;t.clock(T)
+# --- Crash exception needs outside demand recorded below the minimum for 24 hours (no reference yet).
+T0=t.start+3600;t.clock(T0)
+mgmt(t.U,True,95,-6,reject=BAND,label='no crash bid before shallowness is recorded by an observation')
+t.call('observe_release_market',label='observation records a shallow market (no outside buyers)')
+t.check('shallow market recorded, no price sample',pol()['shallowSince']==T0 and pol()['count']==0)
+mgmt(t.U,True,95,-6,reject=BAND,label='crash bid rejected before 24 hours of recorded shallowness')
+t.clock(T0+86_399);mgmt(t.U,True,95,-6,reject=BAND,label='crash bid rejected one second before 24 hours')
+T1=T0+86_400;t.clock(T1)
 mgmt(t.U,True,96,-6,reject=BAND,label='crash bid above 95% of the auction price rejected')
-cap=t.amount(t.defaults['sale_proceeds'])//10
-mgmt(60_000*t.U,True,95,-6,label='crash bid at 95% of the auction price accepted (no outside buyers)')
-t.check('crash month opened with a 10% reserve cap',book()['crashBase']//10==cap and book()['crashSpent']==5_700_000)
-mgmt(4_000*t.U,True,95,-6,reject='Quota exceeded',label='crash bids are capped at 10% of the reserve per month')
-mgmt(3_000*t.U,True,95,-6,label='crash bid within the monthly cap accepted')
-# Project bids alone cannot create a reference price.
-t.clock(T+3600);t.call('observe_release_market',label='arm observation')
-t.clock(T+2*3600);t.call('observe_release_market',reject='Market guard',label='project-only bids give no price or depth')
+P=t.amount(t.defaults['sale_proceeds'])
+mgmt(60_000*t.U,True,95,-6,label='crash bid at 95% of the auction price accepted after 24 hours')
+t.check('crash spend recorded in the rolling 30-day window',sum(book()['crashDays'])==5_700_000)
+mgmt(20_000*t.U,True,95,-6,reject='Quota exceeded',label='crash spending capped at 10% of the reserve over 30 days')
+mgmt(9_000*t.U,True,95,-6,label='crash bid within the 30-day cap accepted')
+t.clock(t.boundary(1)+3600)
+t.check('a new calendar month has started',t.boundary(1)<T1+30*86400)
+mgmt(2_000*t.U,True,95,-6,reject='Quota exceeded',label='a new calendar month does not reset the rolling 30-day budget')
+T2=T1+31*86400;t.clock(T2)
+mgmt(2_000*t.U,True,95,-6,label='after 30 days the window has rolled and crash bidding resumes')
+t.check('old spending dropped out of the window',sum(book()['crashDays'])==190_000)
 
-# --- An outside buyer closes the crash exception.
+# --- An outside buyer closes the exception and resets the shallowness record.
 funded(t.bob,2_000*t.U);order(t.bob,1_500*t.U,True)
 mgmt(t.U,True,95,-6,reject=BAND,label='no crash exception while outside bids meet the minimum depth')
+t.clock(T2+3600);t.call('observe_release_market',label='observation with outside demand clears the shallowness record')
+t.check('shallowness record cleared',pol()['shallowSince']==0)
 
-# --- Reference from outside demand only (month 2).
-R=t.boundary(1)+3600;t.clock(R);t.call('observe_release_market',label='re-arm observation')
+# --- Dust cannot crowd out real demand (review finding B1/M1): 100 one-atom bids above the real bid.
+funded(t.outsider,10*t.U)
+for k in range(100):order(t.outsider,1,True,mantissa=11,exponent=-1)
+t.check('100 dust bids rest above the outside bid',best(160)[0]==1_100_000)
+
+# --- Reference from outside demand only.
+R=T2+2*3600;t.clock(R);t.call('observe_release_market',label='re-arm observation')
 for h in range(1,25):t.clock(R+h*3600);t.call('observe_release_market')
 from release_ref import reference
-t.check('outside reference is 1.0',reference(pol(),R+24*3600)==1_000_000)
+t.check('100 dust bids do not block the reference; it is the outside 1.0',pol()['count']==24 and reference(pol(),R+24*3600)==1_000_000)
 mgmt(10*t.U,True,105,-2,label='management bid at 105% of reference')
 t.clock(R+25*3600);t.call('observe_release_market')
 t.clock(R+26*3600);t.call('observe_release_market')
@@ -91,11 +108,14 @@ p=pol();t.check('last outside reference remembered',p['lastReference']==1_000_00
 t.clock(R+30*3600)
 mgmt(t.U,True,95,-2,reject=BAND,label='stale reference with outside buyers: no crash exception')
 
-# --- Outside buyers disappear: crash exception at 95% of the last outside reference.
+# --- Outside buyers removed by a sale into them (e.g. by the manager): no immediate crash bid (finding B4).
 seat(t.alice);deposit(t.alice,f['wallet'],bv,t.defaults['mint'],1_600*t.U);order(t.alice,1_600*t.U,False)
+mgmt(t.U,True,95,-2,reject=BAND,label='a sale that empties outside demand cannot open the crash exception on the spot')
+S0=R+31*3600;t.clock(S0);t.call('observe_release_market',label='observation records the new shallow market')
+t.clock(S0+86_399);mgmt(t.U,True,95,-2,reject=BAND,label='still rejected before 24 hours of recorded shallowness')
+t.clock(S0+86_400)
 mgmt(t.U,True,96,-2,reject=BAND,label='crash bid above 95% of the last outside reference rejected')
-mgmt(t.U,True,95,-2,label='crash bid at 95% of the last outside reference accepted')
-t.check('new month starts a new crash cap',book()['crashMonth']==2 and book()['crashSpent']==950_000)
+mgmt(t.U,True,95,-2,label='after 24 hours: crash bid at 95% of the last outside reference accepted')
 
 # --- Last reference older than 30 days: ceiling falls back to the opening auction price.
 t.clock(p['lastReferenceTime']+31*86400)

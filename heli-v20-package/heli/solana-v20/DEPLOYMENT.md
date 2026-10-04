@@ -66,7 +66,9 @@ Sonradan yönetici veya doğrulayıcı değiştirildiğinde keeper bilinçli ola
 
 - **Asgari derinlik:** `initialize_release_policy` için kod alt sınırı **1.000 quote birimi** (ör. 1.000 USDC). Gerçek değer kurulumda pazara göre seçilir ve sonra değişmez. Bu, bekleyen alış emirlerinin anlık toplamıdır; işlem hacmi değildir.
 - **Projenin kendi emirleri sayılmaz:** Yönetim, proje envanteri ve release satış hesaplarının Manifest koltuklarındaki alış emirleri referans fiyata ve derinliğe katılmaz. Not: kişisel cüzdanlardan verilen emirleri kod ayırt edemez; buna karşı koruma asgari derinlik ve şeffaflıktır.
-- **Çöküş istisnası:** Geçerli referans yok **ve** o anda dışarıdaki alış emirleri asgari derinliğin altındaysa, rezervle alış emri verilebilir. Tavan: son dış referansın %95'i (en fazla 30 gün eski; değilse açılış ihale fiyatının %95'i). Aylık sınır: ayın ilk çöküş alımındaki proje quote rezervinin %10'u. Gözlemler (keeper) durdurulup referans eskitilse bile dışarıda alıcı varsa istisna açılmaz.
+- **Çöküş istisnası (inceleme sonrası, sahibin kararı):** Dışarıdaki tüm canlı alış emirleri asgari derinliğin altındaysa bunu bir gözlem (`observe_release_market`) kaydeder (`shallow_since`); dış alış yeterli olunca kayıt sıfırlanır. Rezervle alış ancak bu durum **en az 24 saattir** kayıtlıysa **ve** emir anında da dış alış sığsa açılır. Tavan: son dış referansın %95'i (en fazla 30 gün eski; değilse açılış ihale fiyatının %95'i). Sınır: **kayan son 30 günde** çöküş alımlarının toplamı, (proje quote rezervi + bu 30 gündeki çöküş harcaması) toplamının %10'unu aşamaz; takvim ayı başında sıfırlanmaz.
+- **Gözlem güvenliği:** Kitapta en fazla 192 emir düğümü taranır (yaklaşık 220 bin CU'ya kadar). Asgari derinliğin binde birinden küçük "toz" emirler atlanır ama tarama sınırına sayılır. Tarama 192 düğümde biterse kitap "sığ" sayılmaz (çöküş istisnası açılmaz); okunan kısım asgari derinliğe ulaşmadıysa gözlem başarısız olur ve örnek alınmaz. %98 bant derinliği yalnız okunan kısmı sayar, bu da sınırı yalnız düşürebilir. Kalan risk: birinin binlerce toz-üstü emirle kitabı doldurması gözlemi geciktirebilir; bu emirler gerçek para bağlar.
+- **Kapanıştan sonra gözlem:** 60. yıl kapanışından sonra da fiyat gözlemleri sürer (keeper yalnız gözlem planlar); yönetim emirleri kapalıdır.
 
 ## Ekip işlem taahhüdü (sahibin kararı, 4 Ekim 2026)
 
@@ -74,7 +76,7 @@ Kurucu ve ekip HELI pazarında yalnız **ilan edilmiş** cüzdanlardan işlem ya
 
 ## Yönetim release sınırı (V22, sahibin kararı, bulgu 4-B)
 
-O ayki yönetim release'leri ve doğrudan release satışlarının **toplamı** (`epoch.founder`) çağrı anındaki alış derinliğinin %2'sini (`depth/50`) aşamaz. Aylık bütçe sınırları (kapasitenin %20'si, insan bütçesinin ¼'ü) ayrıca geçerlidir. İnce pazarda payın kullanılmayan kısmı o ay kullanılamaz.
+O ayki yönetim release'leri ve doğrudan release satışlarının **toplamı** (`epoch.founder`) dış alış derinliğinin %2'sini (`depth/50`) aşamaz. Derinlik (inceleme sonrası, sahibin kararı): en az bir saattir bekleyen (`sequence_mark` öncesi), projeye ait olmayan, fiyatı referansın **%98'inden düşük olmayan** tüm alış emirleri. Doğrudan release satışı da fiyat ve derinliği yalnız bir saattir bekleyen emirlerden ölçer. Aylık bütçe sınırları (kapasitenin %20'si, insan bütçesinin ¼'ü) ayrıca geçerlidir. İnce pazarda payın kullanılmayan kısmı o ay kullanılamaz.
 
 ## Ücretsiz pay yok (sahibin kararı, 4 Ekim 2026)
 

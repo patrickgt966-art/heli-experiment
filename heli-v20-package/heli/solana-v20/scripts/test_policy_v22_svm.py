@@ -10,6 +10,12 @@ Usage: python test_policy_v22_svm.py depth|closure
 import sys,json,struct,pathlib
 here=pathlib.Path(__file__).parent;sys.path.insert(0,str(here))
 mode=sys.argv[1]
+def outside_bid(ns,owner,amount,mantissa,exponent):
+ t=ns['t'];q=ns['q'];w=t.token_account(q,owner.pubkey())
+ t.send('synthetic quote',[t.Instruction(t.TOKEN,b'\x07'+struct.pack('<Q',20_000*t.U),[t.meta(q,True),t.meta(w,True),t.meta(t.admin.pubkey(),False,True)])])
+ try:ns['seat'](owner)
+ except AssertionError:pass
+ ns['deposit'](owner,w,ns['qv'],q,20_000*t.U);ns['order'](owner,amount,True,mantissa=mantissa,exponent=exponent)
 source=(here/'test_market_release_svm.py').read_text()
 body=source.split("result={'source_sha256'",1)[0]
 if mode=='depth':
@@ -30,10 +36,20 @@ if mode=='depth':
  t.check('month total equals 2% of current depth',founder()==limit)
  t.call('management_release',{'amount':1},act,reject='Market guard',label='no further management release this month')
  t.call('execute_release_sale',{'kind':3,'amount':t.U},rs,reject='Market guard',label='direct release sale shares the same month total')
+ # Owner decision (V22): the 2% applies to all rested outside bids down to 98% of the reference, not just
+ # the first minimum-depth slice. A bid at 0.99 raises the limit once it has rested; one at 0.97 does not.
+ outside_bid(ns,t.outsider,5_000*t.U,99,-2);outside_bid(ns,t.alice,3_000*t.U,97,-2)
+ t.call('management_release',{'amount':1},act,reject='Market guard',label='fresh outside bids do not count before they have rested')
+ now=t.svm.get_clock().unix_timestamp;t.clock(now+3600);t.call('observe_release_market',label='observation marks the new bids as rested')
+ band=depth()+5_000*t.U;left=band//50-founder()
+ t.check('rested outside bids at 0.99 raise the monthly limit; the 0.97 bid is outside the band',left>0 and left<3_000*t.U//50+5_000*t.U//50)
+ t.call('management_release',{'amount':left+1},act,reject='Market guard',label='one atom above 2% of the outside band is rejected')
+ t.call('management_release',{'amount':left},act,label='release up to 2% of all outside bids within 98% of the reference')
+ t.check('month total equals 2% of the outside band',founder()==band//50)
  t.check('monthly management budget still respected',founder()<=t.read(ea['epoch'],'Epoch')['founderBudget'])
  t.clock(t.boundary(13));ea13=ns['epoch_accounts'](t,13);t.call('open_epoch',{'number':13},ea13);t.call('settle',acc=ns['ma']|ea13)
  t.check('new month starts with an empty counter',t.read(ea13['epoch'],'Epoch')['founder']==0)
- extra={'depth_atoms':depth(),'month_total_atoms':limit}
+ extra={'depth_atoms':depth(),'month_total_atoms':limit,'band_month_total_atoms':band//50}
 elif mode=='closure':
  setup="""
 fee={'fee_base':t.pda(b'fee-base'),'fee_quote':t.pda(b'fee-quote'),'operations':t.pda(b'operations'),'quote_mint':q,'sale_proceeds':t.defaults['sale_proceeds']}
@@ -65,6 +81,15 @@ t.call('initialize_fee_vaults',{'monthly_cap':50_000,'reserve':0},fee)
  t.check('expense month keeps counting after the horizon',t.read(fee['operations'],'Operations')['window']>720)
  t.call('management_order',{'amount':t.U,'base_deposit':t.U,'price_mantissa':10,'price_exponent':0,'is_bid':False},act,reject='Invalid state',label='management orders stay closed after closure (option B, not C)')
  t.check('no new supply after closure',t.supply()==supply and t.cfg()['stocks']==[0,0,0,0])
+ # Owner decision (V22, review finding B2): price observations continue after the close so the remaining
+ # inventory is priced against current outside demand, not the 60-year-old auction price.
+ outside_bid(ns,t.outsider,6_000*t.U,1,0)
+ C=t.svm.get_clock().unix_timestamp+3600;t.clock(C);t.call('observe_release_market',label='price observation still runs after the close')
+ for h in range(1,25):t.clock(C+h*3600);t.call('observe_release_market')
+ from release_ref import reference
+ t.check('post-closure reference from current outside demand',reference(t.read(t.defaults['policy'],'ReleasePolicy'),C+24*3600)==1_000_000)
+ t.call('place_project_ask',{'amount':t.U,'price_mantissa':94,'price_exponent':-2},reject='Order price outside the permitted band',label='post-closure ask below 95% of the current reference rejected')
+ t.call('place_project_ask',{'amount':t.U,'price_mantissa':95,'price_exponent':-2},label='post-closure ask at 95% of the current reference accepted')
  extra={'post_closure_allocated_atoms':proceeds,'post_closure_expense_atoms':40_000}
 else:raise SystemExit('mode: depth|closure')
 result={'mode':mode,'source_sha256':t.actual_source,'binary_sha256':t.actual_binary,'checks_and_transactions':len(t.checks),'all_passed':True,**extra,

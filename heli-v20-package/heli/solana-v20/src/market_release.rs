@@ -1,4 +1,4 @@
-//! Monthly sale inventory: only the separate initial 1M allocation is free.
+//! Monthly sale inventory. No tokens are given away; released inventory is sold to buyers.
 //! Vault 0 and Epoch.human_budget are legacy layout names, not human entitlements.
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint,Token,TokenAccount};
