@@ -5,7 +5,7 @@ Aşağıdaki metni Codex'e yapıştırın. Depo herkese açık: https://github.c
 ```text
 Görevin: HELI V21 adlı deneysel bir Solana token projesinin bağımsız ve adversaryal incelemesi. Yanıtını Türkçe ver.
 
-Kaynak: GitHub deposu patrickgt966-art/heli-experiment, etiket "heli-v21"
+Kaynak: GitHub deposu patrickgt966-art/heli-experiment, commit bd44293
 (dal: claude/heli-v20-token-review-6gocpn). Önce şunları oku:
 - heli-v20-package/V21_DURUM.md (V21 özeti, hash'ler, testler, açık konular)
 - reviews/HELI_V20_BAGIMSIZ_INCELEME_2026-10-04.md (önceki inceleme ve "Düzeltme durumu" tablosu)
@@ -39,4 +39,4 @@ Kurallar:
 ```
 
 Kaynağı indirilebilir dosya olarak vermek isterseniz:
-https://github.com/patrickgt966-art/heli-experiment/archive/refs/tags/heli-v21.zip
+https://github.com/patrickgt966-art/heli-experiment/archive/bd44293.zip

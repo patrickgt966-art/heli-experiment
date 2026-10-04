@@ -5,7 +5,7 @@ Tarih: 4 Ekim 2026. V21, V20 inceleme paketinin üzerine yapılan bağımsız in
 **Bu bir güvenlik denetimi değildir.** Program hiçbir ağa (Devnet/mainnet) dağıtılmadı ve bağımsız denetimden geçmedi.
 
 - GitHub dalı: `claude/heli-v20-token-review-6gocpn`
-- Etiket: `heli-v21`
+- V21 anlık görüntüsü: commit `bd44293` (kalıcı link: https://github.com/patrickgt966-art/heli-experiment/tree/bd44293 , ZIP: https://github.com/patrickgt966-art/heli-experiment/archive/bd44293.zip). Bu ortam etiket gönderemediği için etiket yerine commit kullanılıyor. İsterseniz GitHub'da Releases → Draft a new release ile bu commit'e `heli-v21` etiketi verebilirsiniz.
 - V20 başlangıç hali: commit `c9176d5`. Değiştirilmemiş ZIP içeriği; aradaki fark GitHub'da satır satır görülebilir.
 
 ## Program kimliği
