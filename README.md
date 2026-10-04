@@ -29,6 +29,7 @@ Website: https://heli-experiment.pages.dev · Full rules: [`heli-v20-package/hel
 - Sale revenue returns to the project reserve. Expenses wait seven days, can be cancelled, and can never be paid back into project accounts. After the 60-year close, revenue can still pay expenses under the same limits.
 - An administrative pause halts sales, treasury operations and expenses, but never the monthly release rule.
 - An offline recovery key can replace a lost administrator key after seven days.
+- Team trading commitment: the founder and team trade HELI only from publicly declared wallets, never from undisclosed accounts. Team and any market-maker wallet addresses will be published before launch. (The program cannot tell personal wallets apart, so this is a public commitment, not a code rule.)
 
 A project reserve is not a guaranteed redemption backing. HELI makes no claim of guaranteed price, returns or liquidity.
 
