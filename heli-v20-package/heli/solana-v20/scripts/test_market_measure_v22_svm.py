@@ -15,7 +15,7 @@ import json,struct
 import svm_fixture as t
 from bootstrap_v15 import bootstrap,epoch_accounts
 
-f=bootstrap(t,1_000_000,with_policy=True,min_depth=1000,reject_depth=999*t.U)
+f=bootstrap(t,1_000_000,with_policy=True,min_depth=1000,reject_depth=249*t.U)
 t.check('minimum depth of exactly 1,000 quote units accepted',t.read(t.defaults['policy'],'ReleasePolicy')['minimumQuoteDepth']==1000*t.U)
 
 t.check('90M genesis includes 70M market reserve and 15M management',t.cfg()['stocks']==[70_000_000*t.U,0,0,15_000_000*t.U] and t.supply()==90_000_000*t.U)
@@ -32,8 +32,11 @@ t.defaults['release_reserve']=t.defaults['human']
 ma={'management_book':t.pda(b'management-book'),'management_trader':t.pda(b'management-trader'),'management_base':t.pda(b'management-base'),'management_quote':t.pda(b'management-quote'),'project_quote':t.defaults['sale_proceeds'],'management_stock':t.defaults['founder']}
 t.call('create_management_base',acc=ma);t.call('create_management_quote',acc=ma)
 t.send('TEST quote to project reserve',[t.Instruction(t.TOKEN,b'\x07'+struct.pack('<Q',2000*t.U),[t.meta(t.defaults['quote_mint'],True),t.meta(t.defaults['sale_proceeds'],True),t.meta(t.admin.pubkey(),False,True)])])
-t.call('initialize_management',{'quote_floor':999*t.U,'rent_lamports':10_000_000},ma,reject='Quota',label='project quote floor below 1,000 units rejected')
-t.call('initialize_management',{'quote_floor':1000*t.U,'rent_lamports':10_000_000},ma)
+fee={'fee_base':t.pda(b'fee-base'),'fee_quote':t.pda(b'fee-quote'),'operations':t.pda(b'operations'),'quote_mint':t.defaults['quote_mint'],'sale_proceeds':t.defaults['sale_proceeds']}
+t.call('create_fee_base',acc=fee);t.call('create_fee_quote',acc=fee)
+t.call('initialize_fee_vaults',{'monthly_cap':10**15,'reserve':0,'project_floor':119*t.U},fee,reject='Quota',label='project floor below one year of fixed cost (120 units) rejected')
+t.call('initialize_fee_vaults',{'monthly_cap':10**15,'reserve':0,'project_floor':1000*t.U},fee)
+t.call('initialize_management',{'rent_lamports':10_000_000},ma)
 ea=epoch_accounts(t,1);t.call('open_epoch',{'number':1},ea);act=ma|ea
 t.call('management_release',{'amount':t.U},act,reject='calendar',label='management cannot release in first twelve months')
 t.call('management_fund_quote',{'amount':t.U},act|{'admin':t.outsider.pubkey()},reject='has one',label='outsider cannot use project reserve')

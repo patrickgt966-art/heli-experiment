@@ -69,7 +69,7 @@ t.removed('issue_credential','no credential can be issued with any verifier (ins
 # Defensive cancel: the recovery key stops an expense written with a compromised admin key.
 q=t.defaults['quote_mint']
 fee={'fee_base':t.pda(b'fee-base'),'fee_quote':t.pda(b'fee-quote'),'operations':t.pda(b'operations'),'quote_mint':q,'admin':a3.pubkey(),'payer':a3.pubkey()}
-t.call('create_fee_base',acc=fee);t.call('create_fee_quote',acc=fee);t.call('initialize_fee_vaults',{'monthly_cap':50_000,'reserve':0},fee)
+t.call('create_fee_base',acc=fee);t.call('create_fee_quote',acc=fee);t.call('initialize_fee_vaults',{'monthly_cap':50_000,'reserve':0,'project_floor':120*t.U},fee)
 t.removed('allocate_auction_proceeds','the reserve is not moved ahead of an expense')
 loot=t.token_account(q,thief.pubkey());e={'expense':t.pda(b'expense',struct.pack('<Q',0)),'destination':loot,'proposer':a3.pubkey()}|fee
 t.call('propose_expense',{'nonce':0,'amount':10_000,'purpose':[9]*32},e)

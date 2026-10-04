@@ -9,7 +9,7 @@ f=bootstrap(t,1000)
 q=t.defaults['quote_mint']
 fee={'fee_base':t.pda(b'fee-base'),'fee_quote':t.pda(b'fee-quote'),'operations':t.pda(b'operations'),'quote_mint':q,'sale_proceeds':t.defaults['sale_proceeds']}
 t.call('create_fee_base',acc=fee);t.call('create_fee_quote',acc=fee)
-t.call('initialize_fee_vaults',{'monthly_cap':50_000,'reserve':0},fee)
+t.call('initialize_fee_vaults',{'monthly_cap':50_000,'reserve':0,'project_floor':120*t.U},fee)
 t.removed('allocate_auction_proceeds','the reserve is not moved ahead of an expense')
 private=t.token_account(q,t.admin.pubkey())
 def expense(nonce):return {'expense':t.pda(b'expense',struct.pack('<Q',nonce)),'destination':private,'proposer':t.admin.pubkey()}|fee
