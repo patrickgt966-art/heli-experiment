@@ -1,6 +1,6 @@
 const pages = [...document.querySelectorAll('[data-page]')];
 const navLinks = [...document.querySelectorAll('[data-nav]')];
-const titles = { home: 'HELI · How should money begin?', allocation: 'Claim your free share · HELI', transparency: 'Transparency · HELI' };
+const titles = { home: 'HELI · Money that follows its rule', allocation: 'Initial distribution · HELI', transparency: 'Transparency · HELI' };
 const legacy = { ana: 'home', basvuru: 'allocation', seffaflik: 'transparency' };
 function route() {
   const raw = window.location.hash.slice(1);
@@ -35,8 +35,8 @@ function calculate() {
   output.textContent = (cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD';
   note.textContent = 'Assuming the full free allowance is available for each check.';
 }
-checks.addEventListener('input', calculate);
-calculate();
+if (checks) checks.addEventListener('input', calculate);
+if (checks) calculate();
 
 const yearSlider = document.getElementById('supply-year');
 const point = year => ({x: 20 + year / 60 * 560, y: 215 - (5 * 18 ** (year / 60)) / 90 * 195});
@@ -59,10 +59,9 @@ yearSlider.addEventListener('input', exploreSupply);
 exploreSupply();
 
 const allocationDetails = {
-  human: { kicker: 'MONTHLY MARKET SUPPLY', title: 'Market Release Reserve', amount: '70M', share: '77.78%', copy: 'This locked reserve releases tokens into sale inventory after each month ends. Only the separate initial 1 million allocation is free; buyers purchase these monthly tokens on the market.', rule: 'The monthly cap is approximately 0.402247% of released, unburned supply, starting from a 5 million base. First cap: about 20,112 HELI. Management shares the same cap. Unsold inventory waits for buyers, with no monthly burn.' },
+  human: { kicker: 'MONTHLY MARKET SUPPLY', title: 'Market Release Reserve', amount: '70M', share: '77.78%', copy: 'This locked reserve releases tokens into sale inventory after each month ends. No tokens are given away; buyers purchase these monthly tokens on the market.', rule: 'The monthly cap is approximately 0.402247% of released, unburned supply, starting from a 5 million base. First cap: about 20,112 HELI. Management shares the same cap. Unsold inventory waits for buyers, with no monthly burn.' },
   treasury: { kicker: 'SALES & LIQUIDITY', title: 'Management Treasury', amount: '15M', share: '16.67%', copy: 'One manager can sell released treasury tokens and place funded buy and sell orders within a price band: sales at no less than 95% and reserve-funded bids at no more than 105% of the 24-hour market reference; orders expire after about 24 hours. Sale proceeds return to the project reserve.', rule: 'New treasury releases are locked for the first 12 months. Sales and new liquidity inventory then share one capped release budget, at most 2% of resting bid depth per month.' },
-  market: { kicker: 'INITIAL MARKET INVENTORY', title: 'Initial market', amount: '4M', share: '4.44%', copy: 'Allocated to market purchases at launch. Funded auction bids establish the opening price; matching buy and sell orders determine subsequent prices.', rule: 'There is no HELI purchase limit per buyer. Unsold inventory waits for buyers; an allocation does not mean it has already been sold.' },
-  free: { kicker: 'EQUAL INITIAL ENTITLEMENT', title: 'Initial free allocation', amount: '1M', share: '1.11%', copy: 'Up to 1,000 verified people can each receive 1,000 HELI once. This is the only free token allocation; monthly market releases are sold to buyers.', rule: 'After six months, unassigned tokens move to sale inventory to await buyers. Earned but unclaimed entitlements remain protected.' }
+  market: { kicker: 'OPENING AUCTION AND MARKET', title: 'Opening auction and market', amount: '5M', share: '5.56%', copy: 'The whole 5 million launch base. Funded auction bids establish the opening price; matching buy and sell orders determine subsequent prices. There is no free allocation, presale or private round.', rule: 'There is no HELI purchase limit per buyer. Unsold inventory waits for buyers; an allocation does not mean it has already been sold.' },
 };
 function selectAllocation(key) {
   const item = allocationDetails[key];

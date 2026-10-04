@@ -58,15 +58,9 @@ t.check('cancellation returns working HELI without restocking locked allocation'
 private=t.token_account(q,t.admin.pubkey())
 t.call('management_withdraw',{'amount':t.U,'is_base':False},act|{'project_quote':private},reject='seeds',label='management cash cannot be redirected to personal wallet')
 
-# Initial allocation remains the only free entitlement.
-t.clock(t.start)
-launch=f['identity']|{'receipt':t.pda(b'launch-receipt',bytes(f['identity']['credential']))}
-t.call('enroll_launch',acc=launch)
+# Owner decision (V22): no free initial allocation; the whole 5M launch base goes through the auction and market.
 t.clock(t.start+7*t.DAY)
-initial_wallet=t.amount(f['wallet'])
-t.call('claim_launch',acc=launch)
-t.check('only initial entitlement gives exactly 1000 free HELI',t.amount(f['wallet'])==initial_wallet+1000*t.U)
-t.call('claim_launch',acc=launch,reject='calendar',label='initial free entitlement cannot be claimed twice')
+t.check('no free allocation stock at genesis',t.amount(t.defaults['launch'])==0 and t.cfg()['launchRemaining']==0 and t.cfg()['launchFinalized'] is True)
 first_cap=None
 for n in range(1,13):
  ea=epoch_accounts(t,n);t.clock(t.boundary(n-1))
@@ -75,7 +69,7 @@ for n in range(1,13):
  if n==1:
   t.call('settle',acc=monthly,reject='calendar',label='monthly unlock cannot occur before month end')
   ac=f['identity']|ea|{'receipt':t.pda(b'receipt',bytes(ea['epoch']),bytes(f['identity']['credential']))}
-  t.call('enroll',acc=ac,reject='Monthly free dividends are disabled',label='monthly free distribution explicitly rejected')
+  t.call('enroll',acc=ac,reject='AccountNotInitialized',label='monthly free distribution impossible: no identity credential can exist')
   # Earlier rejection does not leave a token entitlement behind.
   t.check('no monthly human receipt created',t.svm.get_account(ac['receipt']) is None)
   t.check('no monthly claim/reward SPL accounts created',t.svm.get_account(ea['claim_vault']) is None and t.svm.get_account(ea['reward_vault']) is None)
@@ -97,9 +91,7 @@ for n in range(1,13):
   t.call('settle',acc=monthly,reject='calendar',label='same monthly unlock cannot be replayed')
  if n==2:t.check('next monthly base includes actual prior unlock',cap>first_cap and released==5_000_000*t.U+first_cap)
  if n==6:
-  reserved_before=t.amount(t.defaults['market_inventory'])
-  t.call('finalize_launch')
-  t.check('only unassigned initial free stock joins market at six months',t.cfg()['launchRemaining']==0 and t.amount(t.defaults['market_inventory'])==reserved_before+999_000*t.U)
+  t.call('finalize_launch',reject='There is no free initial allocation',label='no six-month free allocation reconciliation')
 act=ma|ea
 # An unlocked unsold order can be cancelled and re-offered without new release.
 inv_before=t.amount(t.defaults['market_inventory']);reserve_before=t.cfg()['stocks'][0];epoch_before=t.read(ea['epoch'],'Epoch')['humanBudget']

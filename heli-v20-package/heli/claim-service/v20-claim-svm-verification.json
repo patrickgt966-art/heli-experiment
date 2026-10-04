@@ -1,18 +1,12 @@
 {
-  "checkedDate": "2026-10-02",
-  "scope": "Actual V20 ELF in local LiteSVM; synthetic provider decision, ephemeral keys, no public network",
+  "checkedDate": "2026-10-04",
+  "scope": "Actual ELF in local LiteSVM; synthetic provider decision, ephemeral keys, no public network",
   "passed": true,
   "checks": [
-    "wallet-bound provider approval",
-    "native Ed25519 credential verification",
-    "sponsored registration with zero-SOL applicant",
-    "seven-day wait enforced on chain",
-    "exact 1000 HELI to wallet-owned ATA",
-    "confirmed receipt",
-    "duplicate claim blocked",
-    "second-wallet identity reuse blocked",
+    "wallet-bound provider approval still produces an attestation off chain",
+    "on-chain registration refused: there is no free initial allocation",
+    "no free HELI delivered",
     "applicant SOL remains zero"
   ],
-  "amountAtoms": "1000000000",
-  "programSourceHash": "9ceda6da760d595a3906a80af93038df9b29cdb41582c10cdb9325aac4602b9f"
+  "programSourceHash": "e1726b41d13899735bbecc774837942962ecae13a1ebcd2fae0620bdb8b0a9c3"
 }

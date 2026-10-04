@@ -1,6 +1,6 @@
 {
   "date": "2026-10-04",
-  "deploymentUrl": "https://4a070042.heli-experiment.pages.dev",
+  "deploymentUrl": "https://f44e2f6a.heli-experiment.pages.dev",
   "productionUrl": "https://heli-experiment.pages.dev",
   "branch": "main (Cloudflare Pages production)",
   "sourceCommit": "see git log (V22 rules text)",
@@ -15,12 +15,13 @@
     "heli-rules.txt"
   ],
   "verifiedFromOutside": {
-    "heliRules": "200, contains team trading commitment",
-    "index": "200, contains team trading commitment"
+    "index": "200, \"Money that follows its rule\"",
+    "heliRules": "200, \"There is no free allocation\"",
+    "apply": "old apply page removed; path falls back to the home page"
   },
-  "pilotOrigin": "https://practical-wallet-magnet-months.trycloudflare.com",
-  "pilotServerVersion": "previous claim-service (no CORS header; review fixes N1/H4/M5 not yet running)",
+  "pilotOrigin": null,
+  "pilotServerVersion": "archived (no free allocation)",
   "tokenDelivery": false,
-  "previousDeploymentUrl": "https://390e7d50.heli-experiment.pages.dev",
-  "change": "Team trading commitment: founder and team trade only from publicly declared wallets"
+  "previousDeploymentUrl": "https://4a070042.heli-experiment.pages.dev",
+  "change": "No free allocation: rules-first narrative (Friedman k-percent rule), 5M opening auction, claim/apply pages and identity cost calculator removed"
 }

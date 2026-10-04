@@ -1,6 +1,6 @@
 {
-  "source_sha256": "9ceda6da760d595a3906a80af93038df9b29cdb41582c10cdb9325aac4602b9f",
-  "binary_sha256": "d35b5917198c043184f67befcd702a7806d39a3de331e30aed62fc6132d09c40",
+  "source_sha256": "e1726b41d13899735bbecc774837942962ecae13a1ebcd2fae0620bdb8b0a9c3",
+  "binary_sha256": "e16495fcf257c2bb7927f0335d7d7d16cdba1c32e72eb8417c40d543204d0077",
   "checks_and_transactions": 96,
   "checks": [
     "allocate 82",
@@ -27,7 +27,7 @@
     "place_auction_bid",
     "finalize_auction",
     "claim_auction_bid",
-    "native test provider credential",
+    "free allocation disabled: provider credential rejected",
     "minimum depth of exactly 1,000 quote units accepted",
     "90M genesis includes 70M market reserve and 15M management",
     "no rewards or independent liquidity allocation",
