@@ -7,7 +7,9 @@ Fresh local LiteSVM ledger, synthetic quote/keys; no public transactions.
    opening auction price). Shallowness must be confirmed by observations at most two hours apart.
 4. Dust bids cannot crowd out real demand in the measurement.
 5. All reserve-funded bids (normal and crash) share one rolling 30-day cap of 10% of the project quote
-   reserve; cancelling a live bid gives back its unfilled part. The project quote floor is >= 1,000 units.
+   reserve balance; cancelling a live bid gives back its unfilled part. The project quote floor is >= 1,000 units.
+6. Dust at the 192-node scan limit can stall observations, but without a reference the sale floor stays at
+   95% of the last outside reference for 30 days, so stalling cannot lower it.
 """
 import json,struct
 import svm_fixture as t
@@ -89,9 +91,12 @@ A1=P*6//100//95;C1=A1*95
 mgmt(A1*t.U,True,95,-6,label='crash bid at 95% of the auction price accepted after 24 hours')
 t.check('crash spend recorded in the rolling 30-day window',window()==C1)
 mgmt(A1*t.U,True,95,-6,reject='Quota exceeded',label='bids capped at 10% of the reserve over 30 days')
-A3=((P+C1)//10-C1)//95
+A3=(P//10-C1)//95
 mgmt(A3*t.U,True,95,-6,label='crash bid within the 30-day cap accepted')
 t.check('window holds both crash bids',window()==C1+A3*95)
+W=C1+A3*95;A4=((P+W)//10-W)//95
+t.check('a bid fitting (reserve + window)/10 exists for the check below',A4>0 and W+A4*95>P//10)
+mgmt(A4*t.U,True,95,-6,reject='Quota exceeded',label='the window is not added to the base: the cap is a flat 10% of the reserve balance')
 keep_shallow(t.boundary(1)+3600)
 t.check('a new calendar month has started',t.boundary(1)<T1+30*86400)
 mgmt(A1*t.U,True,95,-6,reject='Quota exceeded',label='a new calendar month does not reset the rolling 30-day budget')
@@ -154,6 +159,44 @@ mgmt(t.U,True,95,-6,reject=BAND,label='crash bid rejected when the latest shallo
 observe_now(seen[0]+7201,label='observation after the gap')
 t.check('the gap restarted the 24-hour wait',pol()['shallowSince']==seen[0])
 mgmt(t.U,True,95,-6,reject=BAND,label='crash bid rejected right after the restart')
+
+# --- Dust at the scan limit (Grok finding 2): 191 skipped nodes ahead of the real bid still measure; 192 stall
+# the observation. With the reference stale, the sale floor stays at 95% of the last outside reference.
+def bid_nodes():  # (price per HELI, seat index, sequence) from the best bid downward
+ d=bytes(t.svm.get_account(m).data);w=lambda o:int.from_bytes(d[o:o+4],'little');NIL=2**32-1;out=[];i=w(160)
+ while i!=NIL:
+  at=256+i;v=d[at+16:at+80];out.append((int.from_bytes(v[0:16],'little')*t.U//10**18,int.from_bytes(v[32:36],'little'),int.from_bytes(v[24:32],'little')))
+  l=w(at)
+  if l!=NIL:
+   while w(256+l+4)!=NIL:l=w(256+l+4)
+   i=l
+  else:
+   c=i;p_=w(at+8)
+   while p_!=NIL and w(256+p_+4)!=c:c=p_;p_=w(256+p_+8)
+   i=p_
+ return out
+bw=t.token_account(q,t.bob.pubkey())
+t.send('synthetic quote',[t.Instruction(t.TOKEN,b'\x07'+struct.pack('<Q',2_000*t.U),[t.meta(q,True),t.meta(bw,True),t.meta(t.admin.pubkey(),False,True)])])
+deposit(t.bob,bw,qv,q,2_000*t.U);bob_seq=int.from_bytes(t.svm.get_account(m).data[144:152],'little');order(t.bob,1_500*t.U,True,mantissa=98,exponent=-2)
+D=seen[0]+3*3600;t.clock(D);t.call('observe_release_market',label='re-arm with a real outside bid at 0.98')
+for h in range(1,25):t.clock(D+h*3600);t.call('observe_release_market')
+t.check('reference at the outside 0.98',reference(pol(),D+24*3600)==980_000)
+ahead=next(k for k,(_,_,sq) in enumerate(bid_nodes()) if sq==bob_seq)
+for k in range(191-ahead):order(t.outsider,2,True,mantissa=99,exponent=-2)
+nodes=bid_nodes();t.check('exactly 191 bid nodes rest above the real bid',next(k for k,(_,_,sq) in enumerate(nodes) if sq==bob_seq)==191)
+t.clock(D+25*3600);t.call('observe_release_market',label='191 skipped nodes ahead: the real bid is still measured')
+t.check('sample still the outside 0.98',last_sample()==980_000)
+order(t.outsider,2,True,mantissa=99,exponent=-2)
+t.check('now 192 bid nodes rest above the real bid',next(k for k,(_,_,sq) in enumerate(bid_nodes()) if sq==bob_seq)==192)
+t.clock(D+26*3600);t.call('observe_release_market',reject='Market guard rejected',label='192 skipped nodes ahead: the observation stalls')
+t.clock(D+25*3600+3601)
+t.check('last outside reference remembered while observations stall',pol()['lastReference']==980_000)
+mgmt(t.U,True,1,0,reject=BAND,label='no live reference: a normal reserve bid at 1.0 (within 105% of 0.98) is rejected')
+ask(t.U,1,-4,reject=BAND,label='stalled reference: an ask at the opening auction price is rejected')
+ask(t.U,930,-3,reject=BAND,label='stalled reference: an ask below 95% of the last outside reference is rejected')
+ask(t.U,931,-3,label='stalled reference: an ask at 95% of the last outside reference is accepted')
+t.clock(pol()['lastReferenceTime']+30*86400+1)
+ask(t.U,1,-4,label='after 30 days without a reference the floor returns to the opening auction price')
 
 result={'source_sha256':t.actual_source,'binary_sha256':t.actual_binary,'checks_and_transactions':len(t.checks),'checks':t.checks,'all_passed':True,
  'scope':'Compiled ELF and Manifest v3.0.24 ELF in local LiteSVM, synthetic quote/keys; V22 market-measurement decisions only. Not a deployment or audit.'}
