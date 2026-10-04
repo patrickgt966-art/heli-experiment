@@ -17,13 +17,13 @@ Website: https://heli-experiment.pages.dev · Full rules: [`heli-v20-package/hel
 **Management Treasury and market**
 - No new treasury releases in the first 12 months. Afterward the treasury shares the monthly cap: at most 20% of monthly capacity and one quarter of releases outside the treasury.
 - All treasury releases in a month together may not exceed 2% of outside bids that rested at least an hour, priced no lower than 98% of the reference.
-- Prices come from a 24-hour reference built only from **outside** bids that rested at least an hour; the project's own orders never count. A reference needs at least 1,000 quote units of outside bids (the exact minimum is fixed at launch).
+- Prices come from a 24-hour reference built only from **outside** bids that rested at least an hour; the project's own orders never count. A reference needs a minimum of outside bids that is fixed at launch (at least 250 quote units).
 - Sales: at least 95% of the reference (without a live reference: at least 95% of the last outside reference if it is at most 30 days old, otherwise the opening auction price). Reserve-funded bids: at most 105% of the reference; without a reference only under the crash exception. Orders expire after about 24 hours.
-- All reserve-funded bids together, normal and crash, may not exceed 10% of the project quote reserve over any rolling 30 days; cancelling an unfilled bid gives its share back. At least 1,000 quote units of the reserve can never be moved to market orders.
+- All reserve-funded bids together, normal and crash, may not exceed 10% of the project quote reserve over any rolling 30 days; cancelling an unfilled bid gives its share back. A project floor, fixed after the opening auction and at least one year of the fixed technical cost (120 quote units), can never be moved to market orders.
 - Crash exception: if outside bids stay below the minimum depth for at least 24 hours, confirmed by observations no more than two hours apart, the reserve may still buy, at most at 95% of the last outside reference (or of the auction price if that reference is older than 30 days), within the same 10% rolling cap.
 
 **Treasury and keys**
-- Sale revenue returns to the project reserve. Expenses are paid straight from the project reserve when an approved expense is paid, never moved ahead of time. Sale revenue is 100% spendable; beyond it, reserve spending over any rolling 30 days is limited to a fixed technical floor of 10 quote units plus 25% a year of the reserve (25%/12 per 30 days), and the reserve keeps 1,000 quote units except for spending within that floor. Expenses wait seven days, can be cancelled by the administrator or the offline recovery key and can never be paid back into project accounts. After the 60-year close, revenue can still pay expenses under the same limits, and price observations continue.
+- Sale revenue returns to the project reserve. Expenses are paid straight from the project reserve when an approved expense is paid, never moved ahead of time. Sale revenue is 100% spendable; beyond it, reserve spending over any rolling 30 days is limited to a fixed technical floor of 10 quote units plus 25% a year of the reserve (25%/12 per 30 days), and the reserve keeps the project floor except for spending within that technical floor. Expenses wait seven days, can be cancelled by the administrator or the offline recovery key and can never be paid back into project accounts. After the 60-year close, revenue can still pay expenses under the same limits, and price observations continue.
 - An administrative pause halts sales, treasury operations and expenses, but never the monthly release rule.
 - An offline recovery key can replace a lost administrator key after seven days.
 - Until the audit the program is upgradeable. The administrator and the manager may be the same key; the pause has no time limit; the administrator or the offline recovery key can cancel a pending expense.
@@ -35,7 +35,7 @@ A project reserve is not a guaranteed redemption backing. HELI makes no claim of
 
 | Area | Status |
 |---|---|
-| Program (V22) | Built reproducibly (Agave 2.1.21); 0.995 MB. ELF SHA-256 `7676916ae706deaa14a972f55123155d5677aba7eb5043c755f4feae1032d66c`. |
+| Program (V22) | Built reproducibly (Agave 2.1.21); 0.996 MB. ELF SHA-256 `9c01e4783be8a17e97cdc710711c3c75d20768000a37a71f36a7360667282ab1`. |
 | Local tests | All 720 monthly periods and treasury, price, governance, expense and entitlement controls pass in a local Solana simulator (LiteSVM) with the real program and Manifest binaries; Node suite 113/113. Counts are overlapping local checks, not an audit. |
 | Free allocation | Removed by owner decision (4 October 2026). The earlier identity-verified free allocation and its live pilot tests are archived in `reviews/`; the program rejects those instructions. |
 | Website | Published on Cloudflare Pages with the V22 rules. |

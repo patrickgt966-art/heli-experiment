@@ -7,6 +7,9 @@ from pathlib import Path
 here=Path(__file__).resolve().parent
 src=(here/'test_market_measure_v22_svm.py').read_text(encoding='utf-8')
 head=src[:src.index('# --- Crash exception needs')]
+# Same setup, but at the code floor of the minimum depth (250 quote units) to show it is accepted.
+head=head.replace('min_depth=1000,reject_depth=249*t.U','min_depth=250,reject_depth=249*t.U').replace("'minimum depth of exactly 1,000 quote units accepted',t.read(t.defaults['policy'],'ReleasePolicy')['minimumQuoteDepth']==1000*t.U","'minimum depth of exactly 250 quote units accepted (code floor)',t.read(t.defaults['policy'],'ReleasePolicy')['minimumQuoteDepth']==250*t.U")
+assert 'min_depth=250' in head and 'exactly 250' in head
 ns={'__name__':'crash_record'};exec(compile(head,str(here/'test_market_measure_v22_svm.py'),'exec'),ns)
 t=ns['t'];q=ns['q'];m=ns['m'];qv=ns['qv'];bv=ns['bv'];f=ns['f'];pol=ns['pol']
 seat,deposit,order,funded=ns['seat'],ns['deposit'],ns['order'],ns['funded']

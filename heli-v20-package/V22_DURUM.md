@@ -4,8 +4,8 @@ Tarih: 4 Ekim 2026. V22 = Claude V21 + Codex kimlik karar sırası düzeltmesi (
 
 | | Değer |
 |---|---|
-| Kaynak SHA-256 | `411dd9a87da28c21fb29f4e4d811a10c06072998bfeabf99c637afcef7fb72ca` |
-| ELF SHA-256 | `7676916ae706deaa14a972f55123155d5677aba7eb5043c755f4feae1032d66c` |
+| Kaynak SHA-256 | `990c035e3fd3f3cf103e963d6ce91bd9dd744f31774bd5fec1ff54e5b408db32` |
+| ELF SHA-256 | `9c01e4783be8a17e97cdc710711c3c75d20768000a37a71f36a7360667282ab1` |
 | Derleme | `heli/solana-v20/scripts/build_local.sh` (Agave 2.1.21 / platform-tools v1.43) |
 
 Değişiklikler, kararlar, testler ve çalıştırılamayanlar: `reviews/v22/V22_DUZELTME_2026-10-04.md`.
@@ -17,6 +17,7 @@ Kısaca:
 - Sahibin kararları (pazar ölçümü): asgari derinlik alt sınırı 1.000; projenin kendi emirleri ölçüme girmez; çöküş istisnası (%95 tavan; dış alış ≥24 saat kayıtlı sığ; kayan 30 günde rezervin en fazla %10'u).
 - Bağımsız inceleme düzeltmeleri (bölüm 8): toz emir koruması (192 düğüm), %2 sınırı referansın %98'ine kadar tüm dış alışlar, kapanıştan sonra gözlem sürer, doğrudan satış taze emirleri saymaz. Açık: M4 (Manifest bağımlılığı, ~49. yıl slot alanı), L3.
 - Sahibin kararları (bölüm 9): tüm rezerv alışları (normal + çöküş) kayan 30 günde rezervin %10'u ile sınırlı; iptal edilen alışın dolmamış kısmı geri verilir; rezerv tabanı (`quote_floor`) en az 1.000; çöküş kaydı en fazla 2 saat arayla kesintisiz teyit ister. Tartışılacak: gider tavanına üst sınır.
+- Küçük başlangıç ayarları (bölüm 15): proje (rezerv) tabanı ihaleden sonra seçilir, en az 120 USDC (bir yıllık sabit teknik maliyet); fiyat ölçümünün asgari derinliği kodda en az 250 USDC (önce 1.000).
 - Bağımsız test ajanı ve temizlik (bölüm 14): rezerv tabanı gelir ödemelerinde de korunur, 30 günlük pencereler 31 gün dilimi, alıcı dönüşünü gösteren gözlem geri alınmaz, logo adresi alan adı kontrolü; kimlik, staking geçmişi, launch hesabı, 1/2 numaralı kasalar ve kullanılmayan alanlar silindi. ELF 995 KB (~6,93 SOL). Açık: kendi kendine satışla gelir aklama (A1/A2) ve yönetimin gözlemi durdurması (A8).
 - Token meta verisi (bölüm 13): `create_token_metadata` genesis'ten önce ad/sembol/logo adresini bir kez yazar; meta veri yoksa genesis çalışmaz. İsim henüz seçilmedi (testlerde yer tutucu).
 - Küçültme (bölüm 12): ölü talimatlar silindi, zincir üstü IDL kapalı, `opt-level="z"`; ELF 1,42 MB → 1,04 MB (yükleme kirası ~9,9 → ~7,2 SOL).

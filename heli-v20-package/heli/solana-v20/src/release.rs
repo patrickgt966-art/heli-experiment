@@ -16,7 +16,8 @@ pub struct InitializeReleasePolicy<'info>{
  #[account(mut)] pub admin:Signer<'info>,pub system_program:Program<'info,System>,
 }
 pub fn initialize(ctx:Context<InitializeReleasePolicy>,minimum_quote_depth:u64)->Result<()> {
- require!(!ctx.accounts.config.live&&minimum_quote_depth>=1000*10u64.pow(ctx.accounts.quote_mint.decimals as u32),ErrorCode::Quota);
+ // Owner decision (4 Oct 2026): code floor 250 quote units for a small market; the launch value is chosen at setup.
+ require!(!ctx.accounts.config.live&&minimum_quote_depth>=250*10u64.pow(ctx.accounts.quote_mint.decimals as u32),ErrorCode::Quota);
  ctx.accounts.policy.minimum_quote_depth=minimum_quote_depth;Ok(())
 }
 #[derive(Accounts)]

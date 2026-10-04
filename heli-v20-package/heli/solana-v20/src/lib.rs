@@ -89,16 +89,21 @@ pub mod heli_core_v20 {
  pub fn initialize_release_seat(ctx:Context<InitializeReleaseSeat>,kind:u8,rent_lamports:u64)->Result<()> {release::initialize_seat(ctx,kind,rent_lamports)}
  pub fn observe_release_market(ctx:Context<ObserveReleaseMarket>)->Result<()> {release::observe(ctx)}
  pub fn execute_release_sale(ctx:Context<ExecuteReleaseSale>,kind:u8,amount:u64)->Result<()> {release::execute(ctx,kind,amount)}
- pub fn initialize_management(ctx:Context<InitializeManagement>,quote_floor:u64,rent_lamports:u64)->Result<()> {management::initialize(ctx,quote_floor,rent_lamports)}
+ pub fn initialize_management(ctx:Context<InitializeManagement>,rent_lamports:u64)->Result<()> {management::initialize(ctx,rent_lamports)}
  pub fn management_fund_quote(ctx:Context<ManagementAction>,amount:u64)->Result<()> {management::fund_quote(ctx,amount)}
  pub fn management_release(ctx:Context<ManagementAction>,amount:u64)->Result<()> {management::release(ctx,amount)}
  pub fn management_order(ctx:Context<ManagementAction>,amount:u64,base_deposit:u64,price_mantissa:u32,price_exponent:i8,is_bid:bool)->Result<()> {management::order(ctx,amount,base_deposit,price_mantissa,price_exponent,is_bid)}
  pub fn management_cancel(ctx:Context<ManagementAction>,sequence:u64)->Result<()> {management::cancel(ctx,sequence)}
  pub fn management_withdraw(ctx:Context<ManagementAction>,amount:u64,is_base:bool)->Result<()> {management::withdraw(ctx,amount,is_base)}
- pub fn initialize_fee_vaults(ctx:Context<InitializeFeeVaults>,monthly_cap:u64,reserve:u64)->Result<()> {
+ // Owner decision (4 Oct 2026): `project_floor` is the untouchable part of the project quote reserve, chosen once
+ // after the opening auction from the amount actually raised (at least 120 quote units: one year of fixed cost). Reserve-funded bids and
+ // reserve-paid expenses may not take the reserve below it (expenses only within the 10-unit technical floor).
+ pub fn initialize_fee_vaults(ctx:Context<InitializeFeeVaults>,monthly_cap:u64,reserve:u64,project_floor:u64)->Result<()> {
   require!(ctx.accounts.config.live&&!ctx.accounts.config.closed&&monthly_cap>0,ErrorCode::State);
+  // At least one year of the fixed technical floor (12 x 10 quote units), so the system can keep running.
+  require!(project_floor>=120*10u64.pow(ctx.accounts.quote_mint.decimals as u32),ErrorCode::Quota);
   let o=&mut ctx.accounts.operations;o.monthly_cap=monthly_cap;o.reserve=reserve;
-  Ok(())
+  ctx.accounts.config.project_floor=project_floor;Ok(())
  }
  pub fn contribute_quote(ctx:Context<ContributeQuote>,amount:u64)->Result<()> {
   // Owner decision (V22, finding 3 option B): treasury funding stays open after the 60-year close; no new supply.
@@ -131,12 +136,12 @@ pub mod heli_core_v20 {
   // Owner decision (V22, expenses): the expense treasury (donations) pays first, keeping its own reserve;
   // the rest is drawn from the project reserve at payment time. Sale revenue is 100% spendable; beyond it,
   // reserve spending over any rolling 30 days is limited to a fixed technical floor (10 quote units) plus
-  // 25%/12 of the reserve excluding unspent revenue (25% a year). The reserve keeps 1,000 quote units
+  // 25%/12 of the reserve excluding unspent revenue (25% a year). The reserve keeps the project floor
   // except for spending within the fixed floor, so the keeper can keep running.
   let amount=a.expense.amount;let o=&mut a.operations;
   let from_fee=amount.min(a.fee_quote.amount.saturating_sub(o.reserve));let r=amount-from_fee;
   if r>0 {
-   let unit=10u64.pow(a.quote_mint.decimals as u32);let fixed=10*unit;let keep=1000*unit;
+   let unit=10u64.pow(a.quote_mint.decimals as u32);let fixed=10*unit;let keep=a.config.project_floor;
    let balance=a.sale_proceeds.amount;require!(balance>=r,ErrorCode::Collateral);
    let revenue_left=a.config.revenue_total.saturating_sub(o.revenue_spent);let from_revenue=r.min(revenue_left);let rest=r-from_revenue;let mut below_ok=false;
    if rest>0 {
@@ -151,7 +156,7 @@ pub mod heli_core_v20 {
     below_ok=from_revenue==0&&window<=fixed;
     let slot=o.out_day.rem_euclid(31) as usize;o.out_days[slot]=o.out_days[slot].checked_add(rest).ok_or(ErrorCode::Math)?;
    }
-   // The 1,000-unit minimum applies to every reserve payment, revenue included; only a payment made purely
+   // The project floor applies to every reserve payment, revenue included; only a payment made purely
    // within the fixed technical floor may go below it (review A3).
    require!(balance-r>=keep||below_ok,ErrorCode::Collateral);
    o.revenue_spent=o.revenue_spent.checked_add(from_revenue).ok_or(ErrorCode::Math)?;
@@ -240,7 +245,7 @@ fn treasury_owned(owner:&Pubkey,config:&Pubkey,program:&Pubkey)->bool {
  seeds.iter().any(|s|Pubkey::find_program_address(s,program).0==*owner)
 }
 fn outgoing<'a>(program:AccountInfo<'a>,from:AccountInfo<'a>,to:AccountInfo<'a>,authority:AccountInfo<'a>,bump:u8,amount:u64)->Result<()> {if amount>0 {let b=[bump];let seeds:&[&[u8]]=&[b"config",&b];token::transfer(CpiContext::new_with_signer(program,Transfer{from,to,authority},&[seeds]),amount)?;}Ok(())}
-#[account] pub struct Config {pub admin:Pubkey,pub mint:Pubkey,pub quote_mint:Pubkey,pub start:i64,pub stocks:[u64;4],pub bump:u8,pub vault_mask:u8,pub live:bool,pub closed:bool,pub paused:bool,pub last_settled_epoch:u16,pub market_remaining:u64,pub sale_authorized:u64,pub sale_total_sold:u64,pub manifest_market:Pubkey,pub manifest_trader_bump:u8,pub manifest_bound:bool,pub manifest_base_deposited:u64,pub manifest_base_returned:u64,pub manifest_quote_withdrawn:u64,pub revenue_total:u64,pub metadata_created:bool}
+#[account] pub struct Config {pub admin:Pubkey,pub mint:Pubkey,pub quote_mint:Pubkey,pub start:i64,pub stocks:[u64;4],pub bump:u8,pub vault_mask:u8,pub live:bool,pub closed:bool,pub paused:bool,pub last_settled_epoch:u16,pub market_remaining:u64,pub sale_authorized:u64,pub sale_total_sold:u64,pub manifest_market:Pubkey,pub manifest_trader_bump:u8,pub manifest_bound:bool,pub manifest_base_deposited:u64,pub manifest_base_returned:u64,pub manifest_quote_withdrawn:u64,pub revenue_total:u64,pub metadata_created:bool,pub project_floor:u64}
 #[account] pub struct Operations {pub monthly_cap:u64,pub reserve:u64,pub earned_total:u64,pub spent_total:u64,pub next_nonce:u64,pub donated_total:u64,pub sale_allocated_total:u64,pub revenue_spent:u64,pub out_day:i64,pub out_days:[u64;31]}
 #[account] pub struct Expense {pub destination:Pubkey,pub proposer:Pubkey,pub purpose:[u8;32],pub amount:u64,pub ready_at:i64,pub nonce:u64,pub paid:bool,pub cancelled:bool}
 #[event] pub struct ExpenseExecuted {pub nonce:u64,pub destination:Pubkey,pub amount:u64,pub purpose:[u8;32]}

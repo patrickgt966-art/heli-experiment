@@ -1550,10 +1550,6 @@
       ],
       "args": [
         {
-          "name": "quoteFloor",
-          "type": "u64"
-        },
-        {
           "name": "rentLamports",
           "type": "u64"
         }
@@ -2114,7 +2110,7 @@
       "accounts": [
         {
           "name": "config",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -2165,6 +2161,10 @@
         },
         {
           "name": "reserve",
+          "type": "u64"
+        },
+        {
+          "name": "projectFloor",
           "type": "u64"
         }
       ]
@@ -2751,10 +2751,6 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "quoteFloor",
-            "type": "u64"
-          },
-          {
             "name": "totalReleased",
             "type": "u64"
           },
@@ -2949,6 +2945,10 @@
           {
             "name": "metadataCreated",
             "type": "bool"
+          },
+          {
+            "name": "projectFloor",
+            "type": "u64"
           }
         ]
       }

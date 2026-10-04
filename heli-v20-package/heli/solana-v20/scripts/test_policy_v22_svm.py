@@ -51,14 +51,8 @@ if mode=='depth':
  t.check('new month starts with an empty counter',t.read(ea13['epoch'],'Epoch')['founder']==0)
  extra={'depth_atoms':depth(),'month_total_atoms':limit,'band_month_total_atoms':band//50}
 elif mode=='closure':
- setup="""
-fee={'fee_base':t.pda(b'fee-base'),'fee_quote':t.pda(b'fee-quote'),'operations':t.pda(b'operations'),'quote_mint':q,'sale_proceeds':t.defaults['sale_proceeds']}
-t.call('create_fee_base',acc=fee);t.call('create_fee_quote',acc=fee)
-t.call('initialize_fee_vaults',{'monthly_cap':10**15,'reserve':0},fee)
-"""
- body=body.replace("t.call('close_constitution')",setup+"t.call('close_constitution')",1)
  ns={'__name__':'__main__'};exec(compile(body,str(here/'test_market_release_svm.py'),'exec'),ns)
- t=ns['t'];fee=ns['fee'];act=ns['act'];q=ns['q']
+ t=ns['t'];fee=ns['fee'];act=ns['act'];q=ns['q']  # fee vaults and the project floor come from the scenario setup
  c=t.cfg();t.check('program is closed',c['closed'] and not c['live'])
  supply=t.supply();proceeds=t.amount(fee['sale_proceeds']);cash=t.amount(fee['fee_quote'])
  t.check('post-closure sale revenue is waiting in project proceeds',proceeds>=t.U)

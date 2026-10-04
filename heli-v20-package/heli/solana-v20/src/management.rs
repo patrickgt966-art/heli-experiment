@@ -7,14 +7,14 @@ use anchor_spl::token::{self,Mint,Token,TokenAccount,Transfer};
 use crate::{Config,Epoch,ErrorCode,OpeningAuction,boundary,outgoing,manifest_bridge::check_market,release::{ReleasePolicy,reference_price,bid_book,band_depth,order_bounds,check_order_price,order_expiry,outside_shallow,crash_ceiling,order_quote,own_bid_quote}};
 
 #[account]
-pub struct ManagementBook {pub quote_floor:u64,pub total_released:u64,pub quote_funded:u64,pub quote_returned:u64,pub trader_bump:u8,pub bid_day:i64,pub bid_days:[u64;31],pub revenue_counted:u64}
+pub struct ManagementBook {pub total_released:u64,pub quote_funded:u64,pub quote_returned:u64,pub trader_bump:u8,pub bid_day:i64,pub bid_days:[u64;31],pub revenue_counted:u64}
 
 #[derive(Accounts)]
 pub struct InitializeManagement<'info>{
  #[account(seeds=[b"config"],bump=config.bump,has_one=admin)] pub config:Box<Account<'info,Config>>,
  #[account(address=config.mint)] pub mint:Box<Account<'info,Mint>>,
  #[account(address=config.quote_mint)] pub quote_mint:Box<Account<'info,Mint>>,
- #[account(init,payer=admin,space=8+297,seeds=[b"management-book"],bump)] pub management_book:Box<Account<'info,ManagementBook>>,
+ #[account(init,payer=admin,space=8+289,seeds=[b"management-book"],bump)] pub management_book:Box<Account<'info,ManagementBook>>,
  /// CHECK: Fixed System-owned signer PDA; Manifest seat is claimed by CPI.
  #[account(init,payer=admin,space=0,owner=system_program.key(),seeds=[b"management-trader"],bump)] pub management_trader:UncheckedAccount<'info>,
  /// CHECK: Bound market, owner, mints, program and header checked before CPI.
@@ -24,16 +24,14 @@ pub struct InitializeManagement<'info>{
  #[account(mut)] pub admin:Signer<'info>,pub token_program:Program<'info,Token>,pub system_program:Program<'info,System>,pub rent:Sysvar<'info,Rent>,
 }
 
-pub fn initialize(mut ctx:Context<InitializeManagement>,quote_floor:u64,rent_lamports:u64)->Result<()> {
+pub fn initialize(mut ctx:Context<InitializeManagement>,rent_lamports:u64)->Result<()> {
  let a=&mut ctx.accounts;require!(a.config.live&&!a.config.closed&&a.config.manifest_bound&&rent_lamports>=1_000_000&&rent_lamports<=100_000_000,ErrorCode::State);
- // Owner decision (V22): the untouchable project quote reserve is at least 1,000 quote units.
- require!(quote_floor>=1000*10u64.pow(a.quote_mint.decimals as u32),ErrorCode::Quota);
  check_market(&a.manifest_market.to_account_info(),&a.manifest_program.to_account_info(),&a.config.mint,&a.config.quote_mint)?;
  invoke(&system_instruction::transfer(&a.admin.key(),&a.management_trader.key(),rent_lamports),&[a.admin.to_account_info(),a.management_trader.to_account_info(),a.system_program.to_account_info()])?;
  let bump=[ctx.bumps.management_trader];let sign:&[&[u8]]=&[b"management-trader",&bump];
  let ix=Instruction{program_id:a.manifest_program.key(),data:vec![1],accounts:vec![AccountMeta::new(a.management_trader.key(),true),AccountMeta::new(a.manifest_market.key(),false),AccountMeta::new_readonly(a.system_program.key(),false)]};
  invoke_signed(&ix,&[a.management_trader.to_account_info(),a.manifest_market.to_account_info(),a.system_program.to_account_info(),a.manifest_program.to_account_info()],&[sign])?;
- a.management_book.quote_floor=quote_floor;a.management_book.trader_bump=ctx.bumps.management_trader;Ok(())
+ a.management_book.trader_bump=ctx.bumps.management_trader;Ok(())
 }
 
 #[derive(Accounts)]
@@ -87,7 +85,9 @@ fn deposit_or_withdraw(a:&ManagementAction,base:bool,amount:u64,tag:u8)->Result<
 
 pub fn fund_quote(mut ctx:Context<ManagementAction>,amount:u64)->Result<()> {
  let a=&mut ctx.accounts;active(a)?;require!(amount>0,ErrorCode::Quota);
- let needed=amount.checked_add(a.management_book.quote_floor).ok_or(ErrorCode::Math)?;require!(a.project_quote.amount>=needed,ErrorCode::Collateral);
+ // The project floor is set with the treasury vaults (initialize_fee_vaults); no reserve leaves before it exists.
+ require!(a.config.project_floor>0,ErrorCode::State);
+ let needed=amount.checked_add(a.config.project_floor).ok_or(ErrorCode::Math)?;require!(a.project_quote.amount>=needed,ErrorCode::Collateral);
  outgoing(a.token_program.to_account_info(),a.project_quote.to_account_info(),a.management_quote.to_account_info(),a.config.to_account_info(),a.config.bump,amount)?;
  deposit_or_withdraw(a,false,amount,2)?;
  a.management_book.quote_funded=a.management_book.quote_funded.checked_add(amount).ok_or(ErrorCode::Math)?;Ok(())
