@@ -1,21 +1,26 @@
 {
   "date": "2026-10-04",
-  "deploymentId": "2a639840-a063-4458-bc6f-fbabbe22b2b6",
-  "cloudflareStatus": "Success",
-  "environment": "production",
-  "entry": "https://heli-experiment.pages.dev/apply.html",
-  "publicReachabilityVerified": false,
-  "publicCheck": "20 second timeout",
-  "pilotConfigHttpStatus": 200,
-  "pilotOrigin": "https://practical-wallet-magnet-months.trycloudflare.com",
-  "tokenDelivery": false,
+  "deploymentUrl": "https://5278edb5.heli-experiment.pages.dev",
+  "productionUrl": "https://heli-experiment.pages.dev",
+  "branch": "main (Cloudflare Pages production)",
+  "sourceCommit": "7f782bb",
   "files": [
     "index.html",
     "apply.html",
+    "apply.js",
     "style.css",
     "app.js",
     "favicon.svg",
     "_headers",
     "heli-rules.txt"
-  ]
+  ],
+  "verifiedFromOutside": {
+    "index": "200, 'Status as of October 4, 2026'",
+    "apply": "pilot status check loaded; reported 'Identity pilot online.' in Chromium against the live tunnel",
+    "heliRules": "200, dated October 4, 2026",
+    "csp": "connect-src https://*.trycloudflare.com"
+  },
+  "pilotOrigin": "https://practical-wallet-magnet-months.trycloudflare.com",
+  "pilotServerVersion": "previous claim-service (no CORS header; review fixes N1/H4/M5 not yet running)",
+  "tokenDelivery": false
 }
