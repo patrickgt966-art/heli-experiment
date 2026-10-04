@@ -16,6 +16,49 @@ Tarih: 4 Ekim 2026. İncelenen paket: `HELI_V20_CLAUDE_REVIEW.zip` (FILE_MANIFES
 
 ---
 
+## 0.1 Karşı inceleme sonrası düzeltmeler (4 Ekim 2026)
+
+Ayrı bir ajan raporu çürütmekle görevlendirildi. İddialarını yeniden çalıştırarak kontrol ettim; aşağıdakiler doğrulandı ve rapora işlendi.
+
+**Düzeltilen hatalar**
+- **PoC2 rakamı yanlıştı.** Proje geliri 1 değil yaklaşık 9.995 quote. Saldırgan yine 990.005 HELI'yi yaklaşık 0,99 quote'a aldı (C1'de düzeltildi).
+- **Satır numaraları:** `release.rs`, `identity.rs`, `mobile/solana.mjs` ve `claim-service/app.js` referansları, dosyaları birleştirerek numaralandırmamdan dolayı kaymıştı. Hepsi düzeltildi. (Karşı inceleyicinin "CRLF" açıklaması doğru değil; sebep birleştirilmiş listelemeydi.)
+- **C2b:** `monthly_cap` zaten bir kez yazılıyor ve değiştirilemiyor. Sorun, değeri yöneticinin seçmesi ve iptal yolu olmaması.
+- **M2:** PoC tek bir sahte örnek kaydettiğini gösteriyor, referans fiyatın (24 örnek) değiştiğini göstermiyor. Referansın itilebileceği makul ama gösterilmedi.
+
+**Kabul edilen ciddiyet değişiklikleri**
+- **C1 ve C2a:** Dışarıdan bir saldırgan istismarı değil, tek yöneticinin yetkisi. Doğru etiket "mainnet'i engelleyen yönetişim riski ve belge-kod çelişkisi". C2b (iptal yok, pause'u kontrol etmiyor) ise gerçek bir kod kusuru olarak Yüksek.
+- **H1:** Devnet için ön şart değil (test tokenı, yeniden dağıtılabilir). Mainnet'ten önce zorunlu. Fon kaybı yok, keeper'ın admin pin'i farkı yakalıyor.
+- **H5:** Bir hata değil, politika ve açıklama sorunu. Ancak N2 bunu güçlendiriyor (aşağıda).
+- **M1:** Asıl sorun `management_order`'da fiyat kontrolü olmaması (C1/C2a ile kesişiyor). Release'in derinlik sınırı ikincil.
+
+**Yeniden üretilmiş yeni bulgular**
+- **N1 – Başvuru linkiyle oturum sabitleme (Orta).** `claim-service/app.js:25` (`if(transferred)save()`).
+  - Saldırgan kendi başvuru linkini kurbana gönderir, sayfa onay sormadan kurbanın oturumunu ezer.
+  - Kurban Didit doğrulamasını saldırganın cüzdanına bağlı başvuruda tamamlar, kendi başvurusu "duplicate" olur.
+  - Gözlenen: `hijacked application status verified wallet==attacker true` ve `victim own application status duplicate`.
+  - Düzeltme: Linkle gelen oturumu yalnız açık onayla ve cüzdan adresini göstererek kabul edin, var olanı ezmeyin, linki kısa ömürlü yapın.
+- **N2 – Tek emre dayalı gözlem: toz bid ile DoS (Orta).** `release.rs:46-69`, `management.rs:93-94`.
+  - 0,011 quote teminatlı, 0,01 HELI'lik bir bid gözlemi "Market guard rejected" ile reddettirdi.
+  - İki saatten uzun kalırsa 24'lük seri sıfırlanıyor.
+  - En az 5.000 quote şartı tek emirden okunduğu için parçalı organik bir piyasa bunu sağlamaz; pratikte ancak bir balina ya da projenin kendi fonladığı bid sağlar.
+  - Düzeltme: Birden çok fiyat seviyesinden toplam derinlik, toz ve süresi dolmuş emirleri atlama, gözlemin aynı işlemde veya CPI ile çağrılmasını engelleme.
+- **M3 artık hipotez değil.** Süresi dolmuş tek bir top-bid gözlemi 190 slot boyunca engelledi. 0,01 HELI'lik bir ask ile herkes temizleyebiliyor.
+- **N3 – Hız sınırı imzalı Didit webhook'larını da kesiyor (Düşük).** `server.mjs:28`.
+- **N4 – Kapanıştan sonra `management_base` HELI'si sıkışıyor (Düşük, kod).** `active()` `live` istiyor (`management.rs:68`), proje ask'i ise `live||closed` ile açık kalıyor. Tutarsız.
+
+**Temiz çıkan alanlar (karşı inceleme ile)**
+- Ed25519 kontrolü.
+- Anchor seeds ve has_one kısıtları.
+- İhale yuvarlama ve iadeleri.
+- Manifest cancel kodlaması.
+- Rust/JS takvim tutarlılığı (504.700 karşılaştırma).
+- XSS ve CSRF.
+
+**Güncellenmiş hüküm**
+- **Gerçek kullanıcıyla Devnet pilotu öncesi:** N1, H4 (`/web3.js` çökmesi ve hız sınırı) ve C2b kapatılmalı. H1 Devnet için şart değil.
+- **Mainnet:** hüküm değişmedi.
+
 ## 1. Ne çalıştırdım, ne doğruladım
 
 Ortam: izole kopya, Node 22.22.0 (pakette ≥24 önerilmiş, `node:sqlite` 22'de deneysel uyarıyla çalıştı), Python 3.11, solders 0.29.0. Gerçek anahtar, kimlik, ağ dağıtımı ve harcama kullanılmadı.
@@ -51,7 +94,7 @@ Satır numaraları paketteki dosyalara göredir. Kod uzun satırlıdır, bu yüz
 - Yer: `solana-v20/src/manifest_bridge.rs:94-120` (`place_ask`), `:31-42` (`update_data`).
 - Sorun: `price_mantissa/exponent` için tek kontrol `mantissa>0, -18≤exp≤18`. Açılış ihalesi fiyatına, TWAP'a veya herhangi bir tabana bağlı alt sınır yok.
 - Senaryo: Yönetici 1.000.000 HELI'yi `1×10⁻⁶` quote-atom/base-atom fiyatına (HELI başına 1 quote atomu) koyuyor. Anlaşmalı bir cüzdan bunu alıyor.
-- PoC sonucu: Saldırgan 990.000 HELI aldı. Projenin geliri 1 quote birimi oldu. İhale tabanı HELI başına 100 atomdu, yani fiyat yaklaşık 100 kat düşük. Aynı yol, her ay serbest bırakılan stok ve altı ayda devreden 999 bin ücretsiz pay için de geçerli.
+- PoC sonucu (karşı incelemeyle düzeltildi): Ucuz ask önce defterde bekleyen 9.995 HELI'lik bid'i o bid'in fiyatından (1,0) doldurdu, proje bundan yaklaşık 9.995 quote aldı. Kalan 990.005 HELI'yi anlaşmalı alıcı toplam yaklaşık 0,99 quote'a aldı (HELI başına ~1 quote atomu; ihale tabanı 100 atomdu). İlk sürümdeki "proje geliri 1 quote" ifadesi yanlış ölçümdü. Manifest'in eşleştirmesi mevcut bid'leri korur; tam istismar için ask ile anlaşmalı bid'in aynı işlemde gönderilmesi ya da defterin önceden boş olması gerekir. Aynı yol, her ay serbest bırakılan stok ve altı ayda devreden 999 bin ücretsiz pay için de geçerli.
 - Etki: "Aylık tavan" yalnız miktarı sınırlıyor. Değerin kime aktarılacağını yönetici seçiyor. Belgelerdeki "piyasa fiyatı belirler" iddiası yönetici dürüstlüğüne dayanıyor.
 - Düzeltme:
   - Zincir üstü fiyat tabanı ekleyin: `max(ihale_clearing, k×reference_price)`.
@@ -89,7 +132,7 @@ Satır numaraları paketteki dosyalara göredir. Kod uzun satırlıdır, bu yüz
 
 **C3 — Anahtar ve upgrade merkeziyeti, rotasyon ve kurtarma yok [Kod]**
 
-- Yer: `lib.rs` içinde `admin` değiştiren bir talimat yok. `identity.rs:137-140` verifier'ı yalnız `!live` iken bir kez ayarlıyor. Upgrade authority kodda yönetilmiyor. Keeper `heliUpgradeAuthority:null` bekliyor (`keeper/config.example.json`) ama bu yalnız izleme.
+- Yer: `lib.rs` içinde `admin` değiştiren bir talimat yok. `identity.rs:14-17` verifier'ı yalnız `!live` iken bir kez ayarlıyor. Upgrade authority kodda yönetilmiyor. Keeper `heliUpgradeAuthority:null` bekliyor (`keeper/config.example.json`) ama bu yalnız izleme.
 - Senaryolar:
   - Upgrade authority devredeyse, yeni kod config PDA ile bütün kasaları (~85M kilitli HELI + envanter + quote) taşıyabilir. Mint yetkisi `None` olduğu için yeni HELI basılamaz, ama mevcutlar taşınabilir.
   - Yönetici anahtarı kaybolursa: pause açıksa sistem kalıcı donar (bkz. H2). Envanter satılamaz.
@@ -148,7 +191,7 @@ Satır numaraları paketteki dosyalara göredir. Kod uzun satırlıdır, bu yüz
 
 **H5 — 60 yıllık 5M→90M yolu pratikte yönetimin sürekli piyasa derinliğine bağlı [Kod + simülasyon; politika çatışması]**
 
-- Yer: `market_release.rs:42-43`, `management.rs:87-94`, `release.rs:125-131`.
+- Yer: `market_release.rs:42-43`, `management.rs:87-94`, `release.rs:70-76`.
 - Sorun: Yönetim payı (12–719. aylarda tavanın %20'si) kullanılmasa bile pazar release'inden düşülüyor. Kullanmak için de şunlar gerekiyor: o ayın penceresi içinde 24 saatlik gözlem, en az `minimum_quote_depth` (≥5.000 quote birimi) derinlikte bir top-bid ve ±%2 fiyat bandı.
 - Simülasyon (tam sayı, sözleşme formülü):
   - Tam kullanım: 89.999.999,998 HELI.
@@ -168,7 +211,7 @@ Satır numaraları paketteki dosyalara göredir. Kod uzun satırlıdır, bu yüz
 
 **M2 — İzinsiz `observe_release_market` tek işlemde flash bid ile yönlendirilebilir [PoC]**
 
-- Yer: `release.rs:112-124`.
+- Yer: `release.rs:57-69`.
 - PoC: Tek işlemde "bid koy → observe → iptal". Önceki örneklerin hepsi 1,0 quote/HELI iken kayıt 5,0 quote/HELI oldu. Saldırgan 60.000 quote teminatının tamamını aynı anda geri çekti. Sermaye maliyeti yok, yalnız işlem ücreti.
 - Etki: 24 örneğin hepsi kontrol edilerek referans fiyat ±%2 bandının dışına itilebilir. Böylece yönetim release ve satışları engellenir (DoS). Ayrıca yönetici kendi fonladığı bid'le derinlik ve fiyat şartını kendisi sağlayabilir.
 - Düzeltme:
@@ -178,7 +221,7 @@ Satır numaraları paketteki dosyalara göredir. Kod uzun satırlıdır, bu yüz
 
 **M3 — Süresi dolmuş top-bid ile gözlem engelleme [Hipotez]**
 
-- Yer: `release.rs:108`.
+- Yer: `release.rs:53`.
 - Sorun: `last_valid_slot < now` olan bir en iyi bid defterden temizlenene kadar `top_bid` reddediliyor.
 - Senaryo: Kısa ömürlü yüksek bir bid ucuz bir DoS olabilir.
 - Gereken: Manifest'in tembel temizleme davranışıyla yeniden üretim.
@@ -199,13 +242,13 @@ Satır numaraları paketteki dosyalara göredir. Kod uzun satırlıdır, bu yüz
 
 **M6 — Sponsor bütçesi tek bir doğrulanmış kullanıcıyla tüketilebilir [Kod]**
 
-- Yer: `mobile/solana.mjs:104-131`.
+- Yer: `mobile/solana.mjs:38-65`.
 - Sorun: Her `prepare` çağrısı, 90 saniyelik geçerlilik dolunca bütçeye yeniden yazılıyor (kira dahil yaklaşık 0,003–0,006 SOL). Günlük 0,05 SOL tavan, birkaç düzine çağrıda doluyor.
 - Düzeltme: Bütçeyi gönderilen veya onaylanan işlem üzerinden düşün, ya da oturum başına günlük tek hazırlık.
 
 **M7 — Dağıtım sırası tuzakları [Kod]**
 
-- `initialize_release_policy` ve `initialize_identity` yalnız `!live` iken çalışıyor (`release.rs:72`, `identity.rs:138`).
+- `initialize_release_policy` ve `initialize_identity` yalnız `!live` iken çalışıyor (`release.rs:17`, `identity.rs:15`).
 - `open_auction` yalnız `start-600`'den önce çalışıyor (`auction.rs:75`).
 - `place_project_ask` için `auction.finalized` şart (`manifest_bridge.rs:96`).
 - Sonuç: Sıra kaçarsa satış envanteri veya yönetim yolu **kalıcı kullanılamaz**.
@@ -213,7 +256,7 @@ Satır numaraları paketteki dosyalara göredir. Kod uzun satırlıdır, bu yüz
 
 **M8 — Manifest bağımlılığı [Kod/Hipotez]**
 
-- Yer: `release.rs:101-111`, `manifest_bridge.rs:8-21`.
+- Yer: `release.rs:46-56`, `manifest_bridge.rs:8-21`.
 - Sorunlar:
   - Ham bayt ofsetleri ve CPI baytları v3.0.24'e sabitlenmiş.
   - Manifest upgrade edilebilir. HELI programı yalnız program ID'sini kontrol ediyor, kod hash'ini değil. Keeper kod hash'ini kontrol ediyor, ama program etmiyor.
@@ -231,7 +274,7 @@ Satır numaraları paketteki dosyalara göredir. Kod uzun satırlıdır, bu yüz
 
 **M10 — Telefon akışı uçtan uca tamamlanmamış [Kod]**
 
-- Devnet modunda `enroll/claim` cüzdan imzası istiyor. Safari'de cüzdan yok (`app.js:27`) ve Phantom'a geri dönüş linki yok.
+- Devnet modunda `enroll/claim` cüzdan imzası istiyor. Safari'de cüzdan yok (`app.js:16`) ve Phantom'a geri dönüş linki yok.
 - Uygulama tokenı localStorage'da ve `navigator.share` ile paylaşılıyor.
 - Gerçek cihaz testi yapılmadı. Bu, kodun kendi belgesinde de kabul ediliyor.
 
@@ -394,7 +437,7 @@ Gözlenen çıktı (atom; 1 HELI = 10⁶, 1 quote = 10⁶):
 
 ```
 poc1: top_bid_depth 9_995_000_000, per_call 199_900_000, calls 21, released 4_197_900_000 (≈%42 derinlik)
-poc2: alıcı 990_000_000_000 HELI-atom aldı, proje geliri 1_000_000 quote-atom
+poc2: alıcı 990_005 HELI için ~0,99 quote ödedi; proje, önce Bob'un 9_995 HELI'lik bid'ini doldurarak ~9_995 quote aldı (ilk sürümdeki "1_000_000 quote-atom gelir" yalnız çekilen kısımdı)
 poc3: rezerv 66_000_000 → 26_000_000, anlaşmalı satıcı +40_000_000 (1 HELI karşılığı)
 poc4: rezervin tamamı (26_000_000) yöneticinin özel hesabına, paused=true iken
 poc5: önceki örnekler 1_000_000; flash örnek 5_000_000; teminat tamamen geri çekildi
