@@ -104,8 +104,10 @@ Kim: Test 2'de `verified` alan kişilerden biri.
 | Didit'te **yeni bir oturum açılmadı** (konsolda bu kişi için tek oturum var) | [ ] |
 | Sonuç `duplicate` **değil** | [ ] |
 
-**Sonuç kaydı (4 Ekim 2026): test edilmedi (ön koşul sağlanmadı).** Pilot kayıtlarının salt okunur dökümü (saat, cüzdanın ilk 4 karakteri, durum, Didit oturumunun ilk 4 karakteri; kişisel veri yok) şunu gösterdi: proje sahibi telefonda eski cüzdanla bağlandığında (15:23) o cüzdanın önceki başvurularının hepsi `declined` durumundaydı. Kod gereği reddedilmiş başvuru yeniden açılmaz; yeni bir başvuru ve yeni bir Didit oturumu açıldı (başlatılmadı, `verifying`'de kaldı). Bu beklenen davranış: reddedilen kişi yeniden deneyebilir. Ama kayıp link yolunu (`verifying`/`review`/`verified` başvurunun yeniden açılması) sınamaz.
-- Temiz Test 3 için: bekleyen veya onaylı başvurusu olan bir cüzdanla, temizlenmiş tarayıcıdan bağlanın; beklenen "Your existing application for this wallet was reopened." ve Didit'te yeni oturum yok.
+**Sonuç kaydı (4 Ekim 2026), deneme 1: ön koşul sağlanmadı.** Telefonda eski cüzdanla bağlanıldığında o cüzdanın önceki başvurularının hepsi `declined` idi. Kod gereği reddedilen başvuru yeniden açılmaz; yeni başvuru ve yeni Didit oturumu açıldı (beklenen davranış, kayıp link yolunu sınamaz).
+
+**Sonuç kaydı (4 Ekim 2026), deneme 2: BAŞARILI.** Bilgisayarda yeni Phantom hesabıyla başvuru açıldı, Didit oturumu başlatılıp tamamlanmadı (`verifying`). Chrome'da site verisi silindi, sayfa yenilendi, aynı cüzdanla yeniden bağlanıp imzalandı. Sayfa aynı başvuruyu "Verification pending" olarak gösterdi. Pilot kayıtlarının salt okunur dökümünde bu cüzdan için **tek** başvuru ve tek Didit oturumu var; yeni başvuru açılmadı. ✔
+- Bulunan arayüz hatası: "Your existing application for this wallet was reopened." mesajı hemen ardından gelen durum yenilemesiyle eziliyordu, kullanıcı görmüyordu. `claim-service/app.js` düzeltildi (mesaj durum metninin önüne eklenir). Pilot bu düzeltmeyi bir sonraki güncellemede alır.
 
 ## Test 4 — Telefonda tarayıcı geçişi (N1)
 
