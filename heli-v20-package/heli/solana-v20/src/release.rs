@@ -7,7 +7,7 @@ const COMPUTE_BUDGET:Pubkey=pubkey!("ComputeBudget111111111111111111111111111111
 use anchor_spl::token::{self,Mint,Token,TokenAccount,Transfer};
 use crate::{Config,Epoch,ErrorCode,OpeningAuction,UNIT,SCALE,boundary,outgoing,manifest_bridge::check_market};
 #[account]
-pub struct ReleasePolicy {pub minimum_quote_depth:u64,pub count:u8,pub next:u8,pub prices:[u64;24],pub times:[i64;24],pub sequence_mark:u64,pub mark_time:i64,pub last_reference:u64,pub last_reference_time:i64,pub shallow_since:i64}
+pub struct ReleasePolicy {pub minimum_quote_depth:u64,pub count:u8,pub next:u8,pub prices:[u64;24],pub times:[i64;24],pub sequence_mark:u64,pub mark_time:i64,pub last_reference:u64,pub last_reference_time:i64,pub shallow_since:i64,pub shallow_seen:i64}
 #[derive(Accounts)]
 pub struct InitializeReleasePolicy<'info>{
  #[account(seeds=[b"config"],bump=config.bump,has_one=admin)] pub config:Box<Account<'info,Config>>,
@@ -139,7 +139,12 @@ pub fn observe(ctx:Context<ObserveReleaseMarket>)->Result<()>{
  let now=Clock::get()?;let sequence=market_sequence(&market)?;let p=&mut ctx.accounts.policy;
  // Crash exception bookkeeping: remember since when outside demand has been provably below the minimum.
  // A shallow market yields no price sample; the call still succeeds so the condition is recorded.
- if outside_shallow(&market,&now,p.minimum_quote_depth)? {if p.shallow_since==0 {p.shallow_since=now.unix_timestamp;}return Ok(());}
+ // The record restarts unless the previous shallow observation is at most two hours old, so the 24-hour
+ // wait needs continuous confirmation and cannot be bridged by a gap without observations.
+ if outside_shallow(&market,&now,p.minimum_quote_depth)? {
+  if p.shallow_since==0||now.unix_timestamp.saturating_sub(p.shallow_seen)>7200 {p.shallow_since=now.unix_timestamp;}
+  p.shallow_seen=now.unix_timestamp;return Ok(());
+ }
  p.shallow_since=0;
  // Arm (or re-arm after a gap): record which orders already rest; the first sample follows an hour later.
  if p.mark_time==0||now.unix_timestamp-p.mark_time>7200 {p.count=0;p.next=0;p.sequence_mark=sequence;p.mark_time=now.unix_timestamp;return Ok(());}
@@ -153,7 +158,8 @@ pub fn observe(ctx:Context<ObserveReleaseMarket>)->Result<()>{
 }
 /// Owner policy for project and management orders (quote atoms per HELI): with a live reference price,
 /// asks >= 95% and bids <= 105% of it; without one, asks >= the opening auction price (the announced
-/// floor if the auction sold nothing) and no reserve-funded bids.
+/// floor if the auction sold nothing) and reserve-funded bids only through the crash exception
+/// (management::order with crash_ceiling).
 pub(crate) fn order_bounds(p:&ReleasePolicy,auction:&OpeningAuction,now:i64)->(u64,Option<u64>){
  match reference_price(p,now) {
   Ok(r)=>((r as u128*95/100)as u64,Some((r as u128*105/100)as u64)),
@@ -169,6 +175,25 @@ pub(crate) fn crash_ceiling(p:&ReleasePolicy,auction:&OpeningAuction,now:i64)->u
  let base=if p.last_reference>0&&now.saturating_sub(p.last_reference_time)<=30*86400 {p.last_reference}
   else if auction.clearing_price>0 {auction.clearing_price}else{auction.floor};
  (base as u128*95/100)as u64
+}
+/// Unfilled quote value of the management seat's own live bid with `sequence`, or 0 when it is not found
+/// within MAX_SCAN nodes, is not a bid of `trader`, or has expired. Used to give back rolling-window quota
+/// when a bid is cancelled; rounds down, so it never exceeds what order_quote charged.
+pub(crate) fn own_bid_quote(market:&AccountInfo,now:&Clock,sequence:u64,trader:&Pubkey)->Result<u64>{
+ let d=market.try_borrow_data()?;require!(d.len()>=256,ErrorCode::Market);let mut i=word(&d,160)?;
+ for _ in 0..MAX_SCAN {
+  if i==NIL {return Ok(0);}
+  let at=node(&d,i)?;let v=&d[at+16..at+80];
+  if u64::from_le_bytes(v[24..32].try_into().unwrap())==sequence {
+   let last=u32::from_le_bytes(v[36..40].try_into().unwrap());let seat=node(&d,u32::from_le_bytes(v[32..36].try_into().unwrap()))?;
+   if v[40]!=1||(last!=0&&(last as u64)<now.slot)||&d[seat+16..seat+48]!=trader.as_ref() {return Ok(0);}
+   let raw=u128::from_le_bytes(v[0..16].try_into().unwrap());let qty=u64::from_le_bytes(v[16..24].try_into().unwrap());
+   let price=raw.checked_mul(UNIT as u128).ok_or(ErrorCode::Math)?/SCALE;
+   return Ok(u64::try_from(qty as u128*price/UNIT as u128).map_err(|_|error!(ErrorCode::Math))?);
+  }
+  i=predecessor(&d,i)?;
+ }
+ Ok(0)
 }
 // Quote atoms locked by a bid of `amount` base atoms at mantissa*10^exponent (same units as check_order_price).
 pub(crate) fn order_quote(amount:u64,mantissa:u32,exponent:i8)->Result<u64>{

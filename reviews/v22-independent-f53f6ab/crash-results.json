@@ -1,0 +1,10 @@
+{
+  "stale_keeper_alone_rejected": true,
+  "manager_sale_removes_outside_demand_then_crash_bid_accepted": true,
+  "before_month": 2,
+  "before_spent_atoms": 1900000,
+  "after_month": 3,
+  "after_spent_atoms": 95,
+  "calendar_reset_accepted": true,
+  "interpretation": "calendar reset is stated policy, not rolling-30-day protection"
+}

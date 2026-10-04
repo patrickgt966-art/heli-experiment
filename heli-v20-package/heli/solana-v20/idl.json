@@ -3750,11 +3750,11 @@
             "type": "u8"
           },
           {
-            "name": "crashDay",
+            "name": "bidDay",
             "type": "i64"
           },
           {
-            "name": "crashDays",
+            "name": "bidDays",
             "type": {
               "array": [
                 "u64",
@@ -3818,6 +3818,10 @@
           },
           {
             "name": "shallowSince",
+            "type": "i64"
+          },
+          {
+            "name": "shallowSeen",
             "type": "i64"
           }
         ]

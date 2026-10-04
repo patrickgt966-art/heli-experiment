@@ -1,7 +1,7 @@
 {
-  "source_sha256": "b3ae416a2ea70c9a9dd78b6b570dc937ce532a7856471d38aa823b5495d1decb",
-  "binary_sha256": "e9a11af70f24edffa1fd7e60aacc33832fb209f9063b58c754bdc9774cec25a4",
-  "checks_and_transactions": 91,
+  "source_sha256": "4f42cf6c112c13c289d718ccc9a50ed05b6eadebc132b4f46a67b0652b6f4356",
+  "binary_sha256": "af15b7b42e5cfda26904cd7dfb20d8fb5d92e76736eaa20befe4919344f95d27",
+  "checks_and_transactions": 93,
   "checks": [
     "allocate 82",
     "TEST quote mint",
@@ -36,6 +36,8 @@
     "bind_manifest_market",
     "create_management_base",
     "create_management_quote",
+    "TEST quote to project reserve",
+    "project quote floor below 1,000 units rejected",
     "initialize_management",
     "open_epoch",
     "management cannot release in first twelve months",

@@ -19,14 +19,16 @@ t.call('bind_manifest_market',{'market_rent_lamports':10_000_000})
 t.defaults['release_reserve']=t.defaults['human']
 ma={'management_book':t.pda(b'management-book'),'management_trader':t.pda(b'management-trader'),'management_base':t.pda(b'management-base'),'management_quote':t.pda(b'management-quote'),'project_quote':t.defaults['sale_proceeds'],'management_stock':t.defaults['founder']}
 t.call('create_management_base',acc=ma);t.call('create_management_quote',acc=ma)
-t.call('initialize_management',{'quote_floor':5*t.U,'rent_lamports':10_000_000},ma)
+t.send('TEST quote to project reserve',[t.Instruction(t.TOKEN,b'\x07'+struct.pack('<Q',1000*t.U),[t.meta(t.defaults['quote_mint'],True),t.meta(t.defaults['sale_proceeds'],True),t.meta(t.admin.pubkey(),False,True)])])
+t.call('initialize_management',{'quote_floor':999*t.U,'rent_lamports':10_000_000},ma,reject='Quota',label='project quote floor below 1,000 units rejected')
+t.call('initialize_management',{'quote_floor':1000*t.U,'rent_lamports':10_000_000},ma)
 ea=epoch_accounts(t,1);t.call('open_epoch',{'number':1},ea);act=ma|ea
 t.call('management_release',{'amount':t.U},act,reject='calendar',label='management cannot release in first twelve months')
 t.call('management_fund_quote',{'amount':t.U},act|{'admin':t.outsider.pubkey()},reject='has one',label='outsider cannot use project reserve')
 t.call('management_order',{'amount':t.U,'base_deposit':0,'price_mantissa':1,'price_exponent':0,'is_bid':True},act|{'admin':t.outsider.pubkey()},reject='has one',label='outsider cannot place treasury orders')
 t.call('set_liquidity_request',{'amount':1},reject='Liquidity inventory is disabled',label='no duplicate liquidity release budget')
 start_quote=t.amount(t.defaults['sale_proceeds'])
-t.call('management_fund_quote',{'amount':start_quote-5*t.U+1},act,reject='Collateral',label='quote reserve floor protects project cash')
+t.call('management_fund_quote',{'amount':start_quote-1000*t.U+1},act,reject='Collateral',label='quote reserve floor protects project cash')
 t.call('management_fund_quote',{'amount':40*t.U},act)
 t.check('liquidity bid funded only with actual project cash',t.amount(t.defaults['sale_proceeds'])==start_quote-40*t.U)
 t.call('management_fund_quote',{'amount':t.U},act|{'quote_vault':bv},reject='Market',label='wrong market quote vault rejected before transfer')
