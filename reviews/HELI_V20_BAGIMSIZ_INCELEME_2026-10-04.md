@@ -55,6 +55,18 @@ Ayrı bir ajan raporu çürütmekle görevlendirildi. İddialarını yeniden ça
 - Rust/JS takvim tutarlılığı (504.700 karşılaştırma).
 - XSS ve CSRF.
 
+**Yeni kanıt: kaynak, standart araçlarla çalışan bir ikiliye derlenemiyor (M9 → Yüksek)**
+- Değiştirilmemiş orijinal kaynak bu ortamda yerel olarak derlendi. Kullanılan araçlar:
+  - Solana 1.18.26 / platform-tools v1.41
+  - Agave 2.1.21 / platform-tools v1.43
+  - `opt-level` 3, s, z ve 2
+- Hiçbir derleme çalışan bir ikili vermedi. Hepsinde paketin kendi testinin ilk adımı olan `initialize`, "Access violation in stack frame 5" ile çöküyor.
+- Derleyici 9 HELI hesap doğrulama fonksiyonunda (`Initialize`, `BindManifestMarket`, `InitializeReleaseSeat`, `InitializeFeeVaults` vb.) 4 KB'lık yığın sınırının aşıldığını bildiriyor. `opt-level=2` uyarıları kaldırıyor ama çökme sürüyor.
+- Paketteki çalışan ELF yalnız Solana Playground'un bilinmeyen araç ve bağımlılık sürümleriyle üretilmiş.
+- Sonuç: Kaynak→ikili bağı bağımsız olarak doğrulanamıyor. Ayrıca kaynakta yapılacak her değişiklik, Playground'a gönderilmeden çalışır halde test edilemiyor.
+- Ek bir derleme sorunu: `manifest_bridge.rs`'teki `pubkey!` makrosu, `Cargo.toml`'da bulunmayan `solana-program` bağımlılığını gerektiriyor.
+- Mainnet için doğrulanabilir derleme (`solana-verify`, sabit Docker imajı) şart olduğu için bu bir blokerdir.
+
 **Güncellenmiş hüküm**
 - **Gerçek kullanıcıyla Devnet pilotu öncesi:** N1, H4 (`/web3.js` çökmesi ve hız sınırı) ve C2b kapatılmalı. H1 Devnet için şart değil.
 - **Mainnet:** hüküm değişmedi.
