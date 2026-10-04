@@ -1,0 +1,11 @@
+{
+  "mode": "depth",
+  "source_sha256": "d6d1cf5bc354cfc31d788ced1ec9333367b3a79f5a2e420e8d02b26b26b21cfb",
+  "binary_sha256": "12ac8cb733fe6c5b53ef2de17e905308f79f0772f2d41784a58599c8c46a0964",
+  "checks_and_transactions": 202,
+  "all_passed": true,
+  "depth_atoms": 9984000000,
+  "month_total_atoms": 199680000,
+  "band_month_total_atoms": 299680000,
+  "scope": "Compiled ELF in local LiteSVM, synthetic quote/keys; V22 owner-decision checks on top of the 720-month market scenario. Not a deployment or audit."
+}

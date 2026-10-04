@@ -1,0 +1,7 @@
+{
+  "source_sha256": "d6d1cf5bc354cfc31d788ced1ec9333367b3a79f5a2e420e8d02b26b26b21cfb",
+  "binary_sha256": "12ac8cb733fe6c5b53ef2de17e905308f79f0772f2d41784a58599c8c46a0964",
+  "checks_and_transactions": 1976,
+  "all_passed": true,
+  "scope": "Compiled ELF and Manifest v3.0.24 ELF in local LiteSVM, synthetic quote/keys; V22 market-measurement decisions only. Not a deployment or audit."
+}

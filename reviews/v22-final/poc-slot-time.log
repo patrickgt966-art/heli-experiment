@@ -1,0 +1,16 @@
+{
+  "mode": "slot-time",
+  "source": "d6d1cf5bc354cfc31d788ced1ec9333367b3a79f5a2e420e8d02b26b26b21cfb",
+  "elf": "12ac8cb733fe6c5b53ef2de17e905308f79f0772f2d41784a58599c8c46a0964",
+  "synthetic_clock": true,
+  "slot_elapsed": 172801,
+  "time_elapsed": 172801,
+  "expiry_slots": 216000,
+  "self_funded_revenue": 81600000,
+  "reserve_after_roundtrip": 1100000000,
+  "reserve_before_funding": 1100000000,
+  "note": "Conditional slot/time divergence, not proof of its current occurrence on a public network.",
+  "external_expense_paid": 81600000,
+  "ordinary_no_revenue_limit": 32916666,
+  "reserve_after_expense": 1018400000
+}

@@ -1,0 +1,11 @@
+{
+  "mode": "management-self",
+  "source": "d6d1cf5bc354cfc31d788ced1ec9333367b3a79f5a2e420e8d02b26b26b21cfb",
+  "elf": "12ac8cb733fe6c5b53ef2de17e905308f79f0772f2d41784a58599c8c46a0964",
+  "synthetic_clock": true,
+  "self_match_executed": true,
+  "charged_quote": 10200000,
+  "ask_guard_until": 0,
+  "working_base": 20000000,
+  "note": "Same-seat round trip, not external cash theft."
+}
