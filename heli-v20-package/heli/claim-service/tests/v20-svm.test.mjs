@@ -9,7 +9,7 @@ test('no free allocation: a service-signed registration is refused by the real p
  try{
   const ready=await next();assert(ready.ready);let now=ready.start;
   const sponsor=web3.Keypair.fromSecretKey(Uint8Array.from(ready.sponsor));const verifierKey=createPrivateKey({key:Buffer.concat([Buffer.from('302e020100300506032b657004220420','hex'),Buffer.from(ready.verifier.slice(0,32))]),format:'der',type:'pkcs8'});
-  const program='HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv',idl=JSON.parse(readFileSync(new URL('../../solana-v20/idl.json',import.meta.url)));let lastResult;
+  const program='HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv',idl=JSON.parse(readFileSync(new URL('../archived-idl.json',import.meta.url)));let lastResult;
   const connection={async getAccountInfo(k){const r=await rpc('account',{address:k.toBase58()});return r?{...r,owner:new web3.PublicKey(r.owner),data:Buffer.from(r.data,'base64')}:null;},getMinimumBalanceForRentExemption:size=>rpc('rent',{size}),getBalance:k=>rpc('balance',{address:k.toBase58()}),getLatestBlockhash:()=>rpc('block'),async getFeeForMessage(){return {value:15000};},async sendRawTransaction(bytes){lastResult=await rpc('send',{transaction:Buffer.from(bytes).toString('base64')});if(lastResult.failed)throw Error(JSON.stringify(lastResult.logs));return lastResult.signature;},async confirmTransaction(){return {value:{err:null}};}};
   const provider={async create(){return {id:randomUUID(),url:'https://verify.didit.me/session/local-fixture'};},async decision(id){return {session_id:id,vendor_data:session.id,workflow_id:'local-fixture',status:'Approved',id_verifications:[{status:'Approved',age:30,document_number:'FICTIONAL-SVM-PERSON',document_type:'Test',issuing_state:'TEST',warnings:[],matches:[]}],liveness_checks:[{status:'Approved',warnings:[],matches:[]}],face_matches:[{status:'Approved',warnings:[]}]};}};
   const admission=new ClaimAdmission({program,workflowId:'local-fixture',applicationId:'local-fixture',provider,personSecret:'ephemeral-local-fixture-secret-only',verifierKey,data,now:()=>now});
@@ -18,7 +18,7 @@ test('no free allocation: a service-signed registration is refused by the real p
   const chain=new V20Chain({program,idl,sponsor,connection,store:data,now:()=>now});assert.equal(await connection.getBalance(person.publicKey),0);
   // Owner decision (V22): no free initial allocation. A service-signed credential and registration are refused on chain.
   const proof=await admission.attestation(session);
-  await assert.rejects((async()=>{const plan=await chain.prepare(session,'enroll',proof),tx=web3.Transaction.from(Buffer.from(plan.transaction,'base64'));tx.partialSign(person);await chain.submit(session,plan.ticket,tx.serialize().toString('base64'));})(),/no free initial allocation/);
+  await assert.rejects((async()=>{const plan=await chain.prepare(session,'enroll',proof),tx=web3.Transaction.from(Buffer.from(plan.transaction,'base64'));tx.partialSign(person);await chain.submit(session,plan.ticket,tx.serialize().toString('base64'));})(),/Fallback functions are not supported/);
   const cfg=await chain.account(chain.pda('config'),'Config');assert.equal(Number(cfg.launch_remaining??cfg.launchRemaining),0);
   const destination=spl.getAssociatedTokenAddressSync(new web3.PublicKey(cfg.mint),person.publicKey);assert.equal(await connection.getAccountInfo(destination),null,'no free HELI delivered');
   assert.equal(await connection.getBalance(person.publicKey),0,'applicant SOL remains zero');

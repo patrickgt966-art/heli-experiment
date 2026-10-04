@@ -7,7 +7,6 @@ export function plan(s){
  // After the 60-year close only price observations continue (owner decision V22), so unsold inventory keeps a current floor.
  if(!c.closed){
  if(s.auction&&!s.auction.finalized&&now>=start)return {name:'finalize_auction',key:'auction'};
- if(!c.launch_finalized&&now>=boundary(start,6))return {name:'finalize_launch',key:'launch'};
  const next=last+1,due=completedMonths(start,now),e=s.epoch;
  if(next<=720&&now>=boundary(start,next-1)){
   if(!e)return {name:'open_epoch',number:next,key:'open:'+next};

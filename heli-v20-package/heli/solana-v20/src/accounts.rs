@@ -277,25 +277,6 @@ pub struct ReadConfig<'info> {
  pub config:Box<Account<'info,Config>>,
 }
 
-#[derive(Accounts)]
-#[instruction(nullifier:[u8;32],proof_digest:[u8;32])]
-pub struct IssueCredential<'info> {
- #[account(seeds=[b"config".as_ref()],bump=config.bump)]
- pub config:Box<Account<'info,Config>>,
- #[account(init,payer=account_payer,space=8+129,seeds=[b"human".as_ref(),nullifier.as_ref()],bump)]
- pub credential:Box<Account<'info,Credential>>,
- #[account(init,payer=account_payer,space=8+32,seeds=[b"id-wallet".as_ref(),person.key().as_ref()],bump)]
- pub wallet_identity:Box<Account<'info,WalletIdentity>>,
- pub person:Signer<'info>,
- #[account(seeds=[b"identity-policy"],bump)]
- pub identity_policy:Box<Account<'info,IdentityPolicy>>,
- /// CHECK: fixed Instructions sysvar, inspected by identity::verify_admission.
- #[account(address=anchor_lang::solana_program::sysvar::instructions::ID)]
- pub instructions:UncheckedAccount<'info>,
- #[account(mut)]
- pub account_payer:Signer<'info>,
- pub system_program:Program<'info,System>,
-}
 
 #[derive(Accounts)]
 #[instruction(number:u16)]
@@ -317,41 +298,8 @@ pub struct OpenEpoch<'info> {
  pub rent:Sysvar<'info,Rent>,
 }
 
-#[derive(Accounts)]
-pub struct EnrollLaunch<'info> {
- #[account(mut,seeds=[b"config".as_ref()],bump=config.bump)]
- pub config:Box<Account<'info,Config>>,
- #[account(seeds=[b"human".as_ref(),credential.nullifier.as_ref()],bump)]
- pub credential:Box<Account<'info,Credential>>,
- #[account(seeds=[b"id-wallet".as_ref(),person.key().as_ref()],bump,constraint=wallet_identity.credential==credential.key())]
- pub wallet_identity:Box<Account<'info,WalletIdentity>>,
- #[account(init,payer=account_payer,space=8+74,seeds=[b"launch-receipt".as_ref(),credential.key().as_ref()],bump)]
- pub receipt:Box<Account<'info,LaunchReceipt>>,
- #[account(mut)]
- pub person:Signer<'info>,
- #[account(mut)] pub account_payer:Signer<'info>,
- pub system_program:Program<'info,System>,
-}
 
-#[derive(Accounts)]
-pub struct CredentialStatus<'info> {
- #[account(seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
- pub config:Box<Account<'info,Config>>,
- #[account(mut,seeds=[b"human".as_ref(),credential.nullifier.as_ref()],bump)]
- pub credential:Box<Account<'info,Credential>>,
- pub admin:Signer<'info>,
-}
 
-#[derive(Accounts)]
-pub struct DisputeLaunch<'info> {
- #[account(mut,seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
- pub config:Box<Account<'info,Config>>,
- #[account(seeds=[b"human".as_ref(),credential.nullifier.as_ref()],bump)]
- pub credential:Box<Account<'info,Credential>>,
- #[account(mut,seeds=[b"launch-receipt".as_ref(),credential.key().as_ref()],bump)]
- pub receipt:Box<Account<'info,LaunchReceipt>>,
- pub admin:Signer<'info>,
-}
 
 #[derive(Accounts)]
 pub struct PrepareDlmmAccounts<'info> {
@@ -377,18 +325,6 @@ pub struct PrepareDlmmAccounts<'info> {
  pub rent:Sysvar<'info,Rent>,
 }
 
-#[derive(Accounts)]
-pub struct RegistryLaunch<'info> {
- #[account(mut,seeds=[b"config".as_ref()],bump=config.bump)]
- pub config:Box<Account<'info,Config>>,
- #[account(mut,address=config.mint)]
- pub mint:Box<Account<'info,Mint>>,
- #[account(mut,seeds=[b"launch-claims".as_ref()],bump,token::mint=mint,token::authority=config)]
- pub launch:Box<Account<'info,TokenAccount>>,
- #[account(mut,seeds=[b"market-inventory".as_ref()],bump,token::mint=mint,token::authority=config)]
- pub market_inventory:Box<Account<'info,TokenAccount>>,
- pub token_program:Program<'info,Token>,
-}
 
 #[derive(Accounts)]
 pub struct ListMeteoraLaunch<'info> {
@@ -588,23 +524,6 @@ pub struct ContributeQuote<'info> {
  pub token_program:Program<'info,Token>,
 }
 
-#[derive(Accounts)]
-pub struct AllocateAuctionProceeds<'info> {
- #[account(seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
- pub config:Box<Account<'info,Config>>,
- #[account(seeds=[b"opening-auction".as_ref()],bump)]
- pub auction:Box<Account<'info,OpeningAuction>>,
- #[account(mut,seeds=[b"operations".as_ref()],bump)]
- pub operations:Box<Account<'info,Operations>>,
- #[account(address=config.quote_mint)]
- pub quote_mint:Box<Account<'info,Mint>>,
- #[account(mut,seeds=[b"auction-proceeds".as_ref()],bump,token::mint=quote_mint,token::authority=config)]
- pub sale_proceeds:Box<Account<'info,TokenAccount>>,
- #[account(mut,seeds=[b"fee-quote".as_ref()],bump,token::mint=quote_mint,token::authority=config)]
- pub fee_quote:Box<Account<'info,TokenAccount>>,
- pub admin:Signer<'info>,
- pub token_program:Program<'info,Token>,
-}
 
 #[derive(Accounts)]
 pub struct ClaimMeteoraFees<'info> {
@@ -728,109 +647,12 @@ pub struct CancelExpense<'info> {
  pub admin:Signer<'info>,
 }
 
-#[derive(Accounts)]
-pub struct ClaimLaunch<'info> {
- #[account(mut,seeds=[b"config".as_ref()],bump=config.bump)]
- pub config:Box<Account<'info,Config>>,
- #[account(address=config.mint)]
- pub mint:Box<Account<'info,Mint>>,
- #[account(seeds=[b"human".as_ref(),credential.nullifier.as_ref()],bump)]
- pub credential:Box<Account<'info,Credential>>,
- #[account(mut,seeds=[b"launch-receipt".as_ref(),credential.key().as_ref()],bump,has_one=owner)]
- pub receipt:Box<Account<'info,LaunchReceipt>>,
- pub owner:Signer<'info>,
- #[account(mut,token::mint=mint,token::authority=owner)]
- pub destination:Box<Account<'info,TokenAccount>>,
- #[account(mut,seeds=[b"launch-claims".as_ref()],bump,token::mint=mint,token::authority=config)]
- pub launch:Box<Account<'info,TokenAccount>>,
- pub token_program:Program<'info,Token>,
-}
 
-#[derive(Accounts)]
-pub struct Enroll<'info> {
- #[account(seeds=[b"config".as_ref()],bump=config.bump)]
- pub config:Box<Account<'info,Config>>,
- #[account(mut,seeds=[b"epoch".as_ref(),&epoch.number.to_le_bytes()],bump=epoch.bump)]
- pub epoch:Box<Account<'info,Epoch>>,
- #[account(seeds=[b"human".as_ref(),credential.nullifier.as_ref()],bump)]
- pub credential:Box<Account<'info,Credential>>,
- #[account(seeds=[b"id-wallet".as_ref(),person.key().as_ref()],bump,constraint=wallet_identity.credential==credential.key())]
- pub wallet_identity:Box<Account<'info,WalletIdentity>>,
- #[account(init,payer=account_payer,space=8+34,seeds=[b"receipt".as_ref(),epoch.key().as_ref(),credential.key().as_ref()],bump)]
- pub receipt:Box<Account<'info,Receipt>>,
- #[account(mut)]
- pub person:Signer<'info>,
- #[account(mut)] pub account_payer:Signer<'info>,
- pub system_program:Program<'info,System>,
-}
 
-#[derive(Accounts)]
-pub struct DisputeEntry<'info> {
- #[account(seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
- pub config:Box<Account<'info,Config>>,
- #[account(mut,seeds=[b"epoch".as_ref(),&epoch.number.to_le_bytes()],bump=epoch.bump)]
- pub epoch:Box<Account<'info,Epoch>>,
- #[account(seeds=[b"human".as_ref(),credential.nullifier.as_ref()],bump)]
- pub credential:Box<Account<'info,Credential>>,
- #[account(mut,seeds=[b"receipt".as_ref(),epoch.key().as_ref(),credential.key().as_ref()],bump)]
- pub receipt:Box<Account<'info,Receipt>>,
- pub admin:Signer<'info>,
-}
 
-#[derive(Accounts)]
-pub struct Registry<'info> {
- #[account(seeds=[b"config".as_ref()],bump=config.bump)]
- pub config:Box<Account<'info,Config>>,
- #[account(mut,seeds=[b"epoch".as_ref(),&epoch.number.to_le_bytes()],bump=epoch.bump)]
- pub epoch:Box<Account<'info,Epoch>>,
-}
 
-#[derive(Accounts)]
-pub struct GlobalCheckpoint<'info> {
- #[account(mut,seeds=[b"config".as_ref()],bump=config.bump)]
- pub config:Box<Account<'info,Config>>,
- #[account(mut,address=config.history)]
- pub history:AccountLoader<'info,GlobalBook>,
-}
 
-#[derive(Accounts)]
-pub struct OpenStake<'info> {
- #[account(seeds=[b"config".as_ref()],bump=config.bump)]
- pub config:Box<Account<'info,Config>>,
- #[account(address=config.mint)]
- pub mint:Box<Account<'info,Mint>>,
- #[account(init,payer=owner,space=8+88,seeds=[b"stake".as_ref(),owner.key().as_ref()],bump)]
- pub stake:Box<Account<'info,StakePosition>>,
- #[account(init,payer=owner,token::mint=mint,token::authority=config,seeds=[b"principal".as_ref(),owner.key().as_ref()],bump)]
- pub stake_vault:Box<Account<'info,TokenAccount>>,
- #[account(zero)]
- pub user_history:AccountLoader<'info,UserBook>,
- #[account(mut)]
- pub owner:Signer<'info>,
- pub token_program:Program<'info,Token>,
- pub system_program:Program<'info,System>,
- pub rent:Sysvar<'info,Rent>,
-}
 
-#[derive(Accounts)]
-pub struct Stake<'info> {
- #[account(mut,seeds=[b"config".as_ref()],bump=config.bump)]
- pub config:Box<Account<'info,Config>>,
- #[account(address=config.mint)]
- pub mint:Box<Account<'info,Mint>>,
- #[account(mut,address=config.history)]
- pub history:AccountLoader<'info,GlobalBook>,
- #[account(mut,seeds=[b"stake".as_ref(),owner.key().as_ref()],bump,has_one=owner)]
- pub stake:Box<Account<'info,StakePosition>>,
- #[account(mut,address=stake.history)]
- pub user_history:AccountLoader<'info,UserBook>,
- #[account(mut,seeds=[b"principal".as_ref(),owner.key().as_ref()],bump,token::mint=mint,token::authority=config)]
- pub stake_vault:Box<Account<'info,TokenAccount>>,
- pub owner:Signer<'info>,
- #[account(mut,token::mint=mint,token::authority=owner)]
- pub wallet:Box<Account<'info,TokenAccount>>,
- pub token_program:Program<'info,Token>,
-}
 
 #[derive(Accounts)]
 pub struct CreateMarket<'info> {
@@ -941,44 +763,4 @@ pub struct Settle<'info> {
  pub reward_vault:Box<Account<'info,TokenAccount>>,
  pub token_program:Program<'info,Token>,
 }
-#[derive(Accounts)]
-pub struct ClaimHuman<'info> {
- #[account(seeds=[b"config".as_ref()],bump=config.bump)]
- pub config:Box<Account<'info,Config>>,
- #[account(address=config.mint)]
- pub mint:Box<Account<'info,Mint>>,
- #[account(mut,seeds=[b"epoch".as_ref(),&epoch.number.to_le_bytes()],bump=epoch.bump)]
- pub epoch:Box<Account<'info,Epoch>>,
- #[account(seeds=[b"human".as_ref(),credential.nullifier.as_ref()],bump)]
- pub credential:Box<Account<'info,Credential>>,
- #[account(mut,seeds=[b"receipt".as_ref(),epoch.key().as_ref(),credential.key().as_ref()],bump,has_one=owner)]
- pub receipt:Box<Account<'info,Receipt>>,
- pub owner:Signer<'info>,
- #[account(mut,token::mint=mint,token::authority=owner)]
- pub destination:Box<Account<'info,TokenAccount>>,
- #[account(mut,seeds=[b"claims".as_ref(),&epoch.number.to_le_bytes()],bump,token::mint=mint,token::authority=config)]
- pub claim_vault:Box<Account<'info,TokenAccount>>,
- pub token_program:Program<'info,Token>,
-}
 
-#[derive(Accounts)]
-pub struct ClaimReward<'info> {
- #[account(mut,seeds=[b"config".as_ref()],bump=config.bump)]
- pub config:Box<Account<'info,Config>>,
- #[account(address=config.mint)]
- pub mint:Box<Account<'info,Mint>>,
- #[account(mut,seeds=[b"epoch".as_ref(),&epoch.number.to_le_bytes()],bump=epoch.bump)]
- pub epoch:Box<Account<'info,Epoch>>,
- #[account(mut,address=config.history)]
- pub history:AccountLoader<'info,GlobalBook>,
- #[account(mut,seeds=[b"stake".as_ref(),owner.key().as_ref()],bump,has_one=owner)]
- pub stake:Box<Account<'info,StakePosition>>,
- #[account(mut,address=stake.history)]
- pub user_history:AccountLoader<'info,UserBook>,
- pub owner:Signer<'info>,
- #[account(mut,token::mint=mint,token::authority=owner)]
- pub destination:Box<Account<'info,TokenAccount>>,
- #[account(mut,seeds=[b"reward-claims".as_ref(),&epoch.number.to_le_bytes()],bump,token::mint=mint,token::authority=config)]
- pub reward_vault:Box<Account<'info,TokenAccount>>,
- pub token_program:Program<'info,Token>,
-}

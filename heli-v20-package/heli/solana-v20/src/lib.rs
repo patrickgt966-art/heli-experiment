@@ -45,14 +45,6 @@ pub mod heli_core_v20 {
   ctx.accounts.config.live=true;Ok(())
  }
  pub fn initialize_identity(ctx:Context<InitializeIdentity>,verifier:Pubkey)->Result<()> {identity::initialize(ctx,verifier)}
- // Owner decision (V22): there is no free initial allocation; the whole 5M launch base is sold through the
- // opening auction and the market. Identity and entitlement instructions are kept for IDL compatibility only.
- pub fn issue_credential(_ctx:Context<IssueCredential>,_nullifier:[u8;32],_proof_digest:[u8;32],_issued_at:i64,_expires_at:i64)->Result<()> {err!(ErrorCode::FreeAllocationDisabled)}
- pub fn enroll_launch(_ctx:Context<EnrollLaunch>)->Result<()> {err!(ErrorCode::FreeAllocationDisabled)}
- pub fn dispute_launch(_ctx:Context<DisputeLaunch>,_reason:[u8;32])->Result<()> {err!(ErrorCode::FreeAllocationDisabled)}
- pub fn restore_launch(_ctx:Context<DisputeLaunch>,_reason:[u8;32])->Result<()> {err!(ErrorCode::FreeAllocationDisabled)}
- pub fn set_credential_active(_ctx:Context<CredentialStatus>,_active:bool,_reason:[u8;32])->Result<()> {err!(ErrorCode::FreeAllocationDisabled)}
- pub fn finalize_launch(_ctx:Context<RegistryLaunch>)->Result<()> {err!(ErrorCode::FreeAllocationDisabled)}
  pub fn prepare_auction_quote(ctx:Context<PrepareAuctionQuote>)->Result<()> {require!(!ctx.accounts.config.closed,ErrorCode::State);Ok(())}
  pub fn open_auction(ctx:Context<OpenAuction>,floor_quote_atoms_per_heli:u64,tick_size:u64)->Result<()> {
   auction::open(ctx,floor_quote_atoms_per_heli,tick_size)
@@ -95,10 +87,6 @@ pub mod heli_core_v20 {
   o.earned_total=next_earned;o.donated_total=next_donated;
   emit!(QuoteContribution{contributor:ctx.accounts.contributor.key(),amount});Ok(())
  }
-  // Owner decision (V22, expenses): the project reserve is never moved ahead of spending. An approved expense
- // draws exactly its amount from the reserve when it is paid (execute_expense); this instruction stays in
- // the IDL for old clients and always rejects.
- pub fn allocate_auction_proceeds(_ctx:Context<AllocateAuctionProceeds>,_amount:u64)->Result<()> {err!(ErrorCode::ExpenseFundedOnPayment)}
  pub fn propose_expense(ctx:Context<ProposeExpense>,nonce:u64,amount:u64,purpose:[u8;32])->Result<()> {
   let o=&mut ctx.accounts.operations;
   // monthly_cap (set once at setup) is now a per-proposal ceiling; spending limits apply at payment.
@@ -208,43 +196,9 @@ pub mod heli_core_v20 {
   let old=ctx.accounts.identity_policy.verifier;ctx.accounts.identity_policy.verifier=verifier;
   emit!(VerifierChanged{old,new:verifier});Ok(())
  }
- pub fn claim_launch(_ctx:Context<ClaimLaunch>)->Result<()> {err!(ErrorCode::FreeAllocationDisabled)}
  pub fn open_epoch(ctx:Context<OpenMarketEpoch>,number:u16)->Result<()> {market_release::open(ctx,number)}
- pub fn enroll(_ctx:Context<Enroll>)->Result<()> {err!(ErrorCode::MonthlyDividendDisabled)}
- pub fn dispute_entry(_ctx:Context<DisputeEntry>)->Result<()> {err!(ErrorCode::MonthlyDividendDisabled)}
- pub fn finalize_registry(_ctx:Context<Registry>)->Result<()> {err!(ErrorCode::MonthlyDividendDisabled)}
  pub fn pause(ctx:Context<Admin>,paused:bool)->Result<()> {ctx.accounts.config.paused=paused;Ok(())}
- pub fn schedule_apr(_ctx:Context<Admin>,bps:u16)->Result<()> {
-  // Retained as a rejecting instruction for old clients. No runtime rate setter.
-  let _=bps;err!(ErrorCode::StakingDisabled)
- }
- pub fn set_liquidity_request(_ctx:Context<Admin>,amount:u64)->Result<()> {let _=amount;err!(ErrorCode::LiquidityDisabled)}
- pub fn checkpoint_global(ctx:Context<GlobalCheckpoint>)->Result<()> {
-  let mut b=ctx.accounts.history.load_mut()?;advance_global(&mut ctx.accounts.config,&mut b,Clock::get()?.unix_timestamp)?;Ok(())
- }
- // No new positions or deposits. Legacy principal/reward recovery stays available.
- pub fn open_stake(_ctx:Context<OpenStake>)->Result<()> {err!(ErrorCode::StakingDisabled)}
- pub fn checkpoint_stake(ctx:Context<Stake>)->Result<()> {sync_stake(ctx.accounts, false)?;Ok(())}
- pub fn stake(_ctx:Context<Stake>,amount:u64)->Result<()> {let _=amount;err!(ErrorCode::StakingDisabled)}
- pub fn request_exit(ctx:Context<Stake>)->Result<()> {
-  require!(ctx.accounts.stake.principal>0&&ctx.accounts.stake.exit_at==0,ErrorCode::State);ctx.accounts.stake.exit_at=Clock::get()?.unix_timestamp.checked_add(7*DAY).ok_or(ErrorCode::Math)?;Ok(())
- }
- pub fn withdraw(ctx:Context<Stake>)->Result<()> {
-  require!(ctx.accounts.stake.principal>0&&ctx.accounts.stake.exit_at>0&&Clock::get()?.unix_timestamp>=ctx.accounts.stake.exit_at,ErrorCode::Time);sync_stake(ctx.accounts,true)?;
-  let amount=ctx.accounts.stake.principal;outgoing(ctx.accounts.token_program.to_account_info(),ctx.accounts.stake_vault.to_account_info(),ctx.accounts.wallet.to_account_info(),ctx.accounts.config.to_account_info(),ctx.accounts.config.bump,amount)?;
-  ctx.accounts.config.principal=ctx.accounts.config.principal.checked_sub(amount).ok_or(ErrorCode::Math)?;ctx.accounts.stake.principal=0;ctx.accounts.stake.exit_at=0;Ok(())
- }
  pub fn settle(ctx:Context<SettleMarket>)->Result<()> {market_release::settle(ctx)}
- pub fn claim_human(_ctx:Context<ClaimHuman>)->Result<()> {err!(ErrorCode::MonthlyDividendDisabled)}
- pub fn claim_reward(ctx:Context<ClaimReward>)->Result<()> {
-  require!(ctx.accounts.epoch.settled,ErrorCode::State);let now=Clock::get()?.unix_timestamp;
-  let mut global=ctx.accounts.history.load_mut()?;advance_global(&mut ctx.accounts.config,&mut global,now)?;
-  let mut user=ctx.accounts.user_history.load_mut()?;advance_user(&ctx.accounts.config,&mut ctx.accounts.stake,&mut user,&global,now)?;
-  let i=ctx.accounts.epoch.number as usize-1;require!(ctx.accounts.stake.cursor>=global.cutoff[i]&&!claimed(&user,i),ErrorCode::Checkpoint);
-  let a=muldiv(weight(&user.low,&user.high,i),global.rate[i] as u128,SCALE)? as u64;require!(a<=ctx.accounts.epoch.reward_remaining,ErrorCode::Collateral);
-  outgoing(ctx.accounts.token_program.to_account_info(),ctx.accounts.reward_vault.to_account_info(),ctx.accounts.destination.to_account_info(),ctx.accounts.config.to_account_info(),ctx.accounts.config.bump,a)?;
-  user.claimed[i/64]|=1u64<<(i%64);ctx.accounts.epoch.reward_remaining-=a;Ok(())
- }
  pub fn close_constitution(ctx:Context<Close>)->Result<()> {
   if ctx.accounts.config.closed{return Ok(());}require!(ctx.accounts.config.live&&Clock::get()?.unix_timestamp>=boundary(ctx.accounts.config.start,720),ErrorCode::Time);
   let bump=[ctx.accounts.config.bump];let seeds:&[&[u8]]=&[b"config",&bump];
@@ -278,8 +232,6 @@ fn advance_user(c:&Config,s:&mut StakePosition,u:&mut UserBook,g:&GlobalBook,now
  for _ in 0..8 {if s.cursor>=target{break;}let n=epoch(c.start,s.cursor);require!(n>=1&&n<=720,ErrorCode::Time);let end=boundary(c.start,n).min(target);let i=n as usize-1;let effective=if g.cutoff[i]>0 {end.min(g.cutoff[i])}else{end};let a=(s.principal as u128).checked_mul((effective-s.cursor).max(0)as u128).ok_or(ErrorCode::Math)?;add_weight(&mut u.low,&mut u.high,i,a)?;s.cursor=end;}
  Ok(())
 }
-fn sync_stake(a:&mut Stake,require_caught:bool)->Result<()> {let now=Clock::get()?.unix_timestamp;let mut g=a.history.load_mut()?;advance_global(&mut a.config,&mut g,now)?;let mut u=a.user_history.load_mut()?;advance_user(&a.config,&mut a.stake,&mut u,&g,now)?;
- if require_caught {let target=now.min(boundary(a.config.start,720)).max(a.config.start);require!(a.config.cursor==target&&a.stake.cursor==target,ErrorCode::Checkpoint);}Ok(())}
 fn claimed(u:&UserBook,i:usize)->bool {u.claimed[i/64]&(1u64<<(i%64))!=0}
 fn observe(m:&mut Market,x:u64,y:u64,now:i64)->Result<()> {
  require!(m.seeded&&x>0&&y>0&&now>=m.last,ErrorCode::Market);let price=muldiv(y as u128,UNIT as u128,x as u128)?;

@@ -96,6 +96,11 @@ def instruction(name,arguments=None,accounts=None):
  data=hashlib.sha256(('global:'+name).encode()).digest()[:8]
  for f in d['args']:data+=encode(f['type'],(arguments or {})[snake(f['name'])])
  return Instruction(PROGRAM,data,[meta(a[snake(f['name'])],f['isMut'],f['isSigner']) for f in d['accounts']])
+def removed(name,label=None):
+ # Instruction deleted from the program (owner decision, 4 Oct 2026: smaller ELF): its discriminator is unknown.
+ assert name not in INSTRUCTIONS,name+' still in the IDL'
+ ix=Instruction(PROGRAM,hashlib.sha256(('global:'+name).encode()).digest()[:8],[meta(admin.pubkey(),True,True)])
+ return send(label or name+' no longer exists in the program',[ix],None,'Fallback functions are not supported')
 def call(name,args=None,acc=None,label=None,reject=None):
  ix=instruction(name,args,acc);s=[KEYS[str(m.pubkey)] for m in ix.accounts if m.is_signer]
  return send(label or name,[ix],s,reject)

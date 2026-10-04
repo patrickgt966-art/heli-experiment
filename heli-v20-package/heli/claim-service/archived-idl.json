@@ -709,6 +709,258 @@
       ]
     },
     {
+      "name": "issueCredential",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "credential",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "walletIdentity",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "person",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "identityPolicy",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instructions",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "accountPayer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "nullifier",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "proofDigest",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "issuedAt",
+          "type": "i64"
+        },
+        {
+          "name": "expiresAt",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "enrollLaunch",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "credential",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "walletIdentity",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "receipt",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "person",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "accountPayer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "disputeLaunch",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "credential",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "receipt",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "reason",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "restoreLaunch",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "credential",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "receipt",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "reason",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "setCredentialActive",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "credential",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "active",
+          "type": "bool"
+        },
+        {
+          "name": "reason",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "finalizeLaunch",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "launch",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marketInventory",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "prepareAuctionQuote",
       "accounts": [
         {
@@ -2280,6 +2532,57 @@
       ]
     },
     {
+      "name": "allocateAuctionProceeds",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "auction",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "operations",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "quoteMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "saleProceeds",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "feeQuote",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "proposeExpense",
       "accounts": [
         {
@@ -2620,6 +2923,52 @@
       ]
     },
     {
+      "name": "claimLaunch",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "credential",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "receipt",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "destination",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "launch",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "openEpoch",
       "accounts": [
         {
@@ -2651,6 +3000,99 @@
       ]
     },
     {
+      "name": "enroll",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "epoch",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "credential",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "walletIdentity",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "receipt",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "person",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "accountPayer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "disputeEntry",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "epoch",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "credential",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "receipt",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "finalizeRegistry",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "epoch",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "pause",
       "accounts": [
         {
@@ -2670,6 +3112,324 @@
           "type": "bool"
         }
       ]
+    },
+    {
+      "name": "scheduleApr",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "bps",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "setLiquidityRequest",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "checkpointGlobal",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "history",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "openStake",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "stake",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakeVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userHistory",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "checkpointStake",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "history",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stake",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userHistory",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakeVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "wallet",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "stake",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "history",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stake",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userHistory",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakeVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "wallet",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "requestExit",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "history",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stake",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userHistory",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakeVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "wallet",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "withdraw",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "history",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stake",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userHistory",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stakeVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "wallet",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     },
     {
       "name": "settle",
@@ -2701,6 +3461,113 @@
         },
         {
           "name": "marketInventory",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claimHuman",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "epoch",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "credential",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "receipt",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "destination",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "claimVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claimReward",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "epoch",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "history",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "stake",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userHistory",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "destination",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rewardVault",
           "isMut": true,
           "isSigner": false
         },

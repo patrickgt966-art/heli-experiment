@@ -5,7 +5,7 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib", "lib"]
 [features]
-default = []
+default = ["no-idl"]
 no-entrypoint = []
 cpi = ["no-entrypoint"]
 no-idl = []
@@ -18,3 +18,5 @@ solana-program = "=1.18.26"
 overflow-checks = true
 lto = "fat"
 codegen-units = 1
+# Smaller ELF lowers the one-time deployment rent (owner decision, 4 Oct 2026). The IDL is published in the repository.
+opt-level = "z"
