@@ -9,23 +9,30 @@ import {Didit,verifyWebhook} from './didit.mjs';
 import {V20Chain} from './chain.mjs';
 import {WebhookQueue} from './webhook-queue.mjs';
 const PROGRAM=readFileSync(new URL('../solana-v20/src/lib.rs',import.meta.url),'utf8').match(/declare_id!\("([^"]+)"\)/)[1];
-export function createClaimServer({origin,admission,chain,data,mode='demo',webhookSecret,queue,now=()=>Math.floor(Date.now()/1000)}){
+// Rate limits: [max requests, window seconds]. Per-client buckets stop one client exhausting everyone's quota;
+// session creation is the expensive path (provider sessions); signed webhooks get their own bucket.
+export const LIMITS=Object.freeze({global:[600,60],client:[30,60],create:[5,600],webhook:[300,60]});
+export function createClaimServer({origin,admission,chain,data,mode='demo',webhookSecret,queue,trustProxy=false,limits=LIMITS,now=()=>Math.floor(Date.now()/1000)}){
  const publicOrigin=new URL(origin);if(publicOrigin.origin!==origin||publicOrigin.username||publicOrigin.password|| (mode!=='demo'&&publicOrigin.protocol!=='https:')||(mode==='identity'&&chain))throw Error('Invalid public origin or identity-only chain');
  const counts=new Map(),statusTimes=new Map();
+ const limited=(name,key)=>{const [max,window]=limits[name],k=name+':'+key,bucket=Math.floor(now()/window),c=counts.get(k);if(counts.size>20000)for(const [x,v] of counts)if(v.bucket!==Math.floor(now()/limits[x.split(':')[0]][1]))counts.delete(x);if(!c||c.bucket!==bucket)counts.set(k,{bucket,n:0});return ++counts.get(k).n>max;};
  const files={'/':['index.html','text/html; charset=utf-8'],'/browser-handoff.js':['browser-handoff.js','text/javascript; charset=utf-8'],'/app.js':['app.js','text/javascript; charset=utf-8'],'/style.css':['style.css','text/css; charset=utf-8'],'/web3.js':['../solana/node_modules/@solana/web3.js/lib/index.iife.min.js','text/javascript']};
  return createServer(async(req,res)=>{
-  const send=(code,value)=>{res.writeHead(code,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(value));};
+  const send=(code,value)=>{if(res.headersSent)return res.end();res.writeHead(code,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(value));};
   try{
    if(req.headers.host!==publicOrigin.host)return send(403,{error:'Unexpected host'});
    const path=new URL(req.url,origin).pathname;
    if(req.method==='GET'){
     if(path==='/api/config')return send(200,{mode,provider:'Didit',program:admission.program,amount:1000,waitDays:7,chainEnabled:!!chain});
     const file=files[path];if(!file)return send(404,{error:'Not found'});
-    res.writeHead(200,{'Content-Type':file[1],'Cache-Control':'no-store','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"});return res.end(readFileSync(new URL(file[0],import.meta.url)));
+    let body;try{body=readFileSync(new URL(file[0],import.meta.url));}catch{return send(404,{error:'Not found'});}
+    res.writeHead(200,{'Content-Type':file[1],'Cache-Control':'no-store','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"});return res.end(body);
    }
    if(req.method!=='POST'||req.headers['content-type']?.split(';')[0]!=='application/json')return send(403,{error:'Request rejected'});
    if(path!=='/webhooks/didit'&&req.headers.origin!==origin)return send(403,{error:'Request origin rejected'});
-   const bucket=Math.floor(now()/60),counter=counts.get('global');if(!counter||counter.bucket!==bucket)counts.set('global',{bucket,n:0});if(++counts.get('global').n>120)return send(429,{error:'Too many requests. Please wait.'});
+   const client=(trustProxy&&typeof req.headers['cf-connecting-ip']==='string'?req.headers['cf-connecting-ip']:req.socket.remoteAddress)??'unknown',busy={error:'Too many requests. Please wait.'};
+   if(path==='/webhooks/didit'){if(limited('webhook','all'))return send(429,busy);}
+   else if(limited('client',client)||limited('global','all')||(['/api/session','/api/authenticate'].includes(path)&&limited('create',client)))return send(429,busy);
    let size=0;const chunks=[];for await(const c of req){size+=c.length;if(size>(path==='/webhooks/didit'?1_000_000:16000))return send(413,{error:'Request too large'});chunks.push(c);}const raw=Buffer.concat(chunks);
    if(path==='/webhooks/didit'){if(mode==='demo')return send(403,{error:'Live webhooks disabled'});const event=verifyWebhook(raw,req.headers,webhookSecret,now(),{allowTransportTest:true});if(req.headers['x-didit-test-webhook']==='true')return send(200,{ok:true,test:true,admissionApplied:false});if(queue)queue.enqueue(event);else await admission.webhook(event);return send(200,{ok:true});}
    const b=JSON.parse(raw);
@@ -48,7 +55,7 @@ export function createClaimServer({origin,admission,chain,data,mode='demo',webho
     if(path==='/api/demo/claim'){if(!s.eligibleAt||s.eligibleAt>now()||s.demoClaimed)throw Error('Claim unavailable');s.demoClaimed=true;data.save();return send(200,{simulated:true,amount:1000});}
    }
    return send(404,{error:'Not found'});
-  }catch(e){if(mode!=='demo')console.error(JSON.stringify({event:'request_rejected',providerHttpStatus:e.httpStatus??null,reason:['Invalid provider session','Identity provider unavailable','Wallet challenge expired','Decision does not match application'].includes(e.message)?e.message:'Request validation rejected'}));const allowed=['Application access denied','Wallet challenge expired','Identity approval is required','Claim unavailable','No new entitlement','Authenticate your wallet first'];send(400,{error:allowed.includes(e.message)?e.message:'Request could not be completed. Check your application status and try again.'});}
+  }catch(e){if(mode!=='demo')console.error(JSON.stringify({event:'request_rejected',providerHttpStatus:e.httpStatus??null,reason:['Invalid provider session','Identity provider unavailable','Wallet challenge expired','Decision does not match application'].includes(e.message)?e.message:'Request validation rejected'}));const allowed=['Application access denied','Wallet challenge expired','Identity approval is required','Claim unavailable','No new entitlement','Authenticate your wallet first','Identity checks are paused for today. Please try again tomorrow.'];send(400,{error:allowed.includes(e.message)?e.message:'Request could not be completed. Check your application status and try again.'});}
  });
 }
 if(process.argv[1]===fileURLToPath(import.meta.url)){
@@ -76,8 +83,9 @@ if(process.argv[1]===fileURLToPath(import.meta.url)){
   verifierKey=generateKeyPairSync('ed25519').privateKey;personSecret='local-test-only-secret-not-for-production';provider={decisions:new Map(),async create(id){const pid=randomUUID();this.decisions.set(pid,{session_id:pid,vendor_data:id,workflow_id:env.DIDIT_WORKFLOW_ID??'local-demo',status:'Not Started'});return {id:pid,url:'https://verify.didit.me/session/local-demo-not-live'};},async decision(id){const d=this.decisions.get(id);if(!d)throw Error('Demo identity not completed');return d;}};
  }
  data??=storage(mode==='demo'?':memory:':fileURLToPath(new URL('./.state/claim.sqlite',import.meta.url)));
- const admission=new ClaimAdmission({program:env.HELI_PROGRAM_ID??PROGRAM,workflowId:env.DIDIT_WORKFLOW_ID??'local-demo',applicationId:env.DIDIT_APPLICATION_ID??'local-demo',provider,personSecret,verifierKey,data});
+ const admission=new ClaimAdmission({program:env.HELI_PROGRAM_ID??PROGRAM,workflowId:env.DIDIT_WORKFLOW_ID??'local-demo',applicationId:env.DIDIT_APPLICATION_ID??'local-demo',provider,personSecret,verifierKey,data,dailyProviderSessions:Number(env.HELI_DAILY_PROVIDER_SESSIONS??200)});
  const queue=mode==='demo'?null:new WebhookQueue({admission,data});
  const timer=queue?setInterval(()=>queue.step().catch(()=>{}),1000):null;
- const server=createClaimServer({origin,admission,chain,data,mode,queue,webhookSecret:env.DIDIT_WEBHOOK_SECRET});server.listen(port,'127.0.0.1',()=>console.log('HELI V20 claim service '+mode+' '+origin));for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{if(timer)clearInterval(timer);server.close(()=>{data.close();process.exit(0);});});
+ // Only trust Cloudflare's client IP header when the service is reachable solely through the tunnel (loopback bind).
+ const server=createClaimServer({origin,admission,chain,data,mode,queue,webhookSecret:env.DIDIT_WEBHOOK_SECRET,trustProxy:env.HELI_TRUST_CF_CONNECTING_IP==='true'});server.listen(port,'127.0.0.1',()=>console.log('HELI V20 claim service '+mode+' '+origin));for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{if(timer)clearInterval(timer);server.close(()=>{data.close();process.exit(0);});});
 }

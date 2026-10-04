@@ -3,13 +3,13 @@ import {hash,verifyWallet,proofMessage} from '../mobile/identity.mjs';
 import {web3} from '../mobile/deps.mjs';
 import {evaluateDecision} from './didit.mjs';
 export class ClaimAdmission {
- constructor({program,workflowId,applicationId,provider,personSecret,verifierKey,data,environment='live',now=()=>Math.floor(Date.now()/1000)}){Object.assign(this,{program,workflowId,applicationId,provider,personSecret,verifierKey,data,environment,now});this.config=web3.PublicKey.findProgramAddressSync([Buffer.from('config')],new web3.PublicKey(program))[0].toBase58();}
- session(wallet){new web3.PublicKey(wallet);const token=randomBytes(32).toString('hex'),id=randomUUID(),expiresAt=this.now()+900;const message=`HELI initial free allocation\nWallet: ${wallet}\nApplication: ${id}\nNonce: ${randomBytes(24).toString('hex')}\nExpires: ${expiresAt}\nThis signature proves wallet ownership. It does not authorize a payment.`;const s={id,wallet,tokenHash:hash(token),message,expiresAt,status:'challenge'};this.data.sessions[id]=s;this.data.save();return {id,wallet,token,message};}
+ constructor({program,workflowId,applicationId,provider,personSecret,verifierKey,data,environment='live',dailyProviderSessions=200,now=()=>Math.floor(Date.now()/1000)}){Object.assign(this,{program,workflowId,applicationId,provider,personSecret,verifierKey,data,environment,dailyProviderSessions,now});this.config=web3.PublicKey.findProgramAddressSync([Buffer.from('config')],new web3.PublicKey(program))[0].toBase58();}
+ session(wallet){new web3.PublicKey(wallet);for(const [k,x] of Object.entries(this.data.sessions))if(x.status==='challenge'&&!x.providerId&&x.expiresAt<this.now()-3600)delete this.data.sessions[k];const token=randomBytes(32).toString('hex'),id=randomUUID(),expiresAt=this.now()+900;const message=`HELI initial free allocation\nWallet: ${wallet}\nApplication: ${id}\nNonce: ${randomBytes(24).toString('hex')}\nExpires: ${expiresAt}\nThis signature proves wallet ownership. It does not authorize a payment.`;const s={id,wallet,tokenHash:hash(token),message,expiresAt,status:'challenge'};this.data.sessions[id]=s;this.data.save();return {id,wallet,token,message};}
  get(id,token){const s=this.data.sessions[id];if(!s||typeof token!=='string'||hash(token)!==s.tokenHash)throw Error('Application access denied');return s;}
  async authenticate(s,signature){
   if(s.providerId)return {verificationUrl:s.verificationUrl};
   if(s.status!=='challenge'||this.now()>s.expiresAt)throw Error('Wallet challenge expired');verifyWallet(s.wallet,Buffer.from(s.message),signature);
-  if(s.creating)throw Error('Verification session is being created');s.creating=true;
+  if(s.creating)throw Error('Verification session is being created');const day=Math.floor(this.now()/86400).toString(),created=(this.data.providerSessions??={})[day]??0;if(created>=this.dailyProviderSessions)throw Error('Identity checks are paused for today. Please try again tomorrow.');this.data.providerSessions[day]=created+1;s.creating=true;
   try{const r=await this.provider.create(s.id);s.providerId=r.id;s.verificationUrl=r.url;s.status='verifying';this.data.save();return {verificationUrl:r.url};}finally{delete s.creating;}
  }
  apply(s,d){const r=evaluateDecision(d,{sessionId:s.providerId,vendorData:s.id,workflowId:this.workflowId,personSecret:this.personSecret});
