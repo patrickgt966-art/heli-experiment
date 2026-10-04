@@ -486,6 +486,15 @@ pub struct ExecuteExpense<'info> {
 }
 
 #[derive(Accounts)]
+pub struct CancelExpense<'info> {
+ #[account(seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
+ pub config:Box<Account<'info,Config>>,
+ #[account(mut,seeds=[b"expense".as_ref(),&expense.nonce.to_le_bytes()],bump)]
+ pub expense:Box<Account<'info,Expense>>,
+ pub admin:Signer<'info>,
+}
+
+#[derive(Accounts)]
 pub struct ClaimLaunch<'info> {
  #[account(mut,seeds=[b"config".as_ref()],bump=config.bump)]
  pub config:Box<Account<'info,Config>>,

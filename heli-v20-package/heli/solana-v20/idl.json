@@ -2121,6 +2121,27 @@
       "args": []
     },
     {
+      "name": "cancelExpense",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "expense",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "claimLaunch",
       "accounts": [
         {
@@ -3276,6 +3297,10 @@
           {
             "name": "paid",
             "type": "bool"
+          },
+          {
+            "name": "cancelled",
+            "type": "bool"
           }
         ]
       }
@@ -3684,6 +3709,26 @@
               32
             ]
           },
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "ExpenseCancelled",
+      "fields": [
+        {
+          "name": "nonce",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "destination",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "amount",
+          "type": "u64",
           "index": false
         }
       ]

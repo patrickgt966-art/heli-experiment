@@ -121,7 +121,9 @@ pub mod heli_core_v20 {
  }
  pub fn execute_expense(mut ctx:Context<ExecuteExpense>)->Result<()> {
   let a=&mut ctx.accounts;let now=Clock::get()?.unix_timestamp;
-  require!(!a.expense.paid&&now>=a.expense.ready_at,ErrorCode::Time);
+  // A pause halts treasury outflows; a cancelled proposal can never be executed.
+  require!(!a.config.paused,ErrorCode::State);
+  require!(!a.expense.paid&&!a.expense.cancelled&&now>=a.expense.ready_at,ErrorCode::Time);
   let window=epoch(a.config.start,now);
   if a.operations.window!=window {a.operations.window=window;a.operations.spent_in_window=0;}
   let amount=a.expense.amount;
@@ -135,6 +137,11 @@ pub mod heli_core_v20 {
   a.expense.paid=true;
   emit!(ExpenseExecuted{nonce:a.expense.nonce,destination:a.expense.destination,amount,purpose:a.expense.purpose});
   Ok(())
+ }
+ // The seven-day delay is a review window: the administrator can withdraw an unpaid proposal before it executes.
+ pub fn cancel_expense(ctx:Context<CancelExpense>)->Result<()> {
+  let e=&mut ctx.accounts.expense;require!(!e.paid&&!e.cancelled,ErrorCode::State);e.cancelled=true;
+  emit!(ExpenseCancelled{nonce:e.nonce,destination:e.destination,amount:e.amount});Ok(())
  }
  pub fn claim_launch(ctx:Context<ClaimLaunch>)->Result<()> {
   require!(ctx.accounts.receipt.valid&&!ctx.accounts.receipt.claimed&&Clock::get()?.unix_timestamp>=ctx.accounts.receipt.eligible_at,ErrorCode::Time);
@@ -217,8 +224,9 @@ fn market_ready(m:&Market,x:u64,y:u64,now:i64)->Result<bool> {
 }
 #[account] pub struct Config {pub admin:Pubkey,pub mint:Pubkey,pub quote_mint:Pubkey,pub history:Pubkey,pub start:i64,pub cursor:i64,pub stocks:[u64;4],pub principal:u64,pub lp_requested:u64,pub apr_bps:u16,pub pending_apr:u16,pub apr_effective:u16,pub bump:u8,pub vault_mask:u8,pub live:bool,pub closed:bool,pub paused:bool,pub last_settled_epoch:u16,pub launch_people:u32,pub launch_claimed:u32,pub launch_finalized:bool,pub launch_per_person:u64,pub launch_remaining:u64,pub market_remaining:u64,pub sale_authorized:u64,pub sale_total_sold:u64,pub sale_order:Pubkey,pub meteora_instruction_hash:[u8;32],pub meteora_committed_at:i64,pub meteora_pool:Pubkey,pub meteora_listed:bool,pub dlmm_pair:Pubkey,pub dlmm_committed_at:i64,pub dlmm_floor_bin:i32,pub dlmm_heli_is_x:bool,pub dlmm_listed:bool,pub dlmm_active_id:i32,pub dlmm_bin_step:u16,pub dlmm_base_factor:u16,pub dlmm_pool_created:bool,pub manifest_market:Pubkey,pub manifest_trader_bump:u8,pub manifest_bound:bool,pub manifest_base_deposited:u64,pub manifest_base_returned:u64,pub manifest_quote_withdrawn:u64}
 #[account] pub struct Operations {pub monthly_cap:u64,pub reserve:u64,pub window:u16,pub spent_in_window:u64,pub earned_total:u64,pub spent_total:u64,pub next_nonce:u64,pub donated_total:u64,pub sale_allocated_total:u64}
-#[account] pub struct Expense {pub destination:Pubkey,pub proposer:Pubkey,pub purpose:[u8;32],pub amount:u64,pub ready_at:i64,pub nonce:u64,pub paid:bool}
+#[account] pub struct Expense {pub destination:Pubkey,pub proposer:Pubkey,pub purpose:[u8;32],pub amount:u64,pub ready_at:i64,pub nonce:u64,pub paid:bool,pub cancelled:bool}
 #[event] pub struct ExpenseExecuted {pub nonce:u64,pub destination:Pubkey,pub amount:u64,pub purpose:[u8;32]}
+#[event] pub struct ExpenseCancelled {pub nonce:u64,pub destination:Pubkey,pub amount:u64}
 #[event] pub struct QuoteContribution {pub contributor:Pubkey,pub amount:u64}
 #[event] pub struct AuctionProceedsAllocated {pub amount:u64}
 #[event] pub struct CalendarBoundary {pub number:u16,pub timestamp:i64}
