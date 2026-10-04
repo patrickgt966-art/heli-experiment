@@ -1,0 +1,15 @@
+{
+ "program":"HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv",
+ "rpcUrl":"https://api.devnet.solana.com",
+ "keeperKeyFile":"LOCAL_DEDICATED_KEEPER_KEY_FILE",
+ "dailyCapLamports":50000000,
+ "reserveLamports":5000000,
+ "trust":{
+  "admin":"SET_VERIFIED_ADMIN_PUBLIC_KEY",
+  "verifier":"SET_VERIFIED_IDENTITY_PUBLIC_KEY",
+  "heliUpgradeAuthority":null,
+  "manifestUpgradeAuthority":null,
+  "manifestHash":"SET_VERIFIED_MANIFEST_ELF_SHA256",
+  "manifestLength":335040
+ }
+}

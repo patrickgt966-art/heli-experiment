@@ -1,0 +1,123 @@
+//! Single-manager project treasury on the bound Manifest market.
+//! New treasury releases consume the legacy founder epoch budget exactly once.
+//! Market collateral, cancelled orders and purchased HELI never refill locked stock.
+use anchor_lang::prelude::*;
+use anchor_lang::solana_program::{instruction::{AccountMeta,Instruction},program::{invoke,invoke_signed},system_instruction};
+use anchor_spl::token::{self,Mint,Token,TokenAccount,Transfer};
+use crate::{Config,Epoch,ErrorCode,UNIT,boundary,outgoing,manifest_bridge::check_market,release::{ReleasePolicy,reference_price,top_bid}};
+
+#[account]
+pub struct ManagementBook {pub quote_floor:u64,pub total_released:u64,pub quote_funded:u64,pub quote_returned:u64,pub trader_bump:u8}
+
+#[derive(Accounts)]
+pub struct InitializeManagement<'info>{
+ #[account(seeds=[b"config"],bump=config.bump,has_one=admin)] pub config:Box<Account<'info,Config>>,
+ #[account(address=config.mint)] pub mint:Box<Account<'info,Mint>>,
+ #[account(address=config.quote_mint)] pub quote_mint:Box<Account<'info,Mint>>,
+ #[account(init,payer=admin,space=8+33,seeds=[b"management-book"],bump)] pub management_book:Box<Account<'info,ManagementBook>>,
+ /// CHECK: Fixed System-owned signer PDA; Manifest seat is claimed by CPI.
+ #[account(init,payer=admin,space=0,owner=system_program.key(),seeds=[b"management-trader"],bump)] pub management_trader:UncheckedAccount<'info>,
+ #[account(init,payer=admin,token::mint=mint,token::authority=management_trader,seeds=[b"management-base"],bump)] pub management_base:Box<Account<'info,TokenAccount>>,
+ #[account(init,payer=admin,token::mint=quote_mint,token::authority=management_trader,seeds=[b"management-quote"],bump)] pub management_quote:Box<Account<'info,TokenAccount>>,
+ /// CHECK: Bound market, owner, mints, program and header checked before CPI.
+ #[account(mut,address=config.manifest_market)] pub manifest_market:UncheckedAccount<'info>,
+ /// CHECK: Executable pinned Manifest program checked by check_market.
+ pub manifest_program:UncheckedAccount<'info>,
+ #[account(mut)] pub admin:Signer<'info>,pub token_program:Program<'info,Token>,pub system_program:Program<'info,System>,pub rent:Sysvar<'info,Rent>,
+}
+
+pub fn initialize(mut ctx:Context<InitializeManagement>,quote_floor:u64,rent_lamports:u64)->Result<()> {
+ let a=&mut ctx.accounts;require!(a.config.live&&!a.config.closed&&a.config.manifest_bound&&rent_lamports>=1_000_000&&rent_lamports<=100_000_000,ErrorCode::State);
+ check_market(&a.manifest_market.to_account_info(),&a.manifest_program.to_account_info(),&a.config.mint,&a.config.quote_mint)?;
+ invoke(&system_instruction::transfer(&a.admin.key(),&a.management_trader.key(),rent_lamports),&[a.admin.to_account_info(),a.management_trader.to_account_info(),a.system_program.to_account_info()])?;
+ let bump=[ctx.bumps.management_trader];let sign:&[&[u8]]=&[b"management-trader",&bump];
+ let ix=Instruction{program_id:a.manifest_program.key(),data:vec![1],accounts:vec![AccountMeta::new(a.management_trader.key(),true),AccountMeta::new(a.manifest_market.key(),false),AccountMeta::new_readonly(a.system_program.key(),false)]};
+ invoke_signed(&ix,&[a.management_trader.to_account_info(),a.manifest_market.to_account_info(),a.system_program.to_account_info(),a.manifest_program.to_account_info()],&[sign])?;
+ a.management_book.quote_floor=quote_floor;a.management_book.trader_bump=ctx.bumps.management_trader;Ok(())
+}
+
+#[derive(Accounts)]
+pub struct ManagementAction<'info>{
+ #[account(mut,seeds=[b"config"],bump=config.bump,has_one=admin)] pub config:Box<Account<'info,Config>>,
+ #[account(address=config.mint)] pub mint:Box<Account<'info,Mint>>,
+ #[account(address=config.quote_mint)] pub quote_mint:Box<Account<'info,Mint>>,
+ #[account(mut,seeds=[b"management-book"],bump)] pub management_book:Box<Account<'info,ManagementBook>>,
+ #[account(mut,seeds=[b"management-trader"],bump=management_book.trader_bump)] pub management_trader:SystemAccount<'info>,
+ #[account(mut,seeds=[b"management-base"],bump,token::mint=mint,token::authority=management_trader)] pub management_base:Box<Account<'info,TokenAccount>>,
+ #[account(mut,seeds=[b"management-quote"],bump,token::mint=quote_mint,token::authority=management_trader)] pub management_quote:Box<Account<'info,TokenAccount>>,
+ #[account(mut,seeds=[b"auction-proceeds"],bump,token::mint=quote_mint,token::authority=config)] pub project_quote:Box<Account<'info,TokenAccount>>,
+ #[account(mut,seeds=[b"vault",&[3u8]],bump,token::mint=mint,token::authority=config)] pub management_stock:Box<Account<'info,TokenAccount>>,
+ #[account(mut,seeds=[b"epoch",&epoch.number.to_le_bytes()],bump=epoch.bump)] pub epoch:Box<Account<'info,Epoch>>,
+ #[account(seeds=[b"release-policy"],bump)] pub policy:Box<Account<'info,ReleasePolicy>>,
+ /// CHECK: Bound market and its canonical vaults are checked for every operation.
+ #[account(mut,address=config.manifest_market)] pub manifest_market:UncheckedAccount<'info>,
+ /// CHECK: Pinned Manifest executable checked by check_market.
+ pub manifest_program:UncheckedAccount<'info>,
+ /// CHECK: Canonical market base vault checked by market().
+ #[account(mut)] pub base_vault:UncheckedAccount<'info>,
+ /// CHECK: Canonical market quote vault checked by market().
+ #[account(mut)] pub quote_vault:UncheckedAccount<'info>,
+ #[account(mut)] pub admin:Signer<'info>,pub token_program:Program<'info,Token>,pub system_program:Program<'info,System>,
+}
+
+fn market(a:&ManagementAction)->Result<()> {
+ require!(a.config.manifest_bound,ErrorCode::Market);
+ let(b,q)=check_market(&a.manifest_market.to_account_info(),&a.manifest_program.to_account_info(),&a.config.mint,&a.config.quote_mint)?;
+ require_keys_eq!(a.base_vault.key(),b,ErrorCode::Market);require_keys_eq!(a.quote_vault.key(),q,ErrorCode::Market);Ok(())
+}
+fn active(a:&ManagementAction)->Result<()> {require!(a.config.live&&!a.config.closed&&!a.config.paused,ErrorCode::State);market(a)}
+fn invoke_management<'a>(a:&ManagementAction<'a>,data:Vec<u8>,metas:Vec<AccountMeta>,mut infos:Vec<AccountInfo<'a>>)->Result<()> {
+ let bump=[a.management_book.trader_bump];let sign:&[&[u8]]=&[b"management-trader",&bump];
+ infos.push(a.manifest_program.to_account_info());invoke_signed(&Instruction{program_id:a.manifest_program.key(),data,accounts:metas},&infos,&[sign])?;Ok(())
+}
+fn deposit_or_withdraw(a:&ManagementAction,base:bool,amount:u64,tag:u8)->Result<()> {
+ let(wallet,vault,mint)=if base {(a.management_base.to_account_info(),a.base_vault.to_account_info(),a.mint.to_account_info())}else{(a.management_quote.to_account_info(),a.quote_vault.to_account_info(),a.quote_mint.to_account_info())};
+ let mut data=vec![tag];data.extend_from_slice(&amount.to_le_bytes());data.push(0);
+ invoke_management(a,data,vec![AccountMeta::new_readonly(a.management_trader.key(),true),AccountMeta::new(a.manifest_market.key(),false),AccountMeta::new(wallet.key(),false),AccountMeta::new(vault.key(),false),AccountMeta::new_readonly(a.token_program.key(),false),AccountMeta::new_readonly(mint.key(),false)],vec![a.management_trader.to_account_info(),a.manifest_market.to_account_info(),wallet,vault,a.token_program.to_account_info(),mint])
+}
+
+pub fn fund_quote(mut ctx:Context<ManagementAction>,amount:u64)->Result<()> {
+ let a=&mut ctx.accounts;active(a)?;require!(amount>0,ErrorCode::Quota);
+ let needed=amount.checked_add(a.management_book.quote_floor).ok_or(ErrorCode::Math)?;require!(a.project_quote.amount>=needed,ErrorCode::Collateral);
+ outgoing(a.token_program.to_account_info(),a.project_quote.to_account_info(),a.management_quote.to_account_info(),a.config.to_account_info(),a.config.bump,amount)?;
+ deposit_or_withdraw(a,false,amount,2)?;
+ a.management_book.quote_funded=a.management_book.quote_funded.checked_add(amount).ok_or(ErrorCode::Math)?;Ok(())
+}
+
+pub fn release(mut ctx:Context<ManagementAction>,amount:u64)->Result<()> {
+ let a=&mut ctx.accounts;active(a)?;let now=Clock::get()?;let e=&a.epoch;let c=&a.config;
+ require!(amount>0&&e.settled&&e.number>=12&&e.number<720&&e.number==c.last_settled_epoch&&now.unix_timestamp>=boundary(c.start,e.number)&&now.unix_timestamp<boundary(c.start,e.number+1),ErrorCode::Time);
+ let used=e.founder.checked_add(amount).ok_or(ErrorCode::Math)?;
+ let non_management=e.human_budget as u128;
+ require!(used<=e.founder_budget&&used<=e.capacity/5&&used as u128*4<=non_management&&amount<=c.stocks[3]&&a.management_stock.amount>=c.stocks[3],ErrorCode::Quota);
+ let ref_price=reference_price(&a.policy,now.unix_timestamp)?;let(price,depth)=top_bid(&a.manifest_market.to_account_info(),&now)?;
+ require!(price as u128*100>=ref_price as u128*98&&price as u128*100<=ref_price as u128*102&&amount<=depth/50&&price as u128*depth as u128/UNIT as u128>=a.policy.minimum_quote_depth as u128,ErrorCode::Market);
+ outgoing(a.token_program.to_account_info(),a.management_stock.to_account_info(),a.management_base.to_account_info(),c.to_account_info(),c.bump,amount)?;
+ a.config.stocks[3]-=amount;a.epoch.founder=used;
+ require!(a.epoch.human_budget as u128+a.epoch.staking as u128+a.epoch.liquidity as u128+used as u128<=a.epoch.capacity as u128,ErrorCode::Quota);
+ a.management_book.total_released=a.management_book.total_released.checked_add(amount).ok_or(ErrorCode::Math)?;
+ // Withdrawal/cancellation never reverses this release or refills this epoch's budget.
+ Ok(())
+}
+
+pub fn order(ctx:Context<ManagementAction>,amount:u64,base_deposit:u64,mantissa:u32,exponent:i8,is_bid:bool)->Result<()> {
+ let a=&ctx.accounts;active(a)?;require!(amount>0&&mantissa>0&&exponent>=-18&&exponent<=18&&(!is_bid||base_deposit==0),ErrorCode::Quota);
+ if base_deposit>0 {require!(base_deposit<=a.management_base.amount,ErrorCode::Collateral);deposit_or_withdraw(a,true,base_deposit,2)?;}
+ let mut data=vec![6,0];data.extend_from_slice(&0u32.to_le_bytes());data.extend_from_slice(&1u32.to_le_bytes());
+ data.extend_from_slice(&amount.to_le_bytes());data.extend_from_slice(&mantissa.to_le_bytes());data.push(exponent as u8);data.push(is_bid as u8);data.extend_from_slice(&0u32.to_le_bytes());data.push(0);
+ invoke_management(a,data,vec![AccountMeta::new(a.management_trader.key(),true),AccountMeta::new(a.manifest_market.key(),false),AccountMeta::new_readonly(a.system_program.key(),false)],vec![a.management_trader.to_account_info(),a.manifest_market.to_account_info(),a.system_program.to_account_info()])
+}
+pub fn cancel(ctx:Context<ManagementAction>,sequence:u64)->Result<()> {
+ let a=&ctx.accounts;market(a)?;let mut data=vec![6,0];data.extend_from_slice(&1u32.to_le_bytes());data.extend_from_slice(&sequence.to_le_bytes());data.push(0);data.extend_from_slice(&0u32.to_le_bytes());
+ invoke_management(a,data,vec![AccountMeta::new(a.management_trader.key(),true),AccountMeta::new(a.manifest_market.key(),false),AccountMeta::new_readonly(a.system_program.key(),false)],vec![a.management_trader.to_account_info(),a.manifest_market.to_account_info(),a.system_program.to_account_info()])
+}
+pub fn withdraw(mut ctx:Context<ManagementAction>,amount:u64,is_base:bool)->Result<()> {
+ let a=&mut ctx.accounts;market(a)?;require!(amount>0,ErrorCode::Quota);deposit_or_withdraw(a,is_base,amount,3)?;
+ if !is_base {
+  let bump=[a.management_book.trader_bump];let sign:&[&[u8]]=&[b"management-trader",&bump];
+  token::transfer(CpiContext::new_with_signer(a.token_program.to_account_info(),Transfer{from:a.management_quote.to_account_info(),to:a.project_quote.to_account_info(),authority:a.management_trader.to_account_info()},&[sign]),amount)?;
+  a.management_book.quote_returned=a.management_book.quote_returned.checked_add(amount).ok_or(ErrorCode::Math)?;
+ }
+ // HELI remains in management_base as already-released working inventory.
+ Ok(())
+}

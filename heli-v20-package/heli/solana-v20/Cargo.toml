@@ -1,0 +1,19 @@
+[package]
+name = "heli_core_v20"
+version = "0.1.0"
+edition = "2021"
+[lib]
+crate-type = ["cdylib", "lib"]
+[features]
+default = []
+no-entrypoint = []
+cpi = ["no-entrypoint"]
+no-idl = []
+no-log-ix-name = []
+[dependencies]
+anchor-lang = "=0.29.0"
+anchor-spl = "=0.29.0"
+[profile.release]
+overflow-checks = true
+lto = "fat"
+codegen-units = 1

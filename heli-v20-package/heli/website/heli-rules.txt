@@ -1,0 +1,45 @@
+HELI — experiment rules and status
+October 2, 2026. Design summary; not a live distribution or investment commitment.
+
+Initial mint: 100 million HELI. Initial burn: 10 million. Maximum remaining supply: 90 million.
+Initial release base: 5 million. 1 million for the initial free allocation; 4 million for the market.
+Free initial allocation: up to 1,000 verified people, 1,000 HELI each.
+Individual family members may apply separately. One person may not claim multiple free allocations.
+Registration during the first six months, closing seven days before the end.
+A seven-day waiting period is planned for valid registrations.
+Unassigned initial free inventory moves to sale inventory; earned but unclaimed allocations stay protected.
+
+Locked allocations: Monthly Market Release Reserve 70 million and HELI Management Treasury 15 million.
+The Management Treasury combines the former founder 5M, market-support 5M and staking 5M allocations.
+Staking is cancelled and has no allocation or new deposits/rewards. There is no separate liquidity release budget.
+Shared monthly release cap: approximately 0.402247% of the supply already released and not burned.
+The monthly rate describes a conditional 5M-to-90M upper path over 720 months, with full capacity use and no further burns.
+Only the separate initial 1 million HELI is free. There is no monthly free dividend or monthly person-count formula.
+The 70 million reserve supplies sale inventory after the first month closes and at subsequent monthly boundaries.
+The rate applies to released, unburned supply, initially 5 million, not to the 70 million reserve balance.
+The first monthly cap is 20,112.368685 HELI. Management, once unlocked, shares this same total cap.
+The unlocked part moves to the fixed project market inventory. Matching funded orders are needed for a sale.
+Unsold released tokens wait for buyers and are not burned monthly. Cancelling an order does not re-lock stock.
+Monthly settlement requires a transaction; anyone can trigger the fixed amount and destination.
+Delayed periods are settled in order. Unused management permissions expire.
+At the 60-year close, only still-locked stock follows the existing final burn rule; unsold released inventory is protected.
+New Management Treasury HELI releases are locked for the first 12 months.
+Afterward, sales and newly released liquidity inventory share at most 20% of monthly capacity
+and one quarter of actual releases outside the Management Treasury, with market checks.
+The single manager can direct funded limit buy/sell orders, cancel orders and return assets to project accounts.
+Sale revenue stays in the project reserve. Bid liquidity needs actual quote funds.
+Released working HELI, cancelled orders and bought HELI never refill locked treasury stock or reset release quotas.
+V20 passed 1,606 checks/transactions using real program binaries in a local Solana simulator,
+including all 720 monthly periods, initial free claims, monthly unlocks, market trades and treasury controls.
+It is not deployed, live trading, guaranteed liquidity or buybacks.
+
+The opening auction's minimum price and parameters will be announced.
+Buy and sell orders determine prices after opening. There is no per-buyer purchase limit.
+Unsold HELI is not cash revenue. No fixed price, guaranteed liquidity, buyback or guaranteed operating revenue.
+
+Real Didit pilot: first passport application APPROVED. Second application by the same person
+IN REVIEW with duplicate-person and duplicate-face warnings. Different-document and separate-family-member
+live tests remain pending. The HELI program was tested in a local Solana simulator.
+Devnet/mainnet deployment and an independent security review remain pending.
+Official live token and market addresses have not been published. Free distribution has not started.
+This website does not collect documents, face images, private keys or application records.

@@ -1,0 +1,25 @@
+{
+  "time": "2026-09-30T19:19:39.713Z",
+  "scope": "read-only mainnet RPC rent, exact ELF allocation, no deployment",
+  "rentBySize": {
+    "36": 833120,
+    "40": 853440,
+    "50": 904240,
+    "82": 1066800,
+    "105": 1183640,
+    "165": 1488440,
+    "168": 1503680,
+    "256": 1950720,
+    "23048": 117734080,
+    "1283621": 6521444920
+  },
+  "programAccountsSol": 6.52227804,
+  "monthlyAccountsSol": 0.00448056,
+  "feeQuote": {
+    "twoTransactionSigners": 10000,
+    "twoSignersAndNativeEd25519": 15000
+  },
+  "firstApplicantRentSol": 0.00442976,
+  "firstApplicantFeeSol": 0.000025,
+  "firstApplicantTotalSol": 0.0044547599999999994
+}

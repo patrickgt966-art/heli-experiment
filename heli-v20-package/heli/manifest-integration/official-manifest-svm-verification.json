@@ -1,0 +1,13 @@
+{
+  "market": "W1Dwk7gkVV4TFRUvfrPnyCCZ5hircoBRdRAABGh9KKx",
+  "manifest_version": "program-v3.0.24",
+  "matched_heli": 1000,
+  "quote_atoms_received": 1000000,
+  "checks": [
+    "Manifest buy/sell limit order",
+    "withdraw Manifest trade proceeds",
+    "withdraw Manifest trade proceeds",
+    "Manifest matched HELI sell and buy orders at market price",
+    "HELI free distribution vault stayed separate"
+  ]
+}

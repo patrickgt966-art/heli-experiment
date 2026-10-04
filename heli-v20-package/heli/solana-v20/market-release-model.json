@@ -1,0 +1,153 @@
+{
+  "rate_percent": 0.4022473737086389,
+  "initial_base_HELI": 5000000,
+  "scope": "Policy arithmetic only; not a price or demand forecast. Actual ELF acceptance separately verifies all 720 months.",
+  "with_full_management_capacity_use": [
+    {
+      "month": 1,
+      "cap_HELI": 20112.368685,
+      "market_unlock_HELI": 20112.368685,
+      "management_release_HELI": 0.0,
+      "released_HELI": 5020112.368685,
+      "market_locked_HELI": 69979887.631315,
+      "management_locked_HELI": 15000000.0
+    },
+    {
+      "month": 2,
+      "cap_HELI": 20193.27016,
+      "market_unlock_HELI": 20193.27016,
+      "management_release_HELI": 0.0,
+      "released_HELI": 5040305.638845,
+      "market_locked_HELI": 69959694.361155,
+      "management_locked_HELI": 15000000.0
+    },
+    {
+      "month": 3,
+      "cap_HELI": 20274.497059,
+      "market_unlock_HELI": 20274.497059,
+      "management_release_HELI": 0.0,
+      "released_HELI": 5060580.135904,
+      "market_locked_HELI": 69939419.864096,
+      "management_locked_HELI": 15000000.0
+    },
+    {
+      "month": 6,
+      "cap_HELI": 20520.143416,
+      "market_unlock_HELI": 20520.143416,
+      "management_release_HELI": 0.0,
+      "released_HELI": 5121894.262381,
+      "market_locked_HELI": 69878105.737619,
+      "management_locked_HELI": 15000000.0
+    },
+    {
+      "month": 12,
+      "cap_HELI": 21020.400965,
+      "market_unlock_HELI": 16816.320772,
+      "management_release_HELI": 4204.080193,
+      "released_HELI": 5246760.167,
+      "market_locked_HELI": 69757443.913193,
+      "management_locked_HELI": 14995795.919807
+    },
+    {
+      "month": 120,
+      "cap_HELI": 32428.874181,
+      "market_unlock_HELI": 25943.099345,
+      "management_release_HELI": 6485.774836,
+      "released_HELI": 8094352.034229,
+      "market_locked_HELI": 67479370.419362,
+      "management_locked_HELI": 14426277.546409
+    },
+    {
+      "month": 360,
+      "cap_HELI": 84987.692934,
+      "market_unlock_HELI": 67990.154348,
+      "management_release_HELI": 16997.538586,
+      "released_HELI": 21213203.435198,
+      "market_locked_HELI": 56984289.29849,
+      "management_locked_HELI": 11802507.266312
+    },
+    {
+      "month": 720,
+      "cap_HELI": 360572.243947,
+      "market_unlock_HELI": 360572.243947,
+      "management_release_HELI": 0.0,
+      "released_HELI": 89999999.997911,
+      "market_locked_HELI": 0.002089,
+      "management_locked_HELI": 0.0
+    }
+  ],
+  "without_management_releases": [
+    {
+      "month": 1,
+      "cap_HELI": 20112.368685,
+      "market_unlock_HELI": 20112.368685,
+      "management_release_HELI": 0.0,
+      "released_HELI": 5020112.368685,
+      "market_locked_HELI": 69979887.631315,
+      "management_locked_HELI": 15000000.0
+    },
+    {
+      "month": 2,
+      "cap_HELI": 20193.27016,
+      "market_unlock_HELI": 20193.27016,
+      "management_release_HELI": 0.0,
+      "released_HELI": 5040305.638845,
+      "market_locked_HELI": 69959694.361155,
+      "management_locked_HELI": 15000000.0
+    },
+    {
+      "month": 3,
+      "cap_HELI": 20274.497059,
+      "market_unlock_HELI": 20274.497059,
+      "management_release_HELI": 0.0,
+      "released_HELI": 5060580.135904,
+      "market_locked_HELI": 69939419.864096,
+      "management_locked_HELI": 15000000.0
+    },
+    {
+      "month": 6,
+      "cap_HELI": 20520.143416,
+      "market_unlock_HELI": 20520.143416,
+      "management_release_HELI": 0.0,
+      "released_HELI": 5121894.262381,
+      "market_locked_HELI": 69878105.737619,
+      "management_locked_HELI": 15000000.0
+    },
+    {
+      "month": 12,
+      "cap_HELI": 21020.400965,
+      "market_unlock_HELI": 16816.320772,
+      "management_release_HELI": 0.0,
+      "released_HELI": 5242556.086807,
+      "market_locked_HELI": 69757443.913193,
+      "management_locked_HELI": 15000000.0
+    },
+    {
+      "month": 120,
+      "cap_HELI": 29739.531191,
+      "market_unlock_HELI": 23791.624953,
+      "management_release_HELI": 0.0,
+      "released_HELI": 7417135.406817,
+      "market_locked_HELI": 67582864.593183,
+      "management_locked_HELI": 15000000.0
+    },
+    {
+      "month": 360,
+      "cap_HELI": 64299.518808,
+      "market_unlock_HELI": 51439.615047,
+      "management_release_HELI": 0.0,
+      "released_HELI": 16036508.259595,
+      "market_locked_HELI": 58963491.740405,
+      "management_locked_HELI": 15000000.0
+    },
+    {
+      "month": 720,
+      "cap_HELI": 204417.526994,
+      "market_unlock_HELI": 204417.526994,
+      "management_release_HELI": 0.0,
+      "released_HELI": 51023276.854714,
+      "market_locked_HELI": 23976723.145286,
+      "management_locked_HELI": 15000000.0
+    }
+  ]
+}

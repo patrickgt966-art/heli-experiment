@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-04",
+  "deploymentId": "2a639840-a063-4458-bc6f-fbabbe22b2b6",
+  "cloudflareStatus": "Success",
+  "environment": "production",
+  "entry": "https://heli-experiment.pages.dev/apply.html",
+  "publicReachabilityVerified": false,
+  "publicCheck": "20 second timeout",
+  "pilotConfigHttpStatus": 200,
+  "pilotOrigin": "https://practical-wallet-magnet-months.trycloudflare.com",
+  "tokenDelivery": false,
+  "files": [
+    "index.html",
+    "apply.html",
+    "style.css",
+    "app.js",
+    "favicon.svg",
+    "_headers",
+    "heli-rules.txt"
+  ]
+}
