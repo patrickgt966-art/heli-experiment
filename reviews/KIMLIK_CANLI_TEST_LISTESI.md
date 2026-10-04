@@ -50,6 +50,11 @@ Kurallar:
 
 ## Test 2 — İki ayrı aile üyesi
 
+**Sahibin kararıyla atlandı (4 Ekim 2026).** Farklı iki kişinin yanlışlıkla "duplicate" sayılma riski canlı olarak ölçülmedi. Böyle bir durumda kişi `review`'a düşer ve manuel incelemeyle (`--allow-duplicate-face`, yalnız farklı kişi doğrulandıktan sonra) onaylanır.
+
+<details><summary>Atlanan test adımları (arşiv)</summary>
+
+
 Kim: Daha önce **hiç başvurmamış** iki kişi, mümkünse birbirine benzeyen kardeşler. Her biri kendi belgesi ve kendi yeni cüzdanıyla.
 
 | Kişi | Beklenen | Sonuç | İşaret |
@@ -58,6 +63,20 @@ Kim: Daha önce **hiç başvurmamış** iki kişi, mümkünse birbirine benzeyen
 | B | `verified` | ______ | [ ] |
 
 Biri `review` alırsa, yüz benzerliği iki farklı kişiyi karıştırmış olabilir. Didit'teki uyarı türünü not edin. Bu durumda manuel onay politikasına karar vermek gerekir: şu an uyarı içeren manuel onaylar da "review"da kalır.
+
+</details>
+
+## Test M — Manuel inceleme (sahibin önceliği)
+
+Ön koşul: pilot güncel kodla çalışıyor (`claim-service/server.mjs`, `admission.mjs`, `didit.mjs`, `app.js`, `manual-review.mjs`, `mobile/solana.mjs`).
+
+1. Proje sahibi, kimlik kartı ve yeni bir cüzdanla başvurur. Beklenen: `review` (duplicated + low similarity).
+2. Didit konsolunda oturum "Approved" yapılır. Beklenen: HELI sayfası hâlâ `review` gösterir. [ ]
+3. Servis durdurulur; `node manual-review.mjs <id> "TEST: ..."` çalıştırılır. Beklenen: **reddedilir** ("application is review"), çünkü yüz-tekrar sinyali var. [ ]
+4. Aynı komut `--allow-duplicate-face` ve "TEST, aynı kişi, hak değildir" gerekçesiyle çalıştırılır. Servis başlatılır, "Refresh status"a basılır. Beklenen: "Identity approved". [ ]
+5. Test sonrası Didit'te oturum "Declined" yapılır. [ ]
+
+Not: 4. adım yalnız mekanizmayı gösterir. Pilot "yalnız kimlik" modunda olduğu için token verilmez. Gerçek bir başvuruda aynı kişi için bayrak kullanılmaz.
 
 ## Test 3 — Kayıp başvuru linki (M5)
 
