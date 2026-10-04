@@ -29,6 +29,14 @@ Kim: **Proje sahibi**. Önceki onaylı başvuruda pasaport kullanıldıysa bu ke
 
 Tarih: ______  Didit'teki uyarı türü (ör. "duplicate face"): ______
 
+**Sonuç kaydı (4 Ekim 2026, deneme 1):** Proje sahibi, kimlik kartıyla ve yeni bir cüzdanla başvurdu. HELI sonucu `review`. Didit uyarıları: **duplicated** + **low similarity** (eski belge fotoğrafı).
+- Yorum: Yüz-tekrar tespiti, farklı belgeye rağmen aynı kişiyi önceki oturumla eşleştirdi. H3 savunması bu denemede çalıştı.
+- Sınır: Tek deneme. Düşük benzerlik uyarısı da aynı anda geldiği için sinyal karışık.
+- Daha temiz kanıt için (isteğe bağlı): Yeni fotoğraflı başka bir belgeyle tekrar; beklenen sonuç yalnız "duplicated" uyarısı.
+- Not: Pilot bu sırada önceki claim-service sürümüyle çalışıyordu. H3 karar mantığı (`didit.mjs`) bu oturumda değişmedi, sonuç geçerli.
+
+**Ortaya çıkan politika konusu:** Eski fotoğraflı belgeler (ör. 10 yıl geçerli kimlik kartları) gerçek başvuranlarda da "low similarity" ile `review`'a düşürebilir. Şu an bunları onaylamanın bir yolu yok; kayıtlı bir manuel inceleme politikası gerekiyor.
+
 ## Test 2 — İki ayrı aile üyesi
 
 Kim: Daha önce **hiç başvurmamış** iki kişi, mümkünse birbirine benzeyen kardeşler. Her biri kendi belgesi ve kendi yeni cüzdanıyla.
