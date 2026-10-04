@@ -35,7 +35,7 @@ A project reserve is not a guaranteed redemption backing. HELI makes no claim of
 
 | Area | Status |
 |---|---|
-| Program (V22) | Built reproducibly (Agave 2.1.21); 1.04 MB. ELF SHA-256 `159998afc16e43591ebd8dde57106af5d69a53665bea4f8474f3083d13963176`. |
+| Program (V22) | Built reproducibly (Agave 2.1.21); 1.06 MB. ELF SHA-256 `a2507e531597c77748615a334accf215ef6de6196b6d12103d71e959368c0b0f`. |
 | Local tests | All 720 monthly periods and treasury, price, governance, expense and entitlement controls pass in a local Solana simulator (LiteSVM) with the real program and Manifest binaries; Node suite 113/113. Counts are overlapping local checks, not an audit. |
 | Free allocation | Removed by owner decision (4 October 2026). The earlier identity-verified free allocation and its live pilot tests are archived in `reviews/`; the program rejects those instructions. |
 | Website | Published on Cloudflare Pages with the V22 rules. |

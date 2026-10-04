@@ -223,6 +223,22 @@ pub struct CreateVault<'info> {
 }
 
 #[derive(Accounts)]
+pub struct CreateTokenMetadata<'info> {
+ #[account(mut,seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
+ pub config:Box<Account<'info,Config>>,
+ #[account(address=config.mint)]
+ pub mint:Box<Account<'info,Mint>>,
+ /// CHECK: Metaplex metadata PDA of the mint, checked in the instruction and created by the CPI.
+ #[account(mut)]
+ pub metadata:UncheckedAccount<'info>,
+ /// CHECK: pinned Metaplex Token Metadata program.
+ #[account(address=TOKEN_METADATA)]
+ pub token_metadata_program:UncheckedAccount<'info>,
+ #[account(mut)]
+ pub admin:Signer<'info>,
+ pub system_program:Program<'info,System>,
+}
+#[derive(Accounts)]
 pub struct Genesis<'info> {
  #[account(mut,seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
  pub config:Box<Account<'info,Config>>,

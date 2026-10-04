@@ -1,7 +1,7 @@
 {
-  "source_sha256": "6ba7f6416373f51870c4f94283cf4730e8c7d233f086803e90a3e6bfc74d18e4",
-  "binary_sha256": "159998afc16e43591ebd8dde57106af5d69a53665bea4f8474f3083d13963176",
-  "checks_and_transactions": 1974,
+  "source_sha256": "92d9ee99b224e78fe5b00783bcad539ee4f0ee6ba807bc10a611fea0d6b4d6f9",
+  "binary_sha256": "a2507e531597c77748615a334accf215ef6de6196b6d12103d71e959368c0b0f",
+  "checks_and_transactions": 1976,
   "checks": [
     "allocate 82",
     "TEST quote mint",
@@ -16,6 +16,8 @@
     "create_vault",
     "create_vault",
     "create_vault",
+    "genesis refused before the token has a name (mint authority would be revoked)",
+    "token name, symbol and logo URI written before genesis",
     "genesis",
     "prepare_auction_quote",
     "prepare_auction_proceeds",

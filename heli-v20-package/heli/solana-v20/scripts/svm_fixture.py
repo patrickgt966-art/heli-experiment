@@ -27,6 +27,9 @@ def snake(s):return re.sub(r'(?<!^)(?=[A-Z])','_',s).lower()
 INSTRUCTIONS={snake(i['name']):i for i in IDL['instructions']}
 TYPES={i['name']:i['type'] for i in IDL.get('accounts',[])+IDL.get('types',[])}
 svm=LiteSVM();svm.add_program_from_file(PROGRAM,ROOT/'heli_core_v20.so')
+# Local test build of Metaplex Token Metadata 1.14.0 (commit 353d01b), not the mainnet binary; see test-programs/README.md.
+TOKEN_METADATA=Pubkey.from_string('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s')
+svm.add_program_from_file(TOKEN_METADATA,ROOT/'test-programs/mpl_token_metadata-1.14.0-353d01b-local.so')
 admin=Keypair();alice=Keypair();bob=Keypair();outsider=Keypair()
 KEYS={str(k.pubkey()):k for k in [admin,alice,bob,outsider]}
 for k in KEYS.values():svm.airdrop(k.pubkey(),100_000_000_000)
@@ -56,6 +59,7 @@ def encode(t,v):
  if t=='publicKey':return bytes(v)
  if t=='bool':return bytes([int(v)])
  if t=='bytes':return len(v).to_bytes(4,'little')+bytes(v)
+ if t=='string':b=v.encode();return len(b).to_bytes(4,'little')+b
  if isinstance(t,str):return int(v).to_bytes(int(t[1:])//8,'little',signed=t.startswith('i'))
  if 'array' in t:return b''.join(encode(t['array'][0],a) for a in v)
  if 'vec' in t:return encode('u32',len(v))+b''.join(encode(t['vec'],a) for a in v)

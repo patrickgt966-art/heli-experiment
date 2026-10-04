@@ -7,7 +7,15 @@ import svm_fixture as t
 from bootstrap_v15 import bootstrap
 
 NOFREE='There is no free initial allocation'
-f=bootstrap(t,1000)  # alice buys 1,000 HELI in the opening auction; her provider credential is rejected
+from bootstrap_v15 import NAME,URI
+f=bootstrap(t,1000,metadata_checks=True)  # alice buys 1,000 HELI in the opening auction
+md=t.svm.get_account(t.defaults['metadata']);d=bytes(md.data)
+def mstr(o):n=int.from_bytes(d[o:o+4],'little');return d[o+4:o+4+n].rstrip(b'\0').decode(),o+4+n
+name,o=mstr(65);symbol,o=mstr(o);uri,o=mstr(o)
+t.check('token metadata is owned by Metaplex and names the HELI mint',str(md.owner)==str(t.TOKEN_METADATA) and d[33:65]==bytes(t.defaults['mint']))
+t.check('wallet-visible name, symbol and logo URI as written',(name,symbol,uri)==(NAME,'HELI',URI))
+t.check('metadata update authority is the program config PDA (no update instruction exists)',d[1:33]==bytes(t.defaults['config']))
+t.check('mint authority revoked after genesis',t.svm.get_account(t.defaults['mint']).data[0:4]==bytes(4))
 c=t.cfg();a=t.read(t.defaults['auction'],'OpeningAuction')
 t.check('supply after genesis is 90M (100M minted, 10M burned)',t.supply()==90_000_000*t.U)
 t.check('locked stocks unchanged: 70M market reserve, 15M management treasury',c['stocks']==[70_000_000*t.U,0,0,15_000_000*t.U])
