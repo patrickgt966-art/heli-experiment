@@ -8,7 +8,7 @@ $heli = Split-Path -Parent $PSScriptRoot
 $base = 'https://raw.githubusercontent.com/patrickgt966-art/heli-experiment/claude/heli-v20-token-review-6gocpn/heli-v20-package/heli'
 $files = @(
   'claim-service/server.mjs','claim-service/admission.mjs','claim-service/didit.mjs',
-  'claim-service/app.js','claim-service/browser-handoff.js','claim-service/manual-review.mjs',
+  'claim-service/app.js','claim-service/index.html','claim-service/style.css','claim-service/browser-handoff.js','claim-service/manual-review.mjs',
   'claim-service/storage.mjs','claim-service/webhook-queue.mjs','mobile/solana.mjs'
 )
 $backup = Join-Path $heli ('claim-service/backup-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))

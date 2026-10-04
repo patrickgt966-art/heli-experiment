@@ -91,7 +91,7 @@ Açık rızanızı her zaman geri çekebilirsiniz. Geri çekme, daha önce yapı
 
 ## İşletmeci için notlar (yayınlanmayacak)
 
-- **Açık rıza kutusu:** Başvuru sayfasına, Didit'e yönlendirmeden önce ayrı ve önceden işaretlenmemiş bir onay kutusu eklenmeli. Örnek metin: "Kimlik belgemin ve yüz görüntümün Didit tarafından doğrulama amacıyla işlenmesine açık rıza veriyorum." Şu an kodda yok.
+- **Açık rıza kutusu:** Eklendi (commit sonrası `claim-service`). Didit linki, sunucu rızayı (`heli-biometric-consent-v1`, zaman damgasıyla) kaydedene kadar verilmez. Rıza metni değişirse sürüm adı da değiştirilmeli. Kutudaki metin avukat onaylı aydınlatma metniyle uyumlu hale getirilmeli ve metne link eklenmeli.
 - **Didit saklama süresi:** Didit konsolundaki veri saklama ayarı kontrol edilip mümkün olan en kısa süreye ayarlanmalı.
 - **VERBİS:** Veri sorumluları siciline kayıt yükümlülüğü olup olmadığı avukata sorulmalı.
 - **Yaş:** 18 yaş altı başvurular reddedilir; bunun metinde ayrıca belirtilmesi gerekip gerekmediği sorulmalı.
