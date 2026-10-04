@@ -4,10 +4,10 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::{instruction::{AccountMeta,Instruction},program::{invoke,invoke_signed},system_instruction};
 use anchor_spl::token::{self,Mint,Token,TokenAccount,Transfer};
-use crate::{Config,Epoch,ErrorCode,OpeningAuction,boundary,outgoing,manifest_bridge::check_market,release::{ReleasePolicy,reference_price,bid_book,band_depth,order_bounds,check_order_price,order_expiry,outside_shallow,crash_ceiling,order_quote}};
+use crate::{Config,Epoch,ErrorCode,OpeningAuction,boundary,outgoing,manifest_bridge::check_market,release::{ReleasePolicy,reference_price,bid_book,band_depth,order_bounds,check_order_price,order_expiry,outside_shallow,crash_ceiling,order_quote,own_bid_quote}};
 
 #[account]
-pub struct ManagementBook {pub quote_floor:u64,pub total_released:u64,pub quote_funded:u64,pub quote_returned:u64,pub trader_bump:u8,pub crash_day:i64,pub crash_days:[u64;30]}
+pub struct ManagementBook {pub quote_floor:u64,pub total_released:u64,pub quote_funded:u64,pub quote_returned:u64,pub trader_bump:u8,pub bid_day:i64,pub bid_days:[u64;30]}
 
 #[derive(Accounts)]
 pub struct InitializeManagement<'info>{
@@ -26,6 +26,8 @@ pub struct InitializeManagement<'info>{
 
 pub fn initialize(mut ctx:Context<InitializeManagement>,quote_floor:u64,rent_lamports:u64)->Result<()> {
  let a=&mut ctx.accounts;require!(a.config.live&&!a.config.closed&&a.config.manifest_bound&&rent_lamports>=1_000_000&&rent_lamports<=100_000_000,ErrorCode::State);
+ // Owner decision (V22): the untouchable project quote reserve is at least 1,000 quote units.
+ require!(quote_floor>=1000*10u64.pow(a.quote_mint.decimals as u32),ErrorCode::Quota);
  check_market(&a.manifest_market.to_account_info(),&a.manifest_program.to_account_info(),&a.config.mint,&a.config.quote_mint)?;
  invoke(&system_instruction::transfer(&a.admin.key(),&a.management_trader.key(),rent_lamports),&[a.admin.to_account_info(),a.management_trader.to_account_info(),a.system_program.to_account_info()])?;
  let bump=[ctx.bumps.management_trader];let sign:&[&[u8]]=&[b"management-trader",&bump];
@@ -63,6 +65,13 @@ fn market(a:&ManagementAction)->Result<()> {
  require!(a.config.manifest_bound,ErrorCode::Market);
  let(b,q)=check_market(&a.manifest_market.to_account_info(),&a.manifest_program.to_account_info(),&a.config.mint,&a.config.quote_mint)?;
  require_keys_eq!(a.base_vault.key(),b,ErrorCode::Market);require_keys_eq!(a.quote_vault.key(),q,ErrorCode::Market);Ok(())
+}
+// Owner decision (V22): every reserve-funded bid, normal or crash exception, shares one rolling 30-day
+// window of placed quote (bid_days, one slot per UTC day). Cancelling a live bid gives back its unfilled part.
+fn roll(b:&mut ManagementBook,day:i64){
+ if day.saturating_sub(b.bid_day)>=30 {b.bid_days=[0;30];}
+ else {let mut d=b.bid_day+1;while d<=day {b.bid_days[d.rem_euclid(30) as usize]=0;d+=1;}}
+ b.bid_day=b.bid_day.max(day);
 }
 fn active(a:&ManagementAction)->Result<()> {require!(a.config.live&&!a.config.closed&&!a.config.paused,ErrorCode::State);market(a)}
 fn invoke_management<'a>(a:&ManagementAction<'a>,data:Vec<u8>,metas:Vec<AccountMeta>,mut infos:Vec<AccountInfo<'a>>)->Result<()> {
@@ -111,28 +120,34 @@ pub fn order(mut ctx:Context<ManagementAction>,amount:u64,base_deposit:u64,manti
   let bounds=order_bounds(&a.policy,&a.auction,now.unix_timestamp);
   if is_bid&&bounds.1.is_none() {
    // Crash exception (owner decision V22): outside demand must have been recorded below the minimum by
-   // observations for at least 24 hours and still be below it now, so a sale by the manager cannot open it
-   // on the spot. Spending is capped at 10% of the project quote reserve over any rolling 30 days.
-   let since=a.policy.shallow_since;
-   require!(since>0&&now.unix_timestamp.saturating_sub(since)>=86_400&&outside_shallow(&a.manifest_market.to_account_info(),&now,a.policy.minimum_quote_depth)?,ErrorCode::PriceOutsideBand);
-   check_order_price(mantissa,exponent,true,(0,Some(crash_ceiling(&a.policy,&a.auction,now.unix_timestamp))))?;
-   let day=now.unix_timestamp.div_euclid(86_400);let b=&mut a.management_book;
-   if day.saturating_sub(b.crash_day)>=30 {b.crash_days=[0;30];}
-   else {let mut d=b.crash_day+1;while d<=day {b.crash_days[d.rem_euclid(30) as usize]=0;d+=1;}}
-   b.crash_day=b.crash_day.max(day);
-   let window:u64=b.crash_days.iter().try_fold(0u64,|s,x|s.checked_add(*x)).ok_or(ErrorCode::Math)?;
+   // continuous observations (at most two hours apart) for at least 24 hours, the latest within two hours,
+   // and still be below it now, so a sale by the manager cannot open it on the spot.
+   let(since,seen,t)=(a.policy.shallow_since,a.policy.shallow_seen,now.unix_timestamp);
+   require!(since>0&&t.saturating_sub(since)>=86_400&&t.saturating_sub(seen)<=7200&&outside_shallow(&a.manifest_market.to_account_info(),&now,a.policy.minimum_quote_depth)?,ErrorCode::PriceOutsideBand);
+   check_order_price(mantissa,exponent,true,(0,Some(crash_ceiling(&a.policy,&a.auction,t))))?;
+  } else {check_order_price(mantissa,exponent,is_bid,bounds)?;}
+  if is_bid {
+   // All reserve-funded bids: placed quote over any rolling 30 days <= 10% of the project quote reserve.
+   roll(&mut a.management_book,now.unix_timestamp.div_euclid(86_400));let b=&mut a.management_book;
+   let window:u64=b.bid_days.iter().try_fold(0u64,|s,x|s.checked_add(*x)).ok_or(ErrorCode::Math)?;
    let cost=order_quote(amount,mantissa,exponent)?;let base=a.project_quote.amount.checked_add(window).ok_or(ErrorCode::Math)?;
    require!(window.checked_add(cost).ok_or(ErrorCode::Math)?<=base/10,ErrorCode::Quota);
-   let slot=day.rem_euclid(30) as usize;b.crash_days[slot]=b.crash_days[slot].checked_add(cost).ok_or(ErrorCode::Math)?;
-  } else {check_order_price(mantissa,exponent,is_bid,bounds)?;}}
+   let slot=b.bid_day.rem_euclid(30) as usize;b.bid_days[slot]=b.bid_days[slot].checked_add(cost).ok_or(ErrorCode::Math)?;
+  }}
  let a=&ctx.accounts;let expiry=order_expiry(&now)?;
  if base_deposit>0 {require!(base_deposit<=a.management_base.amount,ErrorCode::Collateral);deposit_or_withdraw(a,true,base_deposit,2)?;}
  let mut data=vec![6,0];data.extend_from_slice(&0u32.to_le_bytes());data.extend_from_slice(&1u32.to_le_bytes());
  data.extend_from_slice(&amount.to_le_bytes());data.extend_from_slice(&mantissa.to_le_bytes());data.push(exponent as u8);data.push(is_bid as u8);data.extend_from_slice(&expiry.to_le_bytes());data.push(0);
  invoke_management(a,data,vec![AccountMeta::new(a.management_trader.key(),true),AccountMeta::new(a.manifest_market.key(),false),AccountMeta::new_readonly(a.system_program.key(),false)],vec![a.management_trader.to_account_info(),a.manifest_market.to_account_info(),a.system_program.to_account_info()])
 }
-pub fn cancel(ctx:Context<ManagementAction>,sequence:u64)->Result<()> {
- let a=&ctx.accounts;market(a)?;let mut data=vec![6,0];data.extend_from_slice(&1u32.to_le_bytes());data.extend_from_slice(&sequence.to_le_bytes());data.push(0);data.extend_from_slice(&0u32.to_le_bytes());
+pub fn cancel(mut ctx:Context<ManagementAction>,sequence:u64)->Result<()> {
+ let now=Clock::get()?;
+ {let a=&mut ctx.accounts;market(a)?;
+  // Give back the unfilled part of a live bid to the rolling window, newest days first.
+  let mut credit=own_bid_quote(&a.manifest_market.to_account_info(),&now,sequence,&a.management_trader.key())?;
+  if credit>0 {roll(&mut a.management_book,now.unix_timestamp.div_euclid(86_400));let b=&mut a.management_book;let mut d=b.bid_day;
+   for _ in 0..30 {let s=d.rem_euclid(30) as usize;let x=credit.min(b.bid_days[s]);b.bid_days[s]-=x;credit-=x;if credit==0 {break;}d-=1;}}}
+ let a=&ctx.accounts;let mut data=vec![6,0];data.extend_from_slice(&1u32.to_le_bytes());data.extend_from_slice(&sequence.to_le_bytes());data.push(0);data.extend_from_slice(&0u32.to_le_bytes());
  invoke_management(a,data,vec![AccountMeta::new(a.management_trader.key(),true),AccountMeta::new(a.manifest_market.key(),false),AccountMeta::new_readonly(a.system_program.key(),false)],vec![a.management_trader.to_account_info(),a.manifest_market.to_account_info(),a.system_program.to_account_info()])
 }
 pub fn withdraw(mut ctx:Context<ManagementAction>,amount:u64,is_base:bool)->Result<()> {

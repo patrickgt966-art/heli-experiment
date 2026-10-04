@@ -30,12 +30,14 @@ and one quarter of actual releases outside the Management Treasury, checked agai
 reference price built only from outside bids that rested at least an hour; the project's own orders never count.
 In each month, all Management Treasury releases together may not exceed 2% of outside bid depth: bids that rested at least an hour, priced no lower than 98% of the reference.
 A reference needs at least 1,000 quote units of outside bids at every hourly observation (the exact minimum is fixed at launch).
-Crash exception: if outside bids stay below that minimum (recorded by an hourly observation) for at least 24 hours, reserve-funded bids may still buy,
+Crash exception: if outside bids stay below that minimum for at least 24 hours, confirmed by observations no more than two hours apart, reserve-funded bids may still buy,
 at most at 95% of the last outside reference (or of the opening auction price if it is older than 30 days),
-and in total at most 10% of the project quote reserve over any rolling 30 days.
+within the shared bid cap below.
 The single manager can direct funded limit buy/sell orders, cancel orders and return assets to project accounts.
 Sales: at least 95% of the reference price (without a reference: at least the opening auction price).
 Reserve-funded bids: at most 105% of the reference price; without a reference, only under the crash exception above. Orders expire after about 24 hours.
+All reserve-funded bids together, normal and crash, may not exceed 10% of the project quote reserve over any rolling 30 days; cancelling an unfilled bid gives its share back.
+At least 1,000 quote units of the project quote reserve can never be moved to market orders.
 Sale revenue returns to the project reserve. Bid liquidity needs actual quote funds. Expenses wait seven days, can be cancelled and can never be paid back into project accounts.
 An offline recovery key can replace a lost administrator key after a seven-day window.
 Who can still change things today: until the audit and upgrade-key removal, the program can be upgraded. The administrator and the manager may be the same key.

@@ -19,7 +19,8 @@ Website: https://heli-experiment.pages.dev · Full rules: [`heli-v20-package/hel
 - All treasury releases in a month together may not exceed 2% of outside bids that rested at least an hour, priced no lower than 98% of the reference.
 - Prices come from a 24-hour reference built only from **outside** bids that rested at least an hour; the project's own orders never count. A reference needs at least 1,000 quote units of outside bids (the exact minimum is fixed at launch).
 - Sales: at least 95% of the reference (without a reference: at least the opening auction price). Reserve-funded bids: at most 105% of the reference; without a reference only under the crash exception. Orders expire after about 24 hours.
-- Crash exception: if outside bids stay below the minimum depth for at least 24 hours (recorded by an observation), the reserve may still buy, at most at 95% of the last outside reference (or of the auction price if that reference is older than 30 days), and in total at most 10% of the reserve over any rolling 30 days.
+- All reserve-funded bids together, normal and crash, may not exceed 10% of the project quote reserve over any rolling 30 days; cancelling an unfilled bid gives its share back. At least 1,000 quote units of the reserve can never be moved to market orders.
+- Crash exception: if outside bids stay below the minimum depth for at least 24 hours, confirmed by observations no more than two hours apart, the reserve may still buy, at most at 95% of the last outside reference (or of the auction price if that reference is older than 30 days), within the same 10% rolling cap.
 
 **Treasury and keys**
 - Sale revenue returns to the project reserve. Expenses wait seven days, can be cancelled, and can never be paid back into project accounts. After the 60-year close, revenue can still pay expenses under the same limits, and price observations continue.
@@ -34,7 +35,7 @@ A project reserve is not a guaranteed redemption backing. HELI makes no claim of
 
 | Area | Status |
 |---|---|
-| Program (V22) | Built reproducibly (Agave 2.1.21). ELF SHA-256 `e9a11af70f24edffa1fd7e60aacc33832fb209f9063b58c754bdc9774cec25a4`. |
+| Program (V22) | Built reproducibly (Agave 2.1.21). ELF SHA-256 `af15b7b42e5cfda26904cd7dfb20d8fb5d92e76736eaa20befe4919344f95d27`. |
 | Local tests | All 720 monthly periods and treasury, price, governance, expense and entitlement controls pass in a local Solana simulator (LiteSVM) with the real program and Manifest binaries; Node suite 113/113. Counts are overlapping local checks, not an audit. |
 | Free allocation | Removed by owner decision (4 October 2026). The earlier identity-verified free allocation and its live pilot tests are archived in `reviews/`; the program rejects those instructions. |
 | Website | Published on Cloudflare Pages with the V22 rules. |
