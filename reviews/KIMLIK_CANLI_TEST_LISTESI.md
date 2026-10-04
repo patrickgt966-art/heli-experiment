@@ -104,9 +104,8 @@ Kim: Test 2'de `verified` alan kişilerden biri.
 | Didit'te **yeni bir oturum açılmadı** (konsolda bu kişi için tek oturum var) | [ ] |
 | Sonuç `duplicate` **değil** | [ ] |
 
-**Sonuç kaydı (4 Ekim 2026): büyük ihtimalle geçti, tam doğrulanmadı.** Test M hazırlığında proje sahibi telefondaki Phantom'u yanlışlıkla eski cüzdanla bağladı. Sayfa yeni başvuru açmadı; o cüzdanın bekleyen eski başvurusunu gösterdi. Bu, M5 davranışıyla uyumlu.
-- Doğrulanmayanlar: "Your existing application for this wallet was reopened." mesajı not edilmedi. Didit'te o sırada yeni oturum açılmadığı kontrol edilmedi. Başvurunun durumu `verified` değil, bekleyen/incelemedeydi.
-- Tam kanıt için (isteğe bağlı): Didit konsolunda o saatte bu cüzdan için yeni bir oturum olmadığını kontrol edin.
+**Sonuç kaydı (4 Ekim 2026): test edilmedi (ön koşul sağlanmadı).** Pilot kayıtlarının salt okunur dökümü (saat, cüzdanın ilk 4 karakteri, durum, Didit oturumunun ilk 4 karakteri; kişisel veri yok) şunu gösterdi: proje sahibi telefonda eski cüzdanla bağlandığında (15:23) o cüzdanın önceki başvurularının hepsi `declined` durumundaydı. Kod gereği reddedilmiş başvuru yeniden açılmaz; yeni bir başvuru ve yeni bir Didit oturumu açıldı (başlatılmadı, `verifying`'de kaldı). Bu beklenen davranış: reddedilen kişi yeniden deneyebilir. Ama kayıp link yolunu (`verifying`/`review`/`verified` başvurunun yeniden açılması) sınamaz.
+- Temiz Test 3 için: bekleyen veya onaylı başvurusu olan bir cüzdanla, temizlenmiş tarayıcıdan bağlanın; beklenen "Your existing application for this wallet was reopened." ve Didit'te yeni oturum yok.
 
 ## Test 4 — Telefonda tarayıcı geçişi (N1)
 
