@@ -3,7 +3,7 @@ import {boundary} from './calendar.mjs';
 export function pollDelay(result,s){
  if(['confirmed','reconciled','submitted','pending','uncertain','expired-retry-safe'].includes(result.status))return 2000;
  let delay=240000;
- if(!s?.config||s.config.closed||s.config.paused)return delay;
+ if(!s?.config||s.config.closed)return delay;
  const c=s.config,start=Number(c.start),next=Number(c.last_settled_epoch)+1,deadlines=[];
  if(s.auction&&!s.auction.finalized)deadlines.push(start);
  if(!c.launch_finalized)deadlines.push(boundary(start,6));

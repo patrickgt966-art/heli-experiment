@@ -474,6 +474,7 @@ poc5: önceki örnekler 1_000_000; flash örnek 5_000_000; teminat tamamen geri 
 | M3 süresi dolmuş top-bid | **Düzeltildi ve doğrulandı** | Süresi dolmuş ve global (teminatsız) emirler atlanıyor. |
 | C1 fiyatsız proje satışı | **Düzeltildi ve doğrulandı (sahibin kararıyla)** | `place_project_ask` ve yönetimin satış emirleri: referans fiyat varken ≥ %95'i, yokken ≥ ihale fiyatı (ihale satış yapmadıysa ilan edilen taban). Emirler ~24 saat (216.000 slot) geçerli. C1 PoC'si reddediliyor. |
 | C2a fiyatsız yönetim alışı | **Düzeltildi ve doğrulandı (sahibin kararıyla)** | Rezervle fonlanan alış emri yalnız referans fiyat varken ve ≤ %105'iyle; ~24 saat geçerli. Referans yokken alış yok. C2a PoC'si reddediliyor. `test_price_bounds_svm.py`: 91 kontrol/işlem (%94 ret / %95 kabul, %106 ret / %105 kabul, süre alanı). Anlaşmalı işlem hâlâ mümkün ama kayıp en çok yaklaşık %5 ile sınırlı. |
+| H2 sınırsız pause | **Düzeltildi ve doğrulandı (sahibin kararı: B)** | `open_epoch` ve `settle` artık pause'u kontrol etmiyor; aylık kural tek anahtara bağlı değil. Pause satışları, yönetim işlemlerini, giderleri, kayıtları ve ihaleyi durdurmaya devam ediyor. Keeper SVM testi programı baştan pause'layıp hiç açmadan 720 ayı ve 60. yıl kapanışını tamamlıyor (anahtar kaybı senaryosu). Pause süresi hâlâ sınırsız; bu yalnız aylık kuralı değil, satış ve yönetim yolunu ilgilendiriyor. |
 | M9 yeniden üretilebilir derleme | **Yerelde çözüldü** | Birden fazla token hesabı açan kurulum talimatları, her biri tek `init` yapacak şekilde bölündü. 11 yeni kurulum talimatı eklendi; kurulum sırası değişti. Agave 2.1.21 / platform-tools v1.43 ile temiz derleme iki kez aynı ELF hash'ini verdi (`2361b6da…`). Komut: `scripts/build_local.sh`. Sabit Docker imajı ve `solana-verify` hâlâ gerekli. |
 
 Yeni ELF üzerinde yeniden çalıştırılan testler:
@@ -481,7 +482,7 @@ Yeni ELF üzerinde yeniden çalıştırılan testler:
 | Test | Sonuç |
 |---|---|
 | `test_market_release_svm.py` | 1.615 kontrol/işlem (eski 1.606 + 9 yeni kurulum çağrısı), 720 ay |
-| Keeper | 4.351 kontrol/işlem, 1.442 iş |
+| Keeper | 4.353 kontrol/işlem, 1.442 iş (program 720 ay boyunca pause'lu) |
 | Claim SVM | 1/1 |
 | `test_setup_controls_svm.py` | 33 kontrol/işlem |
 | `test_expense_controls_svm.py` | 45 kontrol/işlem |
@@ -491,12 +492,11 @@ Yeni ELF üzerinde yeniden çalıştırılan testler:
 
 Piyasa testi 1.615 kontrol/işlem: gözlem kurulumu eklendi, 1. aydaki referanssız yönetim alışı artık ret kontrolü. Keeper SVM testi Manifest piyasası bağlamadığı için gözlem yolunu çalıştırmıyor; keeper'ın yeni gözlem planlaması yalnız birim testleriyle doğrulandı.
 
-Son ELF: `8349ceb7…`. Depodaki kaynak `build_local.sh` ile sıfırdan derlendiğinde aynı ELF'i veriyor.
+Son ELF: `e3f5cfb8…`. Depodaki kaynak `build_local.sh` ile sıfırdan derlendiğinde aynı ELF'i veriyor.
 
 `reviews/poc_review.py` orijinal paket ve ikili içindir. Yeni kurulum sırasıyla çalışmaz.
 
 Açık kalan başlıca konular:
-- **H2:** pause kapsamı.
 - **H3:** kimlik tekrarının canlı testi.
 - **Gözlem manipülasyonu (kalan):** bir saatten uzun gerçek sermayeyle yapılan wash trade ve proje veya yönetimin kendi fonladığı bid'in derinlik sayılması. Bu ikisi politika kararı.
 - **C3:** yönetici ve verifier rotasyonu.

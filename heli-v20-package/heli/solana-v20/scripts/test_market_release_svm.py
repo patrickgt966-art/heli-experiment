@@ -128,16 +128,17 @@ t.call('management_withdraw',{'amount':t.U,'is_base':True},act)
 t.check('cancel and rewithdraw cannot reset monthly release allowance',t.read(ea['epoch'],'Epoch')['founder']==2*t.U and t.read(ma['management_book'],'ManagementBook')['totalReleased']==t.U)
 t.clock(t.boundary(13))
 t.call('management_release',{'amount':t.U},act,reject='calendar',label='previous month management permission expires')
-# A paused release must not move tokens; delayed settlement remains sequential.
+# Pause halts sales and treasury outflows but not the monthly rule (owner decision H2-B);
+# delayed settlement remains sequential.
 ea13=epoch_accounts(t,13);t.call('open_epoch',{'number':13},ea13)
 t.clock(t.boundary(13));t.call('pause',{'paused':True})
 stock=t.cfg()['stocks'][0];inventory=t.amount(t.defaults['market_inventory'])
-t.call('settle',acc=ma|ea13,reject='calendar',label='paused monthly unlock rejected')
-t.check('pause preserves unlocked inventory and locked stock',t.cfg()['stocks'][0]==stock and t.amount(t.defaults['market_inventory'])==inventory)
-t.call('pause',{'paused':False})
-ea14=epoch_accounts(t,14);t.clock(t.boundary(14));t.call('open_epoch',{'number':14},ea14)
+t.call('place_project_ask',{'amount':t.U,'price_mantissa':10,'price_exponent':0},reject='Market guard rejected',label='pause halts project sales')
+ea14=epoch_accounts(t,14);t.clock(t.boundary(14));t.call('open_epoch',{'number':14},ea14,label='next monthly period opens while paused')
 t.call('settle',acc=ma|ea14,reject='calendar',label='missed monthly periods cannot be skipped')
-t.call('settle',acc=ma|ea13);t.call('settle',acc=ma|ea14)
+t.call('settle',acc=ma|ea13,label='monthly unlock proceeds while paused');t.call('settle',acc=ma|ea14)
+t.check('paused program still moved both monthly releases into sale inventory',t.cfg()['stocks'][0]<stock and t.amount(t.defaults['market_inventory'])>inventory and t.cfg()['paused'])
+t.call('pause',{'paused':False})
 t.check('late periods settle once in order with no human burn',t.cfg()['lastSettledEpoch']==14 and t.read(ea14['epoch'],'Epoch')['burned']==0)
 # Exercise the complete 720-month calendar and retention of unsold released stock.
 for n in range(15,721):

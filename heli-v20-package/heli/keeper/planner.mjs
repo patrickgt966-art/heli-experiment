@@ -2,7 +2,8 @@ import {boundary,completedMonths} from './calendar.mjs';
 // Decisions derive from confirmed chain state, never a remembered wall-clock schedule.
 export function plan(s){
  const c=s.config,now=s.now,start=Number(c.start),last=Number(c.last_settled_epoch);
- if(!c.live||c.closed||c.paused)return null;
+ // Pause does not stop the monthly rule (program H2-B); it only suppresses price observations below.
+ if(!c.live||c.closed)return null;
  if(s.auction&&!s.auction.finalized&&now>=start)return {name:'finalize_auction',key:'auction'};
  if(!c.launch_finalized&&now>=boundary(start,6))return {name:'finalize_launch',key:'launch'};
  const next=last+1,due=completedMonths(start,now),e=s.epoch;

@@ -32,13 +32,16 @@ def drain():
    settled.append(n)
  raise AssertionError('keeper did not quiesce')
 try:
- t.check('paused planner sends no monthly transaction',answer(True)['job'] is None)
+ t.check('pause does not change the monthly maintenance plan',answer(True)['job']==answer()['job'])
+ # Lost-key scenario (owner decision H2-B): paused on chain and never unpaused for the whole horizon.
+ t.call('pause',{'paused':True})
  t.clock(t.boundary(10)+10*t.DAY);drain();t.check('ten missed months caught up sequentially',settled==list(range(1,11)))
  for n in range(11,721):
   t.clock(t.boundary(n));drain()
   if n%120==0:print('V20 keeper months:',n,flush=True)
  t.check('all 720 months settle once in order',settled==list(range(1,721)))
  t.check('constitution closed with no further automatic job',t.cfg()['closed'] and answer()['job'] is None)
+ t.check('all 720 months and the final close ran while the program stayed paused',t.cfg()['paused'])
  t.check('released unsold market inventory survives closure',t.amount(t.defaults['market_inventory'])>0)
  result={'version':'v20','all_passed':True,'months':720,'jobs':len(jobs),'checks_and_transactions':len(t.checks),'source_sha256':t.actual_source,'binary_sha256':t.actual_binary,'scope':'Local LiteSVM; actual JS planner and adapter plus compiled V20 ELF; synthetic quote/identity, no public deployment'}
  (ROOT/'v20-svm-verification.json').write_text(json.dumps(result,indent=2),encoding='utf-8');print(json.dumps(result))

@@ -27,7 +27,9 @@ pub struct SettleMarket<'info> {
 
 pub fn open(ctx:Context<OpenMarketEpoch>,number:u16)->Result<()> {
  let c=&ctx.accounts.config;
- require!(c.live&&!c.closed&&!c.paused&&number>=1&&number<=720&&Clock::get()?.unix_timestamp>=boundary(c.start,number-1),ErrorCode::Time);
+ // Owner decision (review H2-B): the monthly rule is not pausable. Opening and settling only move HELI
+ // between the program's own vaults; pause halts sales, treasury outflows and registrations instead.
+ require!(c.live&&!c.closed&&number>=1&&number<=720&&Clock::get()?.unix_timestamp>=boundary(c.start,number-1),ErrorCode::Time);
  let e=&mut ctx.accounts.epoch;e.number=number;e.bump=ctx.bumps.epoch;
  // No monthly person register or claim/reward token accounts are needed.
  e.registry_finalized=true;Ok(())
@@ -35,7 +37,7 @@ pub fn open(ctx:Context<OpenMarketEpoch>,number:u16)->Result<()> {
 
 pub fn settle(mut ctx:Context<SettleMarket>)->Result<()> {
  let a=&mut ctx.accounts;let c=&a.config;let n=a.epoch.number;
- require!(c.live&&!c.closed&&!c.paused&&!a.epoch.settled&&Clock::get()?.unix_timestamp>=boundary(c.start,n)&&n==c.last_settled_epoch.checked_add(1).ok_or(ErrorCode::Math)?,ErrorCode::Time);
+ require!(c.live&&!c.closed&&!a.epoch.settled&&Clock::get()?.unix_timestamp>=boundary(c.start,n)&&n==c.last_settled_epoch.checked_add(1).ok_or(ErrorCode::Math)?,ErrorCode::Time);
  require!(c.stocks[1]==0&&c.stocks[2]==0&&a.release_reserve.amount>=c.stocks[0]&&a.management_stock.amount>=c.stocks[3]&&a.market_inventory.amount>=c.market_remaining,ErrorCode::Collateral);
  let cap=capacity(a.mint.supply,c.stocks)?;
  // Same common monetary cap. Management release permissions expire; no separate liquidity budget.
