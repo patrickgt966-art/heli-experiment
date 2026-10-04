@@ -91,5 +91,5 @@ if(process.argv[1]===fileURLToPath(import.meta.url)){
  const queue=mode==='demo'?null:new WebhookQueue({admission,data});
  const timer=queue?setInterval(()=>queue.step().catch(()=>{}),1000):null;
  // Only trust Cloudflare's client IP header when the service is reachable solely through the tunnel (loopback bind).
- const server=createClaimServer({origin,admission,chain,data,mode,queue,webhookSecret:env.DIDIT_WEBHOOK_SECRET,trustProxy:env.HELI_TRUST_CF_CONNECTING_IP==='true',siteOrigin:env.HELI_SITE_ORIGIN??'https://heli-experiment.pages.dev'});server.listen(port,'127.0.0.1',()=>console.log('HELI V20 claim service '+mode+' '+origin));for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{if(timer)clearInterval(timer);server.close(()=>{data.close();process.exit(0);});});
+ const server=createClaimServer({origin,admission,chain,data,mode,queue,webhookSecret:env.DIDIT_WEBHOOK_SECRET,trustProxy:env.HELI_TRUST_CF_CONNECTING_IP==='true',siteOrigin:env.HELI_SITE_ORIGIN??'https://heli-experiment.pages.dev'});server.listen(port,'127.0.0.1',()=>console.log('HELI V20 claim service '+mode+' '+origin));for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{if(timer)clearInterval(timer);server.close(()=>{data.close();process.exit(0);});server.closeAllConnections?.();});
 }
