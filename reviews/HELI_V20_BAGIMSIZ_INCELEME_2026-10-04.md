@@ -476,6 +476,7 @@ poc5: önceki örnekler 1_000_000; flash örnek 5_000_000; teminat tamamen geri 
 | C2a fiyatsız yönetim alışı | **Düzeltildi ve doğrulandı (sahibin kararıyla)** | Rezervle fonlanan alış emri yalnız referans fiyat varken ve ≤ %105'iyle; ~24 saat geçerli. Referans yokken alış yok. C2a PoC'si reddediliyor. `test_price_bounds_svm.py`: 91 kontrol/işlem (%94 ret / %95 kabul, %106 ret / %105 kabul, süre alanı). Anlaşmalı işlem hâlâ mümkün ama kayıp en çok yaklaşık %5 ile sınırlı. |
 | H2 sınırsız pause | **Düzeltildi ve doğrulandı (sahibin kararı: B)** | `open_epoch` ve `settle` artık pause'u kontrol etmiyor; aylık kural tek anahtara bağlı değil. Pause satışları, yönetim işlemlerini, giderleri, kayıtları ve ihaleyi durdurmaya devam ediyor. Keeper SVM testi programı baştan pause'layıp hiç açmadan 720 ayı ve 60. yıl kapanışını tamamlıyor (anahtar kaybı senaryosu). Pause süresi hâlâ sınırsız; bu yalnız aylık kuralı değil, satış ve yönetim yolunu ilgilendiriyor. |
 | C3 anahtar merkeziyeti | **Düzeltildi ve doğrulandı (sahibin kararı: B + çevrimdışı)** | Yeni `Governance` hesabı. Olağan yönetici devri iki adımlı ve beklemesiz. Çevrimdışı kurtarma anahtarı kayıp yöneticinin yerine 7 gün sonra yenisini getirir; yönetici bu sürede itiraz edebilir. Kurtarma anahtarı kendini anında değiştirebilir; yönetici onu 7 gün bekleyen, itiraz edilebilir bir öneriyle değiştirir. Kurtarma anahtarı bekleyen gideri iptal edebilir. Doğrulayıcı anında değiştirilir. `test_governance_svm.py`: 68 kontrol/işlem. Upgrade yetkisi planı `solana-v20/DEPLOYMENT.md`'de. Kalan risk: yönetici anahtarını çalan kişi önce davranıp yöneticiyi kendine devrederse kurtarma önerilerini iptal edebilir. Kimlik bilgisi iptali (M4) henüz yok. |
+| M4 hak koruması ve iptal | **Düzeltildi ve doğrulandı (sahibin kararı)** | `dispute_launch` yalnız 7 günlük bekleme süresinde ve zorunlu gerekçe parmak iziyle çalışıyor. Süre dolunca hak kesinleşiyor. `restore_launch` ile ilk 6 ayda itiraz üzerine geri alma var; yeni 7 günlük bekleme başlıyor. `set_credential_active` ile yalnız yönetici kimlik bilgisini gerekçeyle pasif/aktif yapıyor; pasif kimlik kayıt açamıyor, kesinleşmiş hakka dokunulmuyor. Gerekçe parmak izi kayıt ve kimlik hesabında saklanıp olay olarak yayınlanıyor. `test_entitlement_controls_svm.py`: 51 kontrol/işlem. Kalan risk: 7 gün içinde fark edilmeyen sahte kayıt pay alabilir. Hesap boyutları büyüdü: kimlik 8+129, kayıt 8+74 bayt; sponsor kira tahmini güncellendi. |
 | M9 yeniden üretilebilir derleme | **Yerelde çözüldü** | Birden fazla token hesabı açan kurulum talimatları, her biri tek `init` yapacak şekilde bölündü. 11 yeni kurulum talimatı eklendi; kurulum sırası değişti. Agave 2.1.21 / platform-tools v1.43 ile temiz derleme iki kez aynı ELF hash'ini verdi (`2361b6da…`). Komut: `scripts/build_local.sh`. Sabit Docker imajı ve `solana-verify` hâlâ gerekli. |
 
 Yeni ELF üzerinde yeniden çalıştırılan testler:
@@ -490,16 +491,16 @@ Yeni ELF üzerinde yeniden çalıştırılan testler:
 | `test_observation_controls_svm.py` | 74 kontrol/işlem (flash, beklememiş emir, toz, süresi dolmuş emir, boşlukta yeniden kurma) |
 | `test_price_bounds_svm.py` | 91 kontrol/işlem |
 | `test_governance_svm.py` | 68 kontrol/işlem |
+| `test_entitlement_controls_svm.py` | 51 kontrol/işlem |
 | Node paketi | 89/89 |
 
 Piyasa testi 1.615 kontrol/işlem: gözlem kurulumu eklendi, 1. aydaki referanssız yönetim alışı artık ret kontrolü. Keeper SVM testi Manifest piyasası bağlamadığı için gözlem yolunu çalıştırmıyor; keeper'ın yeni gözlem planlaması yalnız birim testleriyle doğrulandı.
 
-Son ELF: `782fc642…`. Depodaki kaynak `build_local.sh` ile sıfırdan derlendiğinde aynı ELF'i veriyor.
+Son ELF: `1645494a…`. Depodaki kaynak `build_local.sh` ile sıfırdan derlendiğinde aynı ELF'i veriyor.
 
 `reviews/poc_review.py` orijinal paket ve ikili içindir. Yeni kurulum sırasıyla çalışmaz.
 
 Açık kalan başlıca konular:
 - **H3:** kimlik tekrarının canlı testi.
 - **Gözlem manipülasyonu (kalan):** bir saatten uzun gerçek sermayeyle yapılan wash trade ve proje veya yönetimin kendi fonladığı bid'in derinlik sayılması. Bu ikisi politika kararı.
-- **M4:** kimlik bilgisi iptali ve itiraz yolu.
 - Bağımsız denetim.

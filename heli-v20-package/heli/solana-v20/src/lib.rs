@@ -57,9 +57,30 @@ pub mod heli_core_v20 {
   require!(ctx.accounts.credential.active&&ctx.accounts.credential.owner==ctx.accounts.person.key()&&c.launch_people<1000,ErrorCode::Identity);
   c.launch_people+=1;let r=&mut ctx.accounts.receipt;r.owner=ctx.accounts.person.key();r.valid=true;r.eligible_at=now.checked_add(7*DAY).ok_or(ErrorCode::Math)?;Ok(())
  }
- pub fn dispute_launch(ctx:Context<DisputeLaunch>)->Result<()> {
-  let c=&mut ctx.accounts.config;require!(!c.launch_finalized&&Clock::get()?.unix_timestamp<boundary(c.start,6)&&ctx.accounts.receipt.valid&&!ctx.accounts.receipt.claimed,ErrorCode::Time);
-  ctx.accounts.receipt.valid=false;c.launch_people=c.launch_people.checked_sub(1).ok_or(ErrorCode::Math)?;Ok(())
+ // Entitlement review (review M4, owner decision): a registration can be disputed only during its seven-day
+ // waiting period, always with the hash of an off-chain written reason; after that the right is final.
+ pub fn dispute_launch(ctx:Context<DisputeLaunch>,reason:[u8;32])->Result<()> {
+  let now=Clock::get()?.unix_timestamp;let c=&mut ctx.accounts.config;let r=&mut ctx.accounts.receipt;
+  require!(reason!=[0;32],ErrorCode::State);
+  require!(!c.launch_finalized&&now<boundary(c.start,6)&&now<r.eligible_at&&r.valid&&!r.claimed,ErrorCode::Time);
+  r.valid=false;r.reason=reason;c.launch_people=c.launch_people.checked_sub(1).ok_or(ErrorCode::Math)?;
+  emit!(LaunchDisputed{credential:ctx.accounts.credential.key(),owner:r.owner,reason});Ok(())
+ }
+ // Appeal: the administrator can reinstate a disputed registration during the first six months; a fresh
+ // seven-day waiting period starts.
+ pub fn restore_launch(ctx:Context<DisputeLaunch>,reason:[u8;32])->Result<()> {
+  let now=Clock::get()?.unix_timestamp;let c=&mut ctx.accounts.config;let r=&mut ctx.accounts.receipt;
+  require!(reason!=[0;32],ErrorCode::State);
+  require!(!c.launch_finalized&&now<boundary(c.start,6)&&!r.valid&&!r.claimed,ErrorCode::Time);
+  require!(ctx.accounts.credential.active&&c.launch_people<1000,ErrorCode::Identity);
+  r.valid=true;r.reason=reason;r.eligible_at=now.checked_add(7*DAY).ok_or(ErrorCode::Math)?;c.launch_people+=1;
+  emit!(LaunchRestored{credential:ctx.accounts.credential.key(),owner:r.owner,reason,eligible_at:r.eligible_at});Ok(())
+ }
+ // A deactivated credential cannot register; rights already past their waiting period are unaffected.
+ pub fn set_credential_active(ctx:Context<CredentialStatus>,active:bool,reason:[u8;32])->Result<()> {
+  require!(reason!=[0;32],ErrorCode::State);
+  let p=&mut ctx.accounts.credential;require!(p.active!=active,ErrorCode::State);p.active=active;p.reason=reason;
+  emit!(CredentialStatusChanged{credential:p.key(),owner:p.owner,active,reason});Ok(())
  }
  pub fn finalize_launch(ctx:Context<RegistryLaunch>)->Result<()> {
   let c=&mut ctx.accounts.config;require!(c.live&&!c.closed&&!c.launch_finalized&&Clock::get()?.unix_timestamp>=boundary(c.start,6),ErrorCode::Time);
@@ -303,11 +324,14 @@ pub const GOVERNANCE_DELAY:i64=7*DAY;
 #[event] pub struct AuctionProceedsAllocated {pub amount:u64}
 #[event] pub struct CalendarBoundary {pub number:u16,pub timestamp:i64}
 #[account] pub struct Epoch {pub number:u16,pub people:u32,pub per_person:u64,pub human_remaining:u64,pub reward_remaining:u64,pub capacity:u64,pub human_budget:u64,pub staking:u64,pub liquidity:u64,pub founder:u64,pub burned:u64,pub quote_lp:u64,pub quote_founder:u64,pub settled:bool,pub registry_finalized:bool,pub bump:u8,pub liquidity_budget:u64,pub founder_budget:u64}
-#[account] pub struct Credential {pub owner:Pubkey,pub nullifier:[u8;32],pub proof_digest:[u8;32],pub active:bool}
+#[account] pub struct Credential {pub owner:Pubkey,pub nullifier:[u8;32],pub proof_digest:[u8;32],pub active:bool,pub reason:[u8;32]}
 #[account] pub struct DlmmOrderReceipt {pub order:Pubkey,pub bin_id:i32,pub amount:u64,pub placed_at:i64,pub closed:bool}
 #[account] pub struct WalletIdentity {pub credential:Pubkey}
 #[account] pub struct Receipt {pub owner:Pubkey,pub valid:bool,pub claimed:bool}
-#[account] pub struct LaunchReceipt {pub owner:Pubkey,pub valid:bool,pub claimed:bool,pub eligible_at:i64}
+#[account] pub struct LaunchReceipt {pub owner:Pubkey,pub valid:bool,pub claimed:bool,pub eligible_at:i64,pub reason:[u8;32]}
+#[event] pub struct LaunchDisputed {pub credential:Pubkey,pub owner:Pubkey,pub reason:[u8;32]}
+#[event] pub struct LaunchRestored {pub credential:Pubkey,pub owner:Pubkey,pub reason:[u8;32],pub eligible_at:i64}
+#[event] pub struct CredentialStatusChanged {pub credential:Pubkey,pub owner:Pubkey,pub active:bool,pub reason:[u8;32]}
 #[account] pub struct StakePosition {pub owner:Pubkey,pub history:Pubkey,pub principal:u64,pub cursor:i64,pub exit_at:i64}
 #[account] pub struct Market {pub seeded:bool,pub last:i64,pub cumulative:u128,pub samples:Vec<Observation>}
 #[derive(AnchorSerialize,AnchorDeserialize,Clone)] pub struct Observation {pub time:i64,pub cumulative:u128}

@@ -282,7 +282,7 @@ pub struct ReadConfig<'info> {
 pub struct IssueCredential<'info> {
  #[account(seeds=[b"config".as_ref()],bump=config.bump)]
  pub config:Box<Account<'info,Config>>,
- #[account(init,payer=account_payer,space=8+97,seeds=[b"human".as_ref(),nullifier.as_ref()],bump)]
+ #[account(init,payer=account_payer,space=8+129,seeds=[b"human".as_ref(),nullifier.as_ref()],bump)]
  pub credential:Box<Account<'info,Credential>>,
  #[account(init,payer=account_payer,space=8+32,seeds=[b"id-wallet".as_ref(),person.key().as_ref()],bump)]
  pub wallet_identity:Box<Account<'info,WalletIdentity>>,
@@ -325,12 +325,21 @@ pub struct EnrollLaunch<'info> {
  pub credential:Box<Account<'info,Credential>>,
  #[account(seeds=[b"id-wallet".as_ref(),person.key().as_ref()],bump,constraint=wallet_identity.credential==credential.key())]
  pub wallet_identity:Box<Account<'info,WalletIdentity>>,
- #[account(init,payer=account_payer,space=8+42,seeds=[b"launch-receipt".as_ref(),credential.key().as_ref()],bump)]
+ #[account(init,payer=account_payer,space=8+74,seeds=[b"launch-receipt".as_ref(),credential.key().as_ref()],bump)]
  pub receipt:Box<Account<'info,LaunchReceipt>>,
  #[account(mut)]
  pub person:Signer<'info>,
  #[account(mut)] pub account_payer:Signer<'info>,
  pub system_program:Program<'info,System>,
+}
+
+#[derive(Accounts)]
+pub struct CredentialStatus<'info> {
+ #[account(seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
+ pub config:Box<Account<'info,Config>>,
+ #[account(mut,seeds=[b"human".as_ref(),credential.nullifier.as_ref()],bump)]
+ pub credential:Box<Account<'info,Credential>>,
+ pub admin:Signer<'info>,
 }
 
 #[derive(Accounts)]

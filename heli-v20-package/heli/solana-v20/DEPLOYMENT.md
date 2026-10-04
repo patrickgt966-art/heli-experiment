@@ -55,3 +55,11 @@ Sonradan yönetici veya doğrulayıcı değiştirildiğinde keeper bilinçli ola
 ## Duraklatma
 
 `pause` satışları, yönetim işlemlerini, giderleri, ücretsiz paya kayıtları ve ihaleyi durdurur. Aylık arz (`open_epoch`, `settle`) ve 60. yıl kapanışı duraklatmadan **etkilenmez** (H2-B). Bunları herkes tetikleyebilir.
+
+## Ücretsiz pay: iptal, itiraz ve kimlik durumu
+
+- **İptal penceresi:** `dispute_launch(reason)` yalnız kaydın 7 günlük bekleme süresi içinde ve ilk 6 ay içinde çalışır. Bekleme süresi dolan hak kesinleşir; hiçbir anahtar onu geri alamaz.
+- **Gerekçe:** Her iptal, geri alma ve kimlik durumu değişikliği, yazılı gerekçenin SHA-256 parmak izini (`reason`) ister. Bu iz zincirde saklanır ve olay olarak yayınlanır. Gerekçe metni kişisel bilgi içerebileceği için zincire değil yönetici kayıtlarına yazılır. İtirazda gösterilen metin bu izle karşılaştırılabilir.
+- **İtiraz:** `restore_launch(reason)` iptal edilmiş kaydı ilk 6 ay içinde yeniden geçerli yapar ve yeni bir 7 günlük bekleme başlatır.
+- **Kimlik bilgisi:** `set_credential_active(active, reason)` yalnız yönetici tarafından çağrılır. Pasif kimlik yeni kayıt açamaz. Bekleme süresindeki bir hakkı durdurmak için kaydın kendisi `dispute_launch` ile iptal edilir. Kesinleşmiş haklar kimlik iptalinden etkilenmez.
+- **Bilinen sınır:** Sahte bir kayıt 7 gün içinde fark edilmezse 1.000 HELI'yi çekebilir.

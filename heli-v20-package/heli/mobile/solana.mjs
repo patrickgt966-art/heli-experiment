@@ -51,8 +51,8 @@ export class SponsoredChain {
   const instructions=[web3.ComputeBudgetProgram.setComputeUnitLimit({units:400_000})];let rent=0;
   if(action==='enroll') {
    if(r)throw Error('Başvuru zaten kayıtlı');
-   if(!identity){const message=proofMessage(this.program,config,person,proof.nullifier,proof.proofDigest,proof.issuedAt,proof.expiresAt);instructions.push(web3.Ed25519Program.createInstructionWithPublicKey({publicKey:key(proof.publicKey).toBytes(),message,signature:Buffer.from(proof.signature,'base64')}));instructions.push(heliInstruction(this.idl,this.program,'issue_credential',{nullifier:Array.from(Buffer.from(proof.nullifier,'hex')),proof_digest:Array.from(Buffer.from(proof.proofDigest,'hex')),issued_at:proof.issuedAt,expires_at:proof.expiresAt},accounts));rent+=await this.connection.getMinimumBalanceForRentExemption(105);rent+=await this.connection.getMinimumBalanceForRentExemption(40);}
-   instructions.push(heliInstruction(this.idl,this.program,'enroll_launch',{},accounts));rent+=await this.connection.getMinimumBalanceForRentExemption(50);
+   if(!identity){const message=proofMessage(this.program,config,person,proof.nullifier,proof.proofDigest,proof.issuedAt,proof.expiresAt);instructions.push(web3.Ed25519Program.createInstructionWithPublicKey({publicKey:key(proof.publicKey).toBytes(),message,signature:Buffer.from(proof.signature,'base64')}));instructions.push(heliInstruction(this.idl,this.program,'issue_credential',{nullifier:Array.from(Buffer.from(proof.nullifier,'hex')),proof_digest:Array.from(Buffer.from(proof.proofDigest,'hex')),issued_at:proof.issuedAt,expires_at:proof.expiresAt},accounts));rent+=await this.connection.getMinimumBalanceForRentExemption(137);rent+=await this.connection.getMinimumBalanceForRentExemption(40);}
+   instructions.push(heliInstruction(this.idl,this.program,'enroll_launch',{},accounts));rent+=await this.connection.getMinimumBalanceForRentExemption(82);
   } else {
    if(!identity||!r||!r.valid||r.claimed||r.owner!==session.wallet)throw Error('Teslimat hakkı yok');
    if(this.now()<Number(r.eligible_at))throw Error('Yedi günlük bekleme devam ediyor');
