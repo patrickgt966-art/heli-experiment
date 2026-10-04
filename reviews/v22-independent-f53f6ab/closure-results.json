@@ -1,0 +1,7 @@
+{
+  "closed": true,
+  "observations_disabled": true,
+  "auction_floor_atoms_per_heli": 100,
+  "sale_at_95_percent_original_auction_price_rejected": true,
+  "market_below_auction_scenario": "economic hypothesis; program floor behavior reproduced"
+}
