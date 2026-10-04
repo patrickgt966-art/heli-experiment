@@ -23,7 +23,10 @@ export function heliInstruction(idl,program,name,args,accounts) {
  return new web3.TransactionInstruction({programId:key(program),data:Buffer.concat([disc(name),...i.args.map(f=>encode(f.type,args[snake(f.name)]))]),keys:i.accounts.map(a=>({pubkey:key(accounts[snake(a.name)]),isWritable:a.isMut,isSigner:a.isSigner}))});
 }
 export class SponsoredChain {
- constructor({program,idl,sponsor,connection,store,dailyCap=50_000_000,now=()=>Math.floor(Date.now()/1000)}){Object.assign(this,{program:key(program),idl,sponsor,connection,store,dailyCap,now});}
+ constructor({program,idl,sponsor,connection,store,dailyCap=50_000_000,maxPreparesPerSession=6,now=()=>Math.floor(Date.now()/1000)}){Object.assign(this,{program:key(program),idl,sponsor,connection,store,dailyCap,maxPreparesPerSession,now});}
+ // Budget is reserved when a plan is signed and returned only once its blockhash can no longer land
+ // (well past the 90 s plan expiry), so abandoned plans do not exhaust the daily sponsor budget.
+ releaseExpired(){for(const [ticket,x] of Object.entries(this.store.pending))if(!x.used&&this.now()>x.expiresAt+120){const day=x.day??Math.floor((x.expiresAt-90)/86400).toString();this.store.budgets[day]=Math.max(0,(this.store.budgets[day]??0)-x.cost);delete this.store.pending[ticket];}}
  pda(...parts){return web3.PublicKey.findProgramAddressSync(parts.map(x=>typeof x==='string'?Buffer.from(x):x),this.program)[0];}
  async account(address,type){const a=await this.connection.getAccountInfo(address,'confirmed');if(!a)return null;if(!a.owner.equals(this.program))throw Error('Yanlış hesap sahibi');return decodeAccount(this.idl,type,a.data);}
  async status(wallet,nullifier){const credential=this.pda('human',Buffer.from(nullifier,'hex'));const receipt=this.pda('launch-receipt',credential.toBuffer());const r=await this.account(receipt,'LaunchReceipt');return r?{status:r.claimed?'claimed':'enrolled',eligibleAt:Number(r.eligible_at)}:{status:'verified'};}
@@ -37,6 +40,8 @@ export class SponsoredChain {
   if(!['enroll','claim'].includes(action))throw Error('Talimat izinli değil');
   const existing=Object.entries(this.store.pending).find(([,x])=>x.sessionId===session.id&&x.action===action&&!x.used&&x.expiresAt>this.now());
   if(existing)return {ticket:existing[0],transaction:existing[1].transaction};
+  this.releaseExpired();const today=Math.floor(this.now()/86400).toString(),attempts=(this.store.prepares??={})[session.id+':'+today]??0;
+  if(attempts>=this.maxPreparesPerSession)throw Error('Bu başvuru için bugünkü işlem hazırlama sınırına ulaşıldı');
   const person=key(session.wallet),config=this.pda('config');const cfg=await this.account(config,'Config');if(!cfg||!cfg.live||cfg.closed||cfg.paused)throw Error('Dağıtım şu anda açık değil');
   const policy=await this.account(this.pda('identity-policy'),'IdentityPolicy');if(!policy||policy.verifier!==proof.publicKey||policy.verifier===this.sponsor.publicKey.toBase58())throw Error('Kimlik doğrulayıcısı zincirdeki ayarla uyuşmuyor');
   const mint=key(cfg.mint),credential=this.pda('human',Buffer.from(proof.nullifier,'hex')),receipt=this.pda('launch-receipt',credential.toBuffer());
@@ -62,7 +67,7 @@ export class SponsoredChain {
   const balance=await this.connection.getBalance(this.sponsor.publicKey,'confirmed');if(balance<cost)throw Error('Dağıtımın işlem bütçesi yetersiz');
   tx.partialSign(this.sponsor);const transaction=tx.serialize({requireAllSignatures:false}).toString('base64');
   const ticket=createHash('sha256').update(tx.serializeMessage()).digest('hex');
-  this.store.budgets[day]=spent+cost;this.store.pending[ticket]={sessionId:session.id,action,message:tx.serializeMessage().toString('base64'),transaction,block,cost,expiresAt:this.now()+90,used:false};this.store.save();
+  this.store.budgets[day]=spent+cost;this.store.prepares[session.id+':'+today]=attempts+1;this.store.pending[ticket]={sessionId:session.id,action,day,message:tx.serializeMessage().toString('base64'),transaction,block,cost,expiresAt:this.now()+90,used:false};this.store.save();
   return {ticket,transaction};
  }
  async submit(session,ticket,raw){

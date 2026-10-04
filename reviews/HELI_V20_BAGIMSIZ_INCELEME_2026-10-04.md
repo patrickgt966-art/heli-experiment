@@ -466,6 +466,9 @@ poc5: önceki örnekler 1_000_000; flash örnek 5_000_000; teminat tamamen geri 
 | N3 webhook'un engellenmesi | **Düzeltildi** | Ayrı webhook kotası. |
 | L6 `.env.example` workflow ID | **Düzeltildi** | |
 | C2b gider pause/iptal | **Düzeltildi ve doğrulandı** | `execute_expense` pause'u kontrol ediyor, `cancel_expense` eklendi. `test_expense_controls_svm.py`: 45 kontrol/işlem. Hedef beyaz listesi ve ikinci onaylayıcı hâlâ sahibin kararı. |
+| H1 `initialize` front-run | **Düzeltildi ve doğrulandı** | `initialize` yalnız programın upgrade yetkilisi imzalarsa çalışıyor (ProgramData kontrolü). Yabancı imzacı, sahte ProgramData ve yetkisiz (`--final`) dağıtım reddediliyor. `test_setup_controls_svm.py`: 33 kontrol/işlem. Dağıtım sırası: deploy → `initialize` → isteğe bağlı olarak upgrade yetkisini kaldırma. |
+| M5 kayıp başvuru | **Düzeltildi** | Aynı cüzdanın imzası, yeni Didit oturumu açmadan mevcut başvuruyu yeniden açıyor. Aynı cüzdandaki aynı kişi artık "duplicate" sayılmıyor. Reddedilen veya süresi dolan başvuru için yeni deneme açık. Başka cüzdandaki tekrar hâlâ engelli. 4 yeni test; eski kod 1'inde başarısız. |
+| M6 sponsor bütçesi | **Düzeltildi** | Kullanılmayan plan, blockhash artık işleme giremeyecek hale gelince (90 sn + 120 sn) bütçeye iade ediliyor. Başvuru başına günde en çok 6 hazırlama. 4 yeni test; eski kod 2'sinde başarısız. |
 | M9 yeniden üretilebilir derleme | **Yerelde çözüldü** | Birden fazla token hesabı açan kurulum talimatları, her biri tek `init` yapacak şekilde bölündü. 11 yeni kurulum talimatı eklendi; kurulum sırası değişti. Agave 2.1.21 / platform-tools v1.43 ile temiz derleme iki kez aynı ELF hash'ini verdi (`2361b6da…`). Komut: `scripts/build_local.sh`. Sabit Docker imajı ve `solana-verify` hâlâ gerekli. |
 
 Yeni ELF üzerinde yeniden çalıştırılan testler:
@@ -475,16 +478,18 @@ Yeni ELF üzerinde yeniden çalıştırılan testler:
 | `test_market_release_svm.py` | 1.615 kontrol/işlem (eski 1.606 + 9 yeni kurulum çağrısı), 720 ay |
 | Keeper | 4.351 kontrol/işlem, 1.442 iş |
 | Claim SVM | 1/1 |
-| Node paketi | 80/80 |
+| `test_setup_controls_svm.py` | 33 kontrol/işlem |
+| `test_expense_controls_svm.py` | 45 kontrol/işlem |
+| Node paketi | 89/89 |
+
+Son ELF: `c31c9d58…`. Depodaki kaynak `build_local.sh` ile sıfırdan derlendiğinde aynı ELF'i veriyor.
 
 `reviews/poc_review.py` orijinal paket ve ikili içindir. Yeni kurulum sırasıyla çalışmaz.
 
 Açık kalan başlıca konular:
 - **C1 ve C2a:** fiyat sınırları.
-- **H1:** `initialize` erişimi.
 - **H2:** pause kapsamı.
 - **H3:** kimlik tekrarının canlı testi.
 - **M2, N2, M3:** gözlem manipülasyonu.
-- **M5:** başvuru kurtarma.
-- **M6:** sponsor bütçesi.
+- **C3:** yönetici ve verifier rotasyonu.
 - Bağımsız denetim.

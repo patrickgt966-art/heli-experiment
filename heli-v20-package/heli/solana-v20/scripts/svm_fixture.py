@@ -82,7 +82,13 @@ def amount(k):return struct.unpack_from('<Q',svm.get_account(k).data,64)[0]
 def supply():return struct.unpack_from('<Q',svm.get_account(defaults['mint']).data,36)[0]
 def cfg():return read(defaults['config'],'Config')
 def released():return supply()-sum(cfg()['stocks'])
-defaults={'config':pda(b'config'),'mint':pda(b'mint'),'admin':admin.pubkey(),'payer':admin.pubkey(),'account_payer':admin.pubkey(),'owner':admin.pubkey(),'token_program':TOKEN,'system_program':SYSTEM,'rent':RENT,'market':pda(b'market')}
+from solders.account import Account as _Account
+PROGRAM_DATA=Pubkey.from_bytes(bytes(svm.get_account(PROGRAM).data[4:36]))
+def set_upgrade_authority(key):
+ a=svm.get_account(PROGRAM_DATA);d=bytearray(a.data);d[12]=0 if key is None else 1;d[13:45]=bytes(32) if key is None else bytes(key)
+ svm.set_account(PROGRAM_DATA,_Account(a.lamports,bytes(d),a.owner,a.executable,a.rent_epoch))
+set_upgrade_authority(admin.pubkey())
+defaults={'config':pda(b'config'),'program':PROGRAM,'program_data':PROGRAM_DATA,'mint':pda(b'mint'),'admin':admin.pubkey(),'payer':admin.pubkey(),'account_payer':admin.pubkey(),'owner':admin.pubkey(),'token_program':TOKEN,'system_program':SYSTEM,'rent':RENT,'market':pda(b'market')}
 for i,n in enumerate(['human','rewards','liquidity','founder']):defaults[n]=pda(b'vault',bytes([i]))
 for n in ['base_pool','quote_pool','quote_treasury','founder_quote']:defaults[n]=pda(n.replace('_','-').encode())
 def instruction(name,arguments=None,accounts=None):

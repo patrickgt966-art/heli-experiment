@@ -22,6 +22,16 @@
       "name": "initialize",
       "accounts": [
         {
+          "name": "program",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "programData",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "config",
           "isMut": true,
           "isSigner": false
@@ -4270,6 +4280,11 @@
       "code": 6011,
       "name": "MonthlyDividendDisabled",
       "msg": "Monthly free dividends are disabled; only the initial allocation is free"
+    },
+    {
+      "code": 6012,
+      "name": "InitializerNotAuthorized",
+      "msg": "Only the program upgrade authority can initialize"
     }
   ]
 }
