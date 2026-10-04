@@ -123,6 +123,10 @@ Kim: Test 2'deki kişilerden biri, gerçek bir telefonda (iPhone tercih edilir).
 | Onaydan sonra Didit kamerası açılır ve doğrulama tamamlanır | [ ] |
 | Doğrulamadan sonra Safari'de "Refresh status" doğru sonucu gösterir | [ ] |
 
+**Sonuç kaydı (4 Ekim 2026): BAŞARILI.** iPhone, Phantom içinde yeni bir test hesabı. Phantom tarayıcısında bağlanıp imzalandı; "Continue identity verification" sonrası "Continue in Safari or Chrome" bölümü çıktı. "Copy application link" ile kopyalanan link Safari'ye yapıştırıldı. Safari'de başvuru aynı cüzdanla (adres Phantom'dakiyle aynı ilk karakterler) "Verification pending" olarak açıldı. "Continue identity verification" ile Didit kamerası açıldı (Safari daha önce kamera izni verdiği için izin sorulmadı). Belge/yüz çekimi yapılmadı; oturum temizlik için konsolda reddedilecek.
+- Önceki başvuruyu hatırlayan Phantom tarayıcısında yeni cüzdana geçmek için "Use another wallet / application" gerekti; bu beklenen davranış.
+- Ek kontrol (başkasının linki) yapılmadı.
+
 Ek kontrol (isteğe bağlı): Başka birinin linkini açtığınızda onay penceresinde **sizin olmayan** bir cüzdan adresi görünmeli. "İptal" seçince kendi kayıtlı başvurunuz değişmemeli.
 
 ## Sonuç
