@@ -1,5 +1,7 @@
 # HELI ilk web sitesi
 
+4 Ekim 2026 pazar ölçümü yayını: referans ve derinlik yalnız dış alış emirleriyle; asgari derinlik 1.000 quote birimi; çöküş istisnası (%95, 30 gün, aylık %10). Yayın: https://390e7d50.heli-experiment.pages.dev
+
 4 Ekim 2026 V22 kural metni yayını: hazine release'lerinin aylık toplamı alış derinliğinin %2'si; 60. yıl kapanışından sonra satış geliri gider ödeyebilir, yeni HELI yok, yönetim emirleri biter; giderler proje hesaplarına geri ödenemez. Cloudflare yayını: https://637407fa.heli-experiment.pages.dev (üretim adresinden doğrulandı).
 
 2 Ekim 2026 V20 güncel yayın: yalnız ilk 1M ücretsiz; 70M aylık satış envanteri rezervidir.

@@ -30,8 +30,12 @@ After the 60-year close no new HELI is released and management orders end; sale 
 New Management Treasury HELI releases are locked for the first 12 months.
 Afterward, sales and newly released liquidity inventory share at most 20% of monthly capacity
 and one quarter of actual releases outside the Management Treasury, checked against a 24-hour
-reference price built only from bids that rested at least an hour.
-In each month, all Management Treasury releases together may not exceed 2% of the resting bid depth.
+reference price built only from outside bids that rested at least an hour; the project's own orders never count.
+In each month, all Management Treasury releases together may not exceed 2% of the resting outside bid depth.
+A reference needs at least 1,000 quote units of outside bids at every hourly observation (the exact minimum is fixed at launch).
+If outside buyers disappear (no reference and outside bids below that minimum), reserve-funded bids may still buy,
+at most at 95% of the last outside reference (or of the opening auction price if it is older than 30 days),
+and at most 10% of the project quote reserve per month.
 The single manager can direct funded limit buy/sell orders, cancel orders and return assets to project accounts.
 Sales: at least 95% of the reference price (without a reference: at least the opening auction price).
 Reserve-funded bids: at most 105% of the reference price, and none without a reference. Orders expire after about 24 hours.
