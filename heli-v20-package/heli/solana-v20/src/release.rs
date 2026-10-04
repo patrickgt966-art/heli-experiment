@@ -219,6 +219,15 @@ pub(crate) fn order_quote(amount:u64,mantissa:u32,exponent:i8)->Result<u64>{
  let q=(amount as u128).checked_mul(num).ok_or(ErrorCode::Math)?.checked_add(d-1).ok_or(ErrorCode::Math)?/d;
  u64::try_from(q).map_err(|_|error!(ErrorCode::Math))
 }
+/// Order price as an exact fraction num/den of quote atoms per HELI.
+pub(crate) fn price_frac(mantissa:u32,exponent:i8)->(u128,u128){
+ let e=exponent as i32+6;if e>=0 {(mantissa as u128*10u128.pow(e as u32),1)}else{(mantissa as u128,10u128.pow((-e) as u32))}
+}
+/// Owner decision (review A1/A2): the project's own orders never trade with each other. A reserve-funded bid
+/// and a project ask are each remembered for two days (longer than the ~24h order expiry); while a management
+/// bid may rest, project asks must be priced above it and release sales (market sells) are refused, and while
+/// a project ask may rest, management bids must be priced below it.
+pub(crate) const SELF_TRADE_WINDOW:i64=2*86_400;
 pub(crate) fn check_order_price(mantissa:u32,exponent:i8,is_bid:bool,bounds:(u64,Option<u64>))->Result<()>{
  let e=exponent as i32+6;
  let(num,den)=if e>=0 {(mantissa as u128*10u128.pow(e as u32),1u128)}else{(mantissa as u128,10u128.pow((-e) as u32))};
@@ -263,6 +272,7 @@ pub fn execute(mut ctx:Context<ExecuteReleaseSale>,kind:u8,amount:u64)->Result<(
  require!(kind==3,ErrorCode::LiquidityDisabled);
  let a=&mut ctx.accounts;let now=Clock::get()?;let c=&a.config;let e=&a.epoch;
  require!(c.live&&!c.closed&&!c.paused&&c.manifest_bound&&e.settled&&e.number<720&&e.number==c.last_settled_epoch&&now.unix_timestamp>=boundary(c.start,e.number)&&now.unix_timestamp<boundary(c.start,e.number+1)&&amount>0,ErrorCode::Time);
+ require!(now.unix_timestamp>=c.mgmt_bid_until,ErrorCode::SelfTrade);
  require!(now.unix_timestamp>=boundary(c.start,12),ErrorCode::Time);let left=e.founder_budget.checked_sub(e.founder).ok_or(ErrorCode::Quota)?;
  require!(amount<=left&&amount<=c.stocks[kind as usize]&&a.source.amount>=c.stocks[kind as usize],ErrorCode::Quota);
  {let dest=Pubkey::find_program_address(&[b"auction-proceeds"],&crate::ID).0;require!(a.destination.key()==dest&&a.destination.owner==c.key(),ErrorCode::Market);let allowance=(e.human_budget as u128)/4;require!(e.founder as u128+amount as u128<=allowance,ErrorCode::Quota);}
