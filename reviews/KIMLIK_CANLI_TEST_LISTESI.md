@@ -78,6 +78,19 @@ Biri `review` alırsa, yüz benzerliği iki farklı kişiyi karıştırmış ola
 
 Not: 4. adım yalnız mekanizmayı gösterir. Pilot "yalnız kimlik" modunda olduğu için token verilmez. Gerçek bir başvuruda aynı kişi için bayrak kullanılmaz.
 
+**Sonuç kaydı (4 Ekim 2026): BAŞARILI.** Pilot, V22 dalındaki claim-service koduyla çalışıyordu (kimlik karar sırası düzeltmesi dahil).
+1. Proje sahibi kimlik kartı ve yeni bir test cüzdanıyla başvurdu. Didit bu kez oturumu doğrudan **Declined** yaptı (review değil). Uyarılar: possible duplicated user, duplicated face under a different identity document, duplicated face, low face match similarity; bilgi notları: barcode not detected, duplicated device/IP. Canlılık başarısız değildi.
+2. Didit konsolunda oturum Approved yapıldı → HELI: **Under review** (konsol onayı tek başına yetmedi). ✔
+3. `manual-review.mjs` bayraksız → **"Manual approval refused: application is review"** (yüz-tekrar sinyali). ✔
+4. `--allow-duplicate-face` ve test gerekçesiyle → `"status":"verified"`; yalnız gerekçe özeti saklandı. Pilot yeniden başlatıldı, sayfa **Identity approved**. ✔
+5. Didit'te oturum Declined yapıldı → HELI: **Application declined** (yeni karar eski manuel onayı geçersiz kıldı). ✔
+- Kimlik kartındaki numara, önceki pasaport onayıyla eşleşmedi (o onay başka bir durum dosyasında olabilir ya da pasaportta kişisel numara okunmamış olabilir). Aynı belge/kişisel numara kuralı bu denemede canlı olarak tetiklenmedi; yerel testlerde doğrulanmıştır.
+
+İşletim notları (bu denemeden):
+- Didit iş akışı yüz-tekrarında oturumu otomatik reddedebiliyor. Manuel inceleme yolu yine çalışır: konsolda Approved → `manual-review.mjs`.
+- Pilot `Stop-Process` ile zorla durdurulursa `.state/claim.sqlite.lock` kalır ve `manual-review.mjs` "EEXIST" hatası verir. Pilotun çalışmadığı doğrulandıktan sonra yalnız bu kilit dosyası silinir; veri dosyası etkilenmez. Pilot kendi penceresinde çalışıyorsa Ctrl + C tercih edilir.
+- Bu bilgisayarda `node` PATH'te değil; Codex'in Node'u tam yoluyla kullanıldı (`& "<...>\node.exe" manual-review.mjs <id> "<gerekçe>"`).
+
 ## Test 3 — Kayıp başvuru linki (M5)
 
 Kim: Test 2'de `verified` alan kişilerden biri.
