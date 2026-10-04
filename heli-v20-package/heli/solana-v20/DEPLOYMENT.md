@@ -96,6 +96,7 @@ O ayki yönetim release'leri ve doğrudan release satışlarının **toplamı** 
 ## Ücretsiz pay yok (sahibin kararı, 4 Ekim 2026)
 
 - Başlangıç tabanı 5M'nin tamamı açılış ihalesi ve piyasa envanterine gider (`genesis`), ihalede 5M satışa çıkar (`OFFER_HELI`).
+- **Cüzdan başına ihale sınırı (sahibin kararı, tekele karşı):** bir cüzdan en fazla `WALLET_CAP_HELI` = 250.000 HELI (teklifin %5'i) isteyebilir; daha büyük teklif `Quota` ile reddedilir, iptal edip yeniden teklif vermek sınırı artırmaz. Çok cüzdan açmayı kod engelleyemez (kimlik yok); sınır tek cüzdanla tekeli önler ve aşmayı görünür kılar. Satılmayan HELI `market_remaining` içinde kalır ve yalnız satış tabanıyla satılır.
 - Ücretsiz pay kasası 0'dır ve başlangıçta kapanmış sayılır (`launch_finalized=true`); keeper 6. ay işini planlamaz.
 - `issue_credential`, `enroll_launch`, `claim_launch`, `dispute_launch`, `restore_launch`, `set_credential_active`, `finalize_launch` IDL uyumluluğu için duruyor ama her zaman `FreeAllocationDisabled` döner.
 - Kimlik ve doğrulayıcı (`initialize_identity`, `set_verifier`) programdan tamamen kaldırıldı (bölüm 14).

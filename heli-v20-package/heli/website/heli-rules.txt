@@ -3,6 +3,7 @@ October 4, 2026. Design summary; not a live sale or investment commitment.
 
 Initial mint: 100 million HELI. Initial burn: 10 million. Maximum remaining supply: 90 million.
 Initial release base: 5 million, all sold through the opening auction and the market.
+Opening auction: one bid per wallet, at most 250,000 HELI (5% of the offer). Unsold HELI stays in the project inventory under the sale floor.
 There is no free allocation, presale or private round. Unsold launch inventory waits for buyers; it is not burned.
 Purpose: money that follows a published rule (in the spirit of Friedman's k-percent rule), with limits on the people in charge.
 The monthly cap is a ceiling, not a target: released tokens enter circulation only when someone buys them.

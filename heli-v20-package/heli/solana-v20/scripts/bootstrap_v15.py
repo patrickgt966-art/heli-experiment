@@ -24,8 +24,24 @@ def bootstrap(t, auction_quantity=1000, with_policy=False, min_depth=5000, rejec
  qw=t.token_account(q,t.alice.pubkey());hw=t.token_account(t.defaults['mint'],t.alice.pubkey())
  t.send('TEST quote to alice',[t.Instruction(t.TOKEN,b'\x07'+struct.pack('<Q',1_000_000*t.U),[t.meta(q,True),t.meta(qw,True),t.meta(t.admin.pubkey(),False,True)])])
  ba={'bidder':t.alice.pubkey(),'bid':t.pda(b'auction-bid',bytes(t.alice.pubkey())),'bidder_quote':qw,'bidder_heli':hw}
- t.call('create_auction_bid',acc=ba);t.call('place_auction_bid',{'quantity_heli':auction_quantity,'tick':0},ba)
+ # One wallet may bid for at most 250,000 HELI (5% of the offer); larger fixtures add synthetic bidders whose
+ # HELI is moved to alice after the claim, so later tests see the same alice balance as before.
+ cap=250_000;mine=min(auction_quantity,cap);extra=[]
+ if metadata_checks:
+  t.call('create_auction_bid',acc=ba);t.call('place_auction_bid',{'quantity_heli':cap+1,'tick':0},ba,reject='Quota',label='one wallet cannot bid for more than 5% of the auction offer')
+  t.call('place_auction_bid',{'quantity_heli':cap,'tick':0},ba,label='one wallet may bid for exactly 5% of the auction offer');t.call('cancel_auction_bid',acc=ba)
+  t.call('place_auction_bid',{'quantity_heli':cap+1,'tick':0},ba,reject='Quota',label='cancelling and re-bidding does not raise the per-wallet limit')
+ else:t.call('create_auction_bid',acc=ba)
+ t.call('place_auction_bid',{'quantity_heli':mine,'tick':0},ba)
+ left=auction_quantity-mine
+ while left>0:
+  k=t.Keypair();t.KEYS[str(k.pubkey())]=k;t.svm.airdrop(k.pubkey(),10_000_000_000);n=min(left,cap);left-=n
+  kq=t.token_account(q,k.pubkey());kh=t.token_account(t.defaults['mint'],k.pubkey())
+  t.send('TEST quote to bidder',[t.Instruction(t.TOKEN,b'\x07'+struct.pack('<Q',1_000_000*t.U),[t.meta(q,True),t.meta(kq,True),t.meta(t.admin.pubkey(),False,True)])])
+  kb={'bidder':k.pubkey(),'bid':t.pda(b'auction-bid',bytes(k.pubkey())),'bidder_quote':kq,'bidder_heli':kh}
+  t.call('create_auction_bid',acc=kb);t.call('place_auction_bid',{'quantity_heli':n,'tick':0},kb);extra.append((k,kb,kh,n))
  t.clock(t.start);t.call('finalize_auction');t.call('claim_auction_bid',acc=ba)
+ for k,kb,kh,n in extra:t.call('claim_auction_bid',acc=kb);t.transfer(kh,hw,n*t.U,k)
  nul=hashlib.sha256(b'long-run-local-person').digest()
  ac={'person':t.alice.pubkey(),'owner':t.alice.pubkey(),'credential':t.pda(b'human',nul),'wallet_identity':t.pda(b'id-wallet',bytes(t.alice.pubkey())),'destination':hw}
  t.removed('issue_credential','free allocation removed: the credential instruction no longer exists')

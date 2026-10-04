@@ -9,6 +9,7 @@ Website: https://heli-experiment.pages.dev · Full rules: [`heli-v20-package/hel
 **Supply**
 - Initial mint: 100 million HELI. Initial burn: 10 million. Maximum remaining supply: 90 million.
 - Initial release base: 5 million, all sold through the opening auction and the market. There is no free allocation, presale or private round.
+- Opening auction: one bid per wallet, at most 250,000 HELI (5% of the 5 million offer). HELI the auction does not sell stays in the project inventory and is sold only under the market sale floor.
 - Locked: Monthly Market Release Reserve 70 million; HELI Management Treasury 15 million (former founder, market-support and staking allocations combined).
 - Shared monthly release cap: about 0.402247% of the supply already released and not burned (first month: 20,112.368685 HELI), over 720 months. About 4.9% a year is an upper bound, not a forecast. Unsold released inventory still counts as released supply in that base.
 - Staking is cancelled. There is no monthly free dividend.
@@ -53,4 +54,4 @@ No wallet secrets or personal data are included in this repository.
 
 ## Türkçe
 
-HELI, Solana üzerinde kurallı para arzını araştıran bir deneydir. Ücretsiz dağıtım yoktur; 5 milyon HELI açılış ihalesi ve piyasa yoluyla satılır. Güncel tasarım V22'dir: yerel Solana simülatör testlerinden geçti (eski kimlik pilotu arşivdedir). Devnet veya ana ağda yayınlanmış değildir ve bağımsız güvenlik denetiminden geçmemiştir. Ayrıntılı durum: `heli-v20-package/V22_DURUM.md`.
+HELI, Solana üzerinde kurallı para arzını araştıran bir deneydir. Ücretsiz dağıtım yoktur; 5 milyon HELI açılış ihalesi ve piyasa yoluyla satılır. İhalede bir cüzdan en fazla 250.000 HELI (teklifin %5'i) isteyebilir. Güncel tasarım V22'dir: yerel Solana simülatör testlerinden geçti (eski kimlik pilotu arşivdedir). Devnet veya ana ağda yayınlanmış değildir ve bağımsız güvenlik denetiminden geçmemiştir. Ayrıntılı durum: `heli-v20-package/V22_DURUM.md`.

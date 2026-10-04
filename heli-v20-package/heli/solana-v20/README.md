@@ -19,6 +19,8 @@ yönetim dışı arzın ¼'ü ve dış alış derinliğinin %2'si. 60. yılda ka
 
 ## Hazine ve pazar (özet)
 
+- Açılış ihalesi: cüzdan başına tek teklif, en fazla 250.000 HELI (`WALLET_CAP_HELI`, teklifin %5'i); satılmayan kısım proje envanterinde kalır.
+
 - Fiyat referansı yalnız dış alışlardan (Manifest v3.0.24), saatlik gözlemle; satış ≥ %95, rezervle alış ≤ %105.
 - Rezervle tüm alışlar 30 günde rezerv bakiyesinin en fazla %10'u; çöküş istisnası 24 saat kesintisiz kayıtlı sığlık ister.
 - Giderler: önce bağışlar, satış geliri %100, ötesi 30 günde 10 quote birimi + rezervin yılda %25'i; rezerv, kurulumda seçilen proje tabanının (en az 120) altına yalnız 10 birimlik teknik tabanla iner; 7 gün bekleme, yönetici veya kurtarma anahtarı iptal edebilir.

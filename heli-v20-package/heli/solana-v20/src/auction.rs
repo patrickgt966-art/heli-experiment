@@ -4,6 +4,9 @@ use anchor_spl::token::{Mint,Token,TokenAccount};
 use crate::{Config,ErrorCode,UNIT,incoming,outgoing};
 pub const LEVELS:usize=256;
 pub const OFFER_HELI:u64=5_000_000;
+/// Owner decision (V22, against monopoly): one wallet may bid for at most 5% of the offer (250,000 HELI);
+/// HELI the auction does not sell stays in the project inventory under the 95%-of-reference sale floor.
+pub const WALLET_CAP_HELI:u64=OFFER_HELI/20;
 const FREEZE_SECONDS:i64=300;
 #[account]
 pub struct OpeningAuction {
@@ -82,7 +85,8 @@ pub fn create_bid(ctx:Context<CreateAuctionBid>)->Result<()> {
 }
 pub fn place(ctx:Context<PlaceAuctionBid>,qty:u64,tick:u16)->Result<()> {
  let a=&mut ctx.accounts.auction;let b=&mut ctx.accounts.bid;
- require!(ctx.accounts.config.live&&!ctx.accounts.config.closed&&!ctx.accounts.config.paused&&!a.finalized&&Clock::get()?.unix_timestamp<a.end-FREEZE_SECONDS&&qty>0&&qty<=OFFER_HELI&&!b.active&&!b.claimed,ErrorCode::State);
+ require!(ctx.accounts.config.live&&!ctx.accounts.config.closed&&!ctx.accounts.config.paused&&!a.finalized&&Clock::get()?.unix_timestamp<a.end-FREEZE_SECONDS&&qty>0&&!b.active&&!b.claimed,ErrorCode::State);
+ require!(qty<=WALLET_CAP_HELI,ErrorCode::Quota);
  let collateral=qty.checked_mul(price(a,tick)?).ok_or(ErrorCode::Math)?;
  incoming(ctx.accounts.token_program.to_account_info(),ctx.accounts.bidder_quote.to_account_info(),ctx.accounts.quote_escrow.to_account_info(),ctx.accounts.bidder.to_account_info(),collateral)?;
  a.demand[tick as usize]=a.demand[tick as usize].checked_add(qty).ok_or(ErrorCode::Math)?;
