@@ -7,7 +7,7 @@ use anchor_spl::token::{self,Mint,Token,TokenAccount,Transfer};
 use crate::{Config,Epoch,ErrorCode,OpeningAuction,boundary,outgoing,manifest_bridge::check_market,release::{ReleasePolicy,reference_price,bid_book,band_depth,order_bounds,check_order_price,order_expiry,outside_shallow,crash_ceiling,order_quote,own_bid_quote}};
 
 #[account]
-pub struct ManagementBook {pub quote_floor:u64,pub total_released:u64,pub quote_funded:u64,pub quote_returned:u64,pub trader_bump:u8,pub bid_day:i64,pub bid_days:[u64;30]}
+pub struct ManagementBook {pub quote_floor:u64,pub total_released:u64,pub quote_funded:u64,pub quote_returned:u64,pub trader_bump:u8,pub bid_day:i64,pub bid_days:[u64;30],pub revenue_counted:u64}
 
 #[derive(Accounts)]
 pub struct InitializeManagement<'info>{
@@ -157,6 +157,9 @@ pub fn withdraw(mut ctx:Context<ManagementAction>,amount:u64,is_base:bool)->Resu
   let bump=[a.management_book.trader_bump];let sign:&[&[u8]]=&[b"management-trader",&bump];
   token::transfer(CpiContext::new_with_signer(a.token_program.to_account_info(),Transfer{from:a.management_quote.to_account_info(),to:a.project_quote.to_account_info(),authority:a.management_trader.to_account_info()},&[sign]),amount)?;
   a.management_book.quote_returned=a.management_book.quote_returned.checked_add(amount).ok_or(ErrorCode::Math)?;
+  // Only net trading profit (returned beyond funded, counted once) is sale revenue.
+  let b=&mut a.management_book;let profit=b.quote_returned.saturating_sub(b.quote_funded);
+  if profit>b.revenue_counted {a.config.revenue_total=a.config.revenue_total.checked_add(profit-b.revenue_counted).ok_or(ErrorCode::Math)?;b.revenue_counted=profit;}
  }
  // HELI remains in management_base as already-released working inventory.
  Ok(())

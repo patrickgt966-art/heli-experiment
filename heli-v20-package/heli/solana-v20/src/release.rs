@@ -283,6 +283,7 @@ pub fn execute(mut ctx:Context<ExecuteReleaseSale>,kind:u8,amount:u64)->Result<(
  for(from,to,n)in[(&a.base,&a.source,unfilled),(&a.quote,&a.destination,earned)] {
   if n>0 {token::transfer(CpiContext::new_with_signer(a.token_program.to_account_info(),Transfer{from:from.to_account_info(),to:to.to_account_info(),authority:a.trader.to_account_info()},&[seeds]),n)?;}
  }
+ a.config.revenue_total=a.config.revenue_total.checked_add(earned).ok_or(ErrorCode::Math)?;
  let e=&mut a.epoch;
  if kind==2 {e.liquidity=e.liquidity.checked_add(filled).ok_or(ErrorCode::Math)?;e.quote_lp=e.quote_lp.checked_add(earned).ok_or(ErrorCode::Math)?;}
  else {e.founder=e.founder.checked_add(filled).ok_or(ErrorCode::Math)?;e.quote_founder=e.quote_founder.checked_add(earned).ok_or(ErrorCode::Math)?;}
