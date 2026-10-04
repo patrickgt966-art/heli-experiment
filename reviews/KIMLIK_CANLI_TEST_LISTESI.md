@@ -104,6 +104,10 @@ Kim: Test 2'de `verified` alan kişilerden biri.
 | Didit'te **yeni bir oturum açılmadı** (konsolda bu kişi için tek oturum var) | [ ] |
 | Sonuç `duplicate` **değil** | [ ] |
 
+**Sonuç kaydı (4 Ekim 2026): büyük ihtimalle geçti, tam doğrulanmadı.** Test M hazırlığında proje sahibi telefondaki Phantom'u yanlışlıkla eski cüzdanla bağladı. Sayfa yeni başvuru açmadı; o cüzdanın bekleyen eski başvurusunu gösterdi. Bu, M5 davranışıyla uyumlu.
+- Doğrulanmayanlar: "Your existing application for this wallet was reopened." mesajı not edilmedi. Didit'te o sırada yeni oturum açılmadığı kontrol edilmedi. Başvurunun durumu `verified` değil, bekleyen/incelemedeydi.
+- Tam kanıt için (isteğe bağlı): Didit konsolunda o saatte bu cüzdan için yeni bir oturum olmadığını kontrol edin.
+
 ## Test 4 — Telefonda tarayıcı geçişi (N1)
 
 Kim: Test 2'deki kişilerden biri, gerçek bir telefonda (iPhone tercih edilir).
