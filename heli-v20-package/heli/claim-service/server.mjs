@@ -11,6 +11,7 @@ import {WebhookQueue} from './webhook-queue.mjs';
 const PROGRAM=readFileSync(new URL('../solana-v20/src/lib.rs',import.meta.url),'utf8').match(/declare_id!\("([^"]+)"\)/)[1];
 // Rate limits: [max requests, window seconds]. Per-client buckets stop one client exhausting everyone's quota;
 // session creation is the expensive path (provider sessions); signed webhooks get their own bucket.
+export const CONSENT_VERSION='heli-biometric-consent-v1';
 export const LIMITS=Object.freeze({global:[600,60],client:[30,60],create:[5,600],webhook:[300,60]});
 export function createClaimServer({origin,admission,chain,data,mode='demo',webhookSecret,queue,trustProxy=false,limits=LIMITS,siteOrigin=null,now=()=>Math.floor(Date.now()/1000)}){
  const publicOrigin=new URL(origin);if(publicOrigin.origin!==origin||publicOrigin.username||publicOrigin.password|| (mode!=='demo'&&publicOrigin.protocol!=='https:')||(mode==='identity'&&chain))throw Error('Invalid public origin or identity-only chain');
@@ -38,10 +39,13 @@ export function createClaimServer({origin,admission,chain,data,mode='demo',webho
    const b=JSON.parse(raw);
    if(path==='/api/session')return send(200,admission.session(b.wallet));
    const s=admission.get(b.id,b.token);
-   if(path==='/api/authenticate')return send(200,await admission.authenticate(s,b.signature));
+   // Biometric processing needs explicit consent first: the provider link is withheld until it is recorded.
+   const linkFor=x=>mode==='demo'||x?.consent?x.verificationUrl??null:null;
+   if(path==='/api/authenticate'){const r=await admission.authenticate(s,b.signature),x=r.resumed?data.sessions[r.id]:s;return send(200,{...r,verificationUrl:linkFor(x),consented:mode==='demo'||!!x?.consent});}
+   if(path==='/api/consent'){if(b.version!==CONSENT_VERSION||!s.providerId||s.status!=='verifying')throw Error('Consent could not be recorded');s.consent??={version:CONSENT_VERSION,at:now()};data.save();return send(200,{verificationUrl:s.verificationUrl,consented:true});}
    if(path==='/api/status'){
     if(s.providerId&&now()-(statusTimes.get(s.id)??0)>=15){await admission.refresh(s);statusTimes.set(s.id,now());}
-    let result={status:s.status,wallet:s.wallet,verificationUrl:s.verificationUrl??null,eligibleAt:s.eligibleAt??null};
+    let result={status:s.status,wallet:s.wallet,verificationUrl:linkFor(s),consented:mode==='demo'||!!s.consent,eligibleAt:s.eligibleAt??null};
     if(chain&&s.status==='verified')Object.assign(result,await chain.status(s.wallet,s.nullifier));
     if(!chain&&s.demoClaimed)result.status='claimed';else if(!chain&&s.eligibleAt)result.status='enrolled';
     return send(200,result);
@@ -55,7 +59,7 @@ export function createClaimServer({origin,admission,chain,data,mode='demo',webho
     if(path==='/api/demo/claim'){if(!s.eligibleAt||s.eligibleAt>now()||s.demoClaimed)throw Error('Claim unavailable');s.demoClaimed=true;data.save();return send(200,{simulated:true,amount:1000});}
    }
    return send(404,{error:'Not found'});
-  }catch(e){if(mode!=='demo')console.error(JSON.stringify({event:'request_rejected',providerHttpStatus:e.httpStatus??null,reason:['Invalid provider session','Identity provider unavailable','Wallet challenge expired','Decision does not match application'].includes(e.message)?e.message:'Request validation rejected'}));const allowed=['Application access denied','Wallet challenge expired','Identity approval is required','Claim unavailable','No new entitlement','Authenticate your wallet first','Identity checks are paused for today. Please try again tomorrow.'];send(400,{error:allowed.includes(e.message)?e.message:'Request could not be completed. Check your application status and try again.'});}
+  }catch(e){if(mode!=='demo')console.error(JSON.stringify({event:'request_rejected',providerHttpStatus:e.httpStatus??null,reason:['Invalid provider session','Identity provider unavailable','Wallet challenge expired','Decision does not match application'].includes(e.message)?e.message:'Request validation rejected'}));const allowed=['Consent could not be recorded','Application access denied','Wallet challenge expired','Identity approval is required','Claim unavailable','No new entitlement','Authenticate your wallet first','Identity checks are paused for today. Please try again tomorrow.'];send(400,{error:allowed.includes(e.message)?e.message:'Request could not be completed. Check your application status and try again.'});}
  });
 }
 if(process.argv[1]===fileURLToPath(import.meta.url)){
@@ -87,5 +91,5 @@ if(process.argv[1]===fileURLToPath(import.meta.url)){
  const queue=mode==='demo'?null:new WebhookQueue({admission,data});
  const timer=queue?setInterval(()=>queue.step().catch(()=>{}),1000):null;
  // Only trust Cloudflare's client IP header when the service is reachable solely through the tunnel (loopback bind).
- const server=createClaimServer({origin,admission,chain,data,mode,queue,webhookSecret:env.DIDIT_WEBHOOK_SECRET,trustProxy:env.HELI_TRUST_CF_CONNECTING_IP==='true',siteOrigin:env.HELI_SITE_ORIGIN??'https://heli-experiment.pages.dev'});server.listen(port,'127.0.0.1',()=>console.log('HELI V20 claim service '+mode+' '+origin));for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{if(timer)clearInterval(timer);server.close(()=>{data.close();process.exit(0);});});
+ const server=createClaimServer({origin,admission,chain,data,mode,queue,webhookSecret:env.DIDIT_WEBHOOK_SECRET,trustProxy:env.HELI_TRUST_CF_CONNECTING_IP==='true',siteOrigin:env.HELI_SITE_ORIGIN??'https://heli-experiment.pages.dev'});server.listen(port,'127.0.0.1',()=>console.log('HELI V20 claim service '+mode+' '+origin));for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{if(timer)clearInterval(timer);server.close(()=>{data.close();process.exit(0);});server.closeAllConnections?.();});
 }
