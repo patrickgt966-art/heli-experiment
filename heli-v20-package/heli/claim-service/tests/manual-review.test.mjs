@@ -58,3 +58,24 @@ test('automatic evaluation is unchanged: any warning still means review',()=>{
  const s={id:'s',providerId:'p'};
  assert.equal(evaluateDecision(decision(s),{sessionId:'p',vendorData:'s',workflowId,personSecret:secret}).status,'review');
 });
+
+test('manual approval cannot bypass a failed or missing liveness check',async()=>{
+ const f=fixture();
+ for(const liveness of [[{status:'Declined',warnings:[{risk:'LOW_LIVENESS_SCORE'}],matches:[]}],[{status:'In Review',warnings:[],matches:[]}],[{warnings:[],matches:[]}],[{status:'Approved',warnings:[],matches:[]},{status:'Declined',warnings:[],matches:[]}]]){
+  const s=await f.session();f.set(s,{liveness});
+  await assert.rejects(f.a.manualApprove(s,REASON),/refused/);assert.equal(s.status,'review');assert.equal(s.nullifier,undefined);
+  await assert.rejects(f.a.manualApprove(s,REASON,{allowDuplicateFace:true}),/refused/,'the duplicate flag does not excuse a liveness failure');assert.equal(s.status,'review');
+ }
+ assert.equal(f.data.manualReviews,undefined,'no audit entry for refused approvals');
+ f.data.close();
+});
+
+test('liveness declined only for duplicate-face warnings passes only with the explicit duplicate flag',async()=>{
+ const f=fixture(),s=await f.session();
+ f.set(s,{doc:'DOC-LIVE-DUP',liveness:[{status:'Declined',warnings:[{risk:'DUPLICATED_FACE'},{risk:'DUPLICATED_FACE_UNDER_A_DIFFERENT_IDENTITY_DOCUMENT'}],matches:[]}]});
+ await assert.rejects(f.a.manualApprove(s,REASON),/refused/);assert.equal(s.status,'review');
+ const mixed=await f.session();f.set(mixed,{doc:'DOC-LIVE-MIX',liveness:[{status:'Declined',warnings:[{risk:'DUPLICATED_FACE'},{risk:'POSSIBLE_SPOOF'}],matches:[]}]});
+ await assert.rejects(f.a.manualApprove(mixed,REASON,{allowDuplicateFace:true}),/refused/,'any non-duplicate liveness warning still blocks');
+ await f.a.manualApprove(s,REASON,{allowDuplicateFace:true});assert.equal(s.status,'verified');
+ f.data.close();
+});

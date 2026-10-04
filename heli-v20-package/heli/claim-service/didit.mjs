@@ -30,7 +30,13 @@ export function evaluateDecision(d,{sessionId,vendorData,workflowId,personSecret
  const states={'Not Started':'verifying','In Progress':'verifying','Awaiting User':'verifying','Resubmitted':'verifying','In Review':'review','Declined':'declined','Abandoned':'expired','Expired':'expired','Kyc Expired':'expired'};
  if(d.status!=='Approved')return {status:states[d.status]??'review'};
  const groups=['id_verifications','liveness_checks','face_matches'];
- if(manual){if(!Array.isArray(d.id_verifications)||!d.id_verifications.length||!Array.isArray(d.liveness_checks)||!d.liveness_checks.length||(hasDuplicateSignal(d)&&!allowDuplicateFace))return {status:'review'};}
+ if(manual){
+  // Liveness stays mandatory on the manual path: every check must be Approved. The only exception is a check the
+  // provider declined solely for duplicate-face warnings, and only when the operator explicitly allowed that signal.
+  const duplicateOnly=x=>Array.isArray(x.warnings)&&x.warnings.length>0&&x.warnings.every(w=>/duplicat/i.test(JSON.stringify(w)));
+  const live=x=>x?.status==='Approved'||(allowDuplicateFace&&x?.status==='Declined'&&duplicateOnly(x));
+  if(!Array.isArray(d.id_verifications)||!d.id_verifications.length||!Array.isArray(d.liveness_checks)||!d.liveness_checks.length||!d.liveness_checks.every(live)||(hasDuplicateSignal(d)&&!allowDuplicateFace))return {status:'review'};
+ }
  else {
  if(groups.some(k=>!Array.isArray(d[k])||!d[k].length||d[k].some(x=>x.status!=='Approved'||!Array.isArray(x.warnings)||!Array.isArray(x.matches??[]))))return {status:'review'};
  if([...d.id_verifications,...d.liveness_checks].some(x=>!Array.isArray(x.matches)))return {status:'review'};
