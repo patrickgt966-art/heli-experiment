@@ -1,0 +1,35 @@
+{
+  "checkedDate": "2026-10-03",
+  "mode": "identity",
+  "publicOrigin": "https://practical-wallet-magnet-months.trycloudflare.com",
+  "hosting": "Temporary Cloudflare quick tunnel to local port 8782; detached hidden processes; requires this computer and both processes to remain running",
+  "diditDestination": "HELI V20 Identity Pilot",
+  "webhookPath": "/webhooks/didit",
+  "events": [
+    "status.updated",
+    "data.updated"
+  ],
+  "webhookConsoleTestHttpStatus": 200,
+  "transportTestGrantsApproval": false,
+  "readExistingDecision": "Approved; required schema accepted; published workflow matched",
+  "walletSignatureAndLiveSessionCreation": "Passed with one disposable test wallet; no identity submitted",
+  "publishedWorkflowId": "a8a9365f-3306-4f9f-849a-4a565580f35d",
+  "editorWorkflowGroupId": "2856c2d4-eac4-45a9-b13d-09ebe05481f7",
+  "automatedTestsPassed": 24,
+  "chainEnabled": false,
+  "tokenDelivery": false,
+  "rawIdentityPersisted": false,
+  "remaining": [
+    "Applicant completes phone verification using own wallet; live result is bound to application",
+    "Stable production HTTPS hosting and operating controls before public use",
+    "Deployed and configured V20 Devnet program before registration or token delivery"
+  ],
+  "browserTransition": "Same application restored in Safari/Chrome with private fragment link; wallet-browser external-open fallback provided; real-device validation pending",
+  "visibleRefreshResult": "Declined/approved/review card, loading indicator, check time, network failure feedback, and result scroll; tested with local rejected fixture",
+  "restartCheck": {
+    "date": "2026-10-04",
+    "configHttpStatus": 200,
+    "webhookDestinationUpdated": true,
+    "tokenDelivery": false
+  }
+}

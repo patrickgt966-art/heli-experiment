@@ -1,0 +1,10 @@
+{
+  "mode": "closure",
+  "source_sha256": "9ceda6da760d595a3906a80af93038df9b29cdb41582c10cdb9325aac4602b9f",
+  "binary_sha256": "d35b5917198c043184f67befcd702a7806d39a3de331e30aed62fc6132d09c40",
+  "checks_and_transactions": 1638,
+  "all_passed": true,
+  "post_closure_allocated_atoms": 67000000,
+  "post_closure_expense_atoms": 40000,
+  "scope": "Compiled ELF in local LiteSVM, synthetic quote/keys; V22 owner-decision checks on top of the 720-month market scenario. Not a deployment or audit."
+}

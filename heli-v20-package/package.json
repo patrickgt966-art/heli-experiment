@@ -1,0 +1,12 @@
+{
+  "name": "heli-independent-review",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@solana/web3.js": "1.98.4",
+    "@solana/spl-token": "0.4.14"
+  }
+}

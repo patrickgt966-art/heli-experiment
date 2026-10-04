@@ -1,0 +1,37 @@
+[
+  {
+    "script": "test_expense_controls_svm.py",
+    "exit": 0,
+    "tail": "{\n  \"source_sha256\": \"5b4bd88704b8fbe4298c7f75efc15b3c3df7c275cf633b68c9b82eabaa65b03d\",\n  \"binary_sha256\": \"1645494a8c02eaa595a1785a21a565605ae7e57d30cf2a74bf776c75a6edd207\",\n  \"checks_and_transactions\": 45,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 ELF in local LiteSVM, synthetic quote/keys; expense pause/cancel controls only. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_price_bounds_svm.py",
+    "exit": 0,
+    "tail": "{\n  \"source_sha256\": \"5b4bd88704b8fbe4298c7f75efc15b3c3df7c275cf633b68c9b82eabaa65b03d\",\n  \"binary_sha256\": \"1645494a8c02eaa595a1785a21a565605ae7e57d30cf2a74bf776c75a6edd207\",\n  \"checks_and_transactions\": 91,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 and Manifest ELFs in local LiteSVM, synthetic quote/keys; order price bounds and expiry only. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_observation_controls_svm.py",
+    "exit": 0,
+    "tail": "{\n  \"source_sha256\": \"5b4bd88704b8fbe4298c7f75efc15b3c3df7c275cf633b68c9b82eabaa65b03d\",\n  \"binary_sha256\": \"1645494a8c02eaa595a1785a21a565605ae7e57d30cf2a74bf776c75a6edd207\",\n  \"checks_and_transactions\": 74,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 and Manifest ELFs in local LiteSVM, synthetic quote/keys; price-observation controls only. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_setup_controls_svm.py",
+    "exit": 0,
+    "tail": "{\n  \"source_sha256\": \"5b4bd88704b8fbe4298c7f75efc15b3c3df7c275cf633b68c9b82eabaa65b03d\",\n  \"binary_sha256\": \"1645494a8c02eaa595a1785a21a565605ae7e57d30cf2a74bf776c75a6edd207\",\n  \"checks_and_transactions\": 33,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 ELF in local LiteSVM, synthetic keys; initialization access only. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_governance_svm.py",
+    "exit": 0,
+    "tail": "{\n  \"source_sha256\": \"5b4bd88704b8fbe4298c7f75efc15b3c3df7c275cf633b68c9b82eabaa65b03d\",\n  \"binary_sha256\": \"1645494a8c02eaa595a1785a21a565605ae7e57d30cf2a74bf776c75a6edd207\",\n  \"checks_and_transactions\": 68,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 ELF in local LiteSVM, synthetic keys; admin/recovery/verifier governance only. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_entitlement_controls_svm.py",
+    "exit": 0,
+    "tail": "source_sha256\": \"5b4bd88704b8fbe4298c7f75efc15b3c3df7c275cf633b68c9b82eabaa65b03d\",\n  \"binary_sha256\": \"1645494a8c02eaa595a1785a21a565605ae7e57d30cf2a74bf776c75a6edd207\",\n  \"checks_and_transactions\": 51,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 ELF in local LiteSVM, synthetic identities; free-allocation dispute/appeal/credential status only. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_market_release_svm.py",
+    "exit": 0,
+    "tail": "{\n  \"source_sha256\": \"5b4bd88704b8fbe4298c7f75efc15b3c3df7c275cf633b68c9b82eabaa65b03d\",\n  \"binary_sha256\": \"1645494a8c02eaa595a1785a21a565605ae7e57d30cf2a74bf776c75a6edd207\",\n  \"checks_and_transactions\": 1615,\n  \"all_passed\": true,\n  \"calendar_months\": 720,\n  \"scope\": \"Real V20 and Manifest ELFs in local LiteSVM, synthetic quote/provider; not public deployment or audit.\"\n}\n"
+  }
+]

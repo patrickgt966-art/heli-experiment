@@ -1,0 +1,5 @@
+{
+  "source_sha256": "9ceda6da760d595a3906a80af93038df9b29cdb41582c10cdb9325aac4602b9f",
+  "binary_sha256": "d35b5917198c043184f67befcd702a7806d39a3de331e30aed62fc6132d09c40",
+  "toolchain": "agave-2.1.21/platform-tools-v1.43"
+}

@@ -1,0 +1,5 @@
+{
+ "solBalance":0.25,"solFloor":0.005,"quoteBalance":100,"quotePerSol":100,
+ "applicants":0,"serverQuote":10,"rpcQuote":0,"identityQuotePerApplicant":null,
+ "otherQuote":0,"monthlyCollectedRevenueQuote":0,"volumeQuote":0,"retainedFeeBps":0
+}

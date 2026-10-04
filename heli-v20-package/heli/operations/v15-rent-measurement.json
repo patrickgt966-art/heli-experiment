@@ -1,0 +1,11 @@
+{
+  "scope": "local LiteSVM rent schedule, not a live RPC quote",
+  "program_bytes": 1283576,
+  "epoch_account_sizes": [
+    168,
+    165,
+    165
+  ],
+  "epoch_rent_lamports": 6138720,
+  "program_accounts_rent_lamports": 8936034480
+}

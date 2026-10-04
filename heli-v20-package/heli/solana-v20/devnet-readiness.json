@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-10-02T18:31:59.673Z",
+  "cluster": "devnet",
+  "wallet": "5rYen19dNmVAPf4664KhxWdLNEc4ZncScYFhe3V2ngYq",
+  "balanceSol": 0,
+  "program": "HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv",
+  "programExecutable": false,
+  "binaryBytes": 1354440,
+  "bufferRentSol": 6.8813934,
+  "programDataRentSol": 6.88143404,
+  "programAccountRentSol": 0.00083312,
+  "minimumProgramRentSol": 6.88226716,
+  "conservativePeakUploadAndDeploySol": 13.76366056,
+  "note": "Exact-length upgradeable loader estimate; excludes transaction fees, state setup and additional allocation. Deposit is test SOL."
+}
