@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self,Mint,Token,TokenAccount,MintTo,Transfer,Burn,SetAuthority};
 use anchor_spl::token::spl_token::instruction::AuthorityType;
 mod calendar; mod economics; mod auction; mod manifest_bridge; mod identity; mod release; mod management; mod market_release;
-use calendar::{DAY,boundary,epoch,month_index}; use economics::*;
+use calendar::{DAY,boundary,epoch}; use economics::*;
 use auction::*;
 use manifest_bridge::*; use identity::*; use release::*;
 use management::*; use market_release::*;
@@ -95,19 +95,13 @@ pub mod heli_core_v20 {
   o.earned_total=next_earned;o.donated_total=next_donated;
   emit!(QuoteContribution{contributor:ctx.accounts.contributor.key(),amount});Ok(())
  }
- pub fn allocate_auction_proceeds(ctx:Context<AllocateAuctionProceeds>,amount:u64)->Result<()> {
-  require!((ctx.accounts.config.live||ctx.accounts.config.closed)&&ctx.accounts.auction.finalized&&amount>0,ErrorCode::State);
-  let o=&mut ctx.accounts.operations;
-  let next_earned=o.earned_total.checked_add(amount).ok_or(ErrorCode::Math)?;
-  let next_allocated=o.sale_allocated_total.checked_add(amount).ok_or(ErrorCode::Math)?;
-  require!(ctx.accounts.sale_proceeds.amount>=amount,ErrorCode::Collateral);
-  outgoing(ctx.accounts.token_program.to_account_info(),ctx.accounts.sale_proceeds.to_account_info(),
-   ctx.accounts.fee_quote.to_account_info(),ctx.accounts.config.to_account_info(),ctx.accounts.config.bump,amount)?;
-  o.earned_total=next_earned;o.sale_allocated_total=next_allocated;
-  emit!(AuctionProceedsAllocated{amount});Ok(())
- }
+  // Owner decision (V22, expenses): the project reserve is never moved ahead of spending. An approved expense
+ // draws exactly its amount from the reserve when it is paid (execute_expense); this instruction stays in
+ // the IDL for old clients and always rejects.
+ pub fn allocate_auction_proceeds(_ctx:Context<AllocateAuctionProceeds>,_amount:u64)->Result<()> {err!(ErrorCode::ExpenseFundedOnPayment)}
  pub fn propose_expense(ctx:Context<ProposeExpense>,nonce:u64,amount:u64,purpose:[u8;32])->Result<()> {
   let o=&mut ctx.accounts.operations;
+  // monthly_cap (set once at setup) is now a per-proposal ceiling; spending limits apply at payment.
   require!(ctx.accounts.proposer.key()==ctx.accounts.config.admin&&nonce==o.next_nonce&&amount>0&&amount<=o.monthly_cap&&purpose!=[0;32],ErrorCode::Quota);
   require!(!treasury_owned(&ctx.accounts.destination.owner,&ctx.accounts.config.key(),ctx.program_id),ErrorCode::ExpenseDestination);
   let now=Clock::get()?.unix_timestamp;
@@ -122,17 +116,34 @@ pub mod heli_core_v20 {
   require!(!a.expense.paid&&!a.expense.cancelled&&now>=a.expense.ready_at,ErrorCode::Time);
   // Checked again at payment: a proposal written before this rule existed must not pay the treasury itself.
   require!(a.destination.key()!=a.fee_quote.key()&&!treasury_owned(&a.destination.owner,&a.config.key(),ctx.program_id),ErrorCode::ExpenseDestination);
-  // Expense months keep counting after month 720; the supply calendar (epoch) stops there.
-  let window=month_index(a.config.start,now);
-  if a.operations.window!=window {a.operations.window=window;a.operations.spent_in_window=0;}
-  let amount=a.expense.amount;
-  require!(a.operations.spent_in_window.checked_add(amount).ok_or(ErrorCode::Math)?<=a.operations.monthly_cap,ErrorCode::Quota);
-  let available=a.operations.earned_total.checked_sub(a.operations.spent_total).ok_or(ErrorCode::Math)?;
-  let needed=amount.checked_add(a.operations.reserve).ok_or(ErrorCode::Math)?;
-  require!(available>=needed&&a.fee_quote.amount>=needed,ErrorCode::Collateral);
-  outgoing(a.token_program.to_account_info(),a.fee_quote.to_account_info(),a.destination.to_account_info(),a.config.to_account_info(),a.config.bump,amount)?;
+  // Owner decision (V22, expenses): the expense treasury (donations) pays first, keeping its own reserve;
+  // the rest is drawn from the project reserve at payment time. Sale revenue is 100% spendable; beyond it,
+  // reserve spending over any rolling 30 days is limited to a fixed technical floor (10 quote units) plus
+  // 25%/12 of the reserve excluding unspent revenue (25% a year). The reserve keeps 1,000 quote units
+  // except for spending within the fixed floor, so the keeper can keep running.
+  let amount=a.expense.amount;let o=&mut a.operations;
+  let from_fee=amount.min(a.fee_quote.amount.saturating_sub(o.reserve));let r=amount-from_fee;
+  if r>0 {
+   let unit=10u64.pow(a.quote_mint.decimals as u32);let fixed=10*unit;let keep=1000*unit;
+   let balance=a.sale_proceeds.amount;require!(balance>=r,ErrorCode::Collateral);
+   let revenue_left=a.config.revenue_total.saturating_sub(o.revenue_spent);let from_revenue=r.min(revenue_left);let rest=r-from_revenue;
+   if rest>0 {
+    let day=now.div_euclid(DAY);
+    if day.saturating_sub(o.out_day)>=30 {o.out_days=[0;30];}
+    else {let mut d=o.out_day+1;while d<=day {o.out_days[d.rem_euclid(30) as usize]=0;d+=1;}}
+    o.out_day=o.out_day.max(day);
+    let window=o.out_days.iter().try_fold(0u64,|s,x|s.checked_add(*x)).ok_or(ErrorCode::Math)?.checked_add(rest).ok_or(ErrorCode::Math)?;
+    let share=(balance.saturating_sub(revenue_left) as u128*25/1200) as u64;
+    require!(window<=fixed.checked_add(share).ok_or(ErrorCode::Math)?,ErrorCode::Quota);
+    require!(balance-r>=keep||window<=fixed,ErrorCode::Collateral);
+    let slot=o.out_day.rem_euclid(30) as usize;o.out_days[slot]=o.out_days[slot].checked_add(rest).ok_or(ErrorCode::Math)?;
+   }
+   o.revenue_spent=o.revenue_spent.checked_add(from_revenue).ok_or(ErrorCode::Math)?;
+   o.earned_total=o.earned_total.checked_add(r).ok_or(ErrorCode::Math)?;o.sale_allocated_total=o.sale_allocated_total.checked_add(r).ok_or(ErrorCode::Math)?;
+   outgoing(a.token_program.to_account_info(),a.sale_proceeds.to_account_info(),a.destination.to_account_info(),a.config.to_account_info(),a.config.bump,r)?;
+  }
+  outgoing(a.token_program.to_account_info(),a.fee_quote.to_account_info(),a.destination.to_account_info(),a.config.to_account_info(),a.config.bump,from_fee)?;
   a.operations.spent_total=a.operations.spent_total.checked_add(amount).ok_or(ErrorCode::Math)?;
-  a.operations.spent_in_window=a.operations.spent_in_window.checked_add(amount).ok_or(ErrorCode::Math)?;
   a.expense.paid=true;
   emit!(ExpenseExecuted{nonce:a.expense.nonce,destination:a.expense.destination,amount,purpose:a.expense.purpose});
   Ok(())
@@ -279,8 +290,8 @@ fn market_ready(m:&Market,x:u64,y:u64,now:i64)->Result<bool> {
  if x==0||y<5000*UNIT{return Ok(false);}let p=m.samples.iter().rev().find(|p|p.time<=now-30*DAY&&p.time>=now-31*DAY);
  if let Some(p)=p {let avg=(m.cumulative-p.cumulative)/(now-p.time)as u128;let spot=muldiv(y as u128,UNIT as u128,x as u128)?;Ok(avg>0&&spot*10000>=avg*8000)}else{Ok(false)}
 }
-#[account] pub struct Config {pub admin:Pubkey,pub mint:Pubkey,pub quote_mint:Pubkey,pub history:Pubkey,pub start:i64,pub cursor:i64,pub stocks:[u64;4],pub principal:u64,pub lp_requested:u64,pub apr_bps:u16,pub pending_apr:u16,pub apr_effective:u16,pub bump:u8,pub vault_mask:u8,pub live:bool,pub closed:bool,pub paused:bool,pub last_settled_epoch:u16,pub launch_people:u32,pub launch_claimed:u32,pub launch_finalized:bool,pub launch_per_person:u64,pub launch_remaining:u64,pub market_remaining:u64,pub sale_authorized:u64,pub sale_total_sold:u64,pub sale_order:Pubkey,pub meteora_instruction_hash:[u8;32],pub meteora_committed_at:i64,pub meteora_pool:Pubkey,pub meteora_listed:bool,pub dlmm_pair:Pubkey,pub dlmm_committed_at:i64,pub dlmm_floor_bin:i32,pub dlmm_heli_is_x:bool,pub dlmm_listed:bool,pub dlmm_active_id:i32,pub dlmm_bin_step:u16,pub dlmm_base_factor:u16,pub dlmm_pool_created:bool,pub manifest_market:Pubkey,pub manifest_trader_bump:u8,pub manifest_bound:bool,pub manifest_base_deposited:u64,pub manifest_base_returned:u64,pub manifest_quote_withdrawn:u64}
-#[account] pub struct Operations {pub monthly_cap:u64,pub reserve:u64,pub window:u16,pub spent_in_window:u64,pub earned_total:u64,pub spent_total:u64,pub next_nonce:u64,pub donated_total:u64,pub sale_allocated_total:u64}
+#[account] pub struct Config {pub admin:Pubkey,pub mint:Pubkey,pub quote_mint:Pubkey,pub history:Pubkey,pub start:i64,pub cursor:i64,pub stocks:[u64;4],pub principal:u64,pub lp_requested:u64,pub apr_bps:u16,pub pending_apr:u16,pub apr_effective:u16,pub bump:u8,pub vault_mask:u8,pub live:bool,pub closed:bool,pub paused:bool,pub last_settled_epoch:u16,pub launch_people:u32,pub launch_claimed:u32,pub launch_finalized:bool,pub launch_per_person:u64,pub launch_remaining:u64,pub market_remaining:u64,pub sale_authorized:u64,pub sale_total_sold:u64,pub sale_order:Pubkey,pub meteora_instruction_hash:[u8;32],pub meteora_committed_at:i64,pub meteora_pool:Pubkey,pub meteora_listed:bool,pub dlmm_pair:Pubkey,pub dlmm_committed_at:i64,pub dlmm_floor_bin:i32,pub dlmm_heli_is_x:bool,pub dlmm_listed:bool,pub dlmm_active_id:i32,pub dlmm_bin_step:u16,pub dlmm_base_factor:u16,pub dlmm_pool_created:bool,pub manifest_market:Pubkey,pub manifest_trader_bump:u8,pub manifest_bound:bool,pub manifest_base_deposited:u64,pub manifest_base_returned:u64,pub manifest_quote_withdrawn:u64,pub revenue_total:u64}
+#[account] pub struct Operations {pub monthly_cap:u64,pub reserve:u64,pub window:u16,pub spent_in_window:u64,pub earned_total:u64,pub spent_total:u64,pub next_nonce:u64,pub donated_total:u64,pub sale_allocated_total:u64,pub revenue_spent:u64,pub out_day:i64,pub out_days:[u64;30]}
 #[account] pub struct Expense {pub destination:Pubkey,pub proposer:Pubkey,pub purpose:[u8;32],pub amount:u64,pub ready_at:i64,pub nonce:u64,pub paid:bool,pub cancelled:bool}
 #[event] pub struct ExpenseExecuted {pub nonce:u64,pub destination:Pubkey,pub amount:u64,pub purpose:[u8;32]}
 #[event] pub struct ExpenseCancelled {pub nonce:u64,pub destination:Pubkey,pub amount:u64}
@@ -308,7 +319,7 @@ pub const GOVERNANCE_DELAY:i64=7*DAY;
 // Large histories use external rent-funded zero accounts and in-place access. No 10KB CPI allocation.
 #[account(zero_copy(unsafe))] #[repr(C)] pub struct GlobalBook {pub low:[u64;720],pub high:[u64;720],pub cutoff:[i64;720],pub rate:[u64;720]}
 #[account(zero_copy(unsafe))] #[repr(C)] pub struct UserBook {pub low:[u64;720],pub high:[u64;720],pub claimed:[u64;12]}
-#[error_code] pub enum ErrorCode {#[msg("Invalid state")]State,#[msg("Invalid calendar window")]Time,#[msg("Quota exceeded")]Quota,#[msg("Invalid credential")]Identity,#[msg("Arithmetic error")]Math,#[msg("Collateral deficit")]Collateral,#[msg("Checkpoint required")]Checkpoint,#[msg("Market guard rejected")]Market,#[msg("Staking policy is fixed")]FixedStakingPolicy,#[msg("Staking is disabled")]StakingDisabled,#[msg("Liquidity inventory is disabled")]LiquidityDisabled,#[msg("Monthly free dividends are disabled")]MonthlyDividendDisabled,#[msg("Only the program upgrade authority can initialize")]InitializerNotAuthorized,#[msg("Order price outside the permitted band")]PriceOutsideBand,#[msg("Signer is not authorized for this governance action")]Unauthorized,#[msg("Expense destination must be outside the program treasury")]ExpenseDestination,#[msg("There is no free initial allocation")]FreeAllocationDisabled}
+#[error_code] pub enum ErrorCode {#[msg("Invalid state")]State,#[msg("Invalid calendar window")]Time,#[msg("Quota exceeded")]Quota,#[msg("Invalid credential")]Identity,#[msg("Arithmetic error")]Math,#[msg("Collateral deficit")]Collateral,#[msg("Checkpoint required")]Checkpoint,#[msg("Market guard rejected")]Market,#[msg("Staking policy is fixed")]FixedStakingPolicy,#[msg("Staking is disabled")]StakingDisabled,#[msg("Liquidity inventory is disabled")]LiquidityDisabled,#[msg("Monthly free dividends are disabled")]MonthlyDividendDisabled,#[msg("Only the program upgrade authority can initialize")]InitializerNotAuthorized,#[msg("Order price outside the permitted band")]PriceOutsideBand,#[msg("Signer is not authorized for this governance action")]Unauthorized,#[msg("Expense destination must be outside the program treasury")]ExpenseDestination,#[msg("There is no free initial allocation")]FreeAllocationDisabled,#[msg("Reserve funds move only when an approved expense is paid")]ExpenseFundedOnPayment}
 
 // Account validation is kept in one source file for reproducible Playground builds.
 include!("accounts.rs");

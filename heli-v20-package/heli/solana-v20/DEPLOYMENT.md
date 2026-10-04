@@ -39,7 +39,7 @@ Bilinen sınır: Yönetici anahtarını çalan kişi sizden önce davranıp yön
 10. Manifest piyasası oluşturulur (Manifest talimatı), ardından `create_manifest_base`, `create_manifest_quote`, `bind_manifest_market`.
 11. `create_management_base`, `create_management_quote`, `initialize_management`
 12. `create_release_base(3)`, `create_release_quote(3)`, `initialize_release_seat(3)`
-13. `create_fee_base`, `create_fee_quote`, `initialize_fee_vaults(monthly_cap, reserve)` — `monthly_cap` sonradan değiştirilemez.
+13. `create_fee_base`, `create_fee_quote`, `initialize_fee_vaults(monthly_cap, reserve)` — `monthly_cap` (tek teklif üst sınırı) sonradan değiştirilemez.
 14. Upgrade yetkisini kurtarma anahtarına devredin:
     `solana program set-upgrade-authority <PROGRAM_ID> --new-upgrade-authority <KURTARMA_ANAHTARI.json>`
 15. Keeper yapılandırmasındaki pinleri güncelleyin: `admin`, `verifier`, `heliUpgradeAuthority` (kurtarma anahtarının açık anahtarı) ve Manifest ikili hash'i.
@@ -59,8 +59,12 @@ Sonradan yönetici veya doğrulayıcı değiştirildiğinde keeper bilinçli ola
 ## Giderler (V22)
 
 - Gider hedefi programın kendi hazinesindeki bir token hesabı olamaz: `fee-quote`, ihale/satış geliri hesabı (`auction-proceeds`) ve config, manifest, yönetim, release ve DLMM PDA'larına ait hesaplar reddedilir (`ExpenseDestination`). Kural hem teklifte hem ödemede uygulanır; V22'den önce yazılmış böyle bir teklif ödenemez, iptal edilmelidir.
-- Aylık gider tavanı takvim ayına göre sıfırlanır. Bu ay sayacı 720. aydan sonra da saymaya devam eder; arz takvimi (720 ay, 60. yıl kapanışı) değişmedi.
-- 60. yıl kapanışından sonra (sahibin kararı, bulgu 3-B): satış geliri `allocate_auction_proceeds` ile gider kasasına aktarılabilir, `contribute_quote` ile bağış alınabilir; giderler aynı aylık tavan, 7 gün bekleme, pause ve kurtarma iptaliyle sürer. Yeni arz yoktur. Yönetim emirleri kapanıştan sonra kapalıdır.
+- **Gider kuralı (sahibin kararı, 4 Ekim 2026):** Rezerv giderden önce taşınmaz; `allocate_auction_proceeds` her zaman `ExpenseFundedOnPayment` (6017) döner. Onaylı gider ödenirken (`execute_expense`) önce gider kasasındaki bağışlar (`fee-quote`, `reserve` kadarı kalır), kalanı doğrudan proje rezervinden (`auction-proceeds`) ödenir.
+- **Gelir %100 harcanabilir:** `Config.revenue_total` doğrudan release satışlarının gelirini, `withdraw_project_quote` ile çekilen proje satış gelirini ve yönetimin net kârını (geri dönen > aktarılan, bir kez) sayar. İhale geliri gelir değildir (başlangıç rezervi). Harcanan gelir `Operations.revenue_spent`.
+- **Gelirin ötesinde:** kayan son 30 günde rezervden harcanan (`out_day`, `out_days[30]`) ≤ **10 quote birimi sabit teknik taban** + (rezerv − harcanmamış gelir) × 25/1200 (yılda %25). Takvim ayında sıfırlanmaz.
+- **Rezerv tabanı:** ödeme rezervde 1.000 quote biriminin altına inemez; tek istisna, 30 günlük harcama 10 birimlik sabit tabanın içindeyse (keeper çalışmaya devam etsin diye).
+- `initialize_fee_vaults(monthly_cap, reserve)`: `monthly_cap` artık yalnız **tek teklif** için üst sınırdır; harcama sınırı ödemede uygulanır. Bekleyen gideri **yalnız yönetici** iptal edebilir (kurtarma anahtarı edemez; tartışılacak).
+- 60. yıl kapanışından sonra (sahibin kararı, bulgu 3-B): aynı kurallarla giderler sürer, `contribute_quote` ile bağış alınabilir; 7 gün bekleme ve pause geçerli. Yeni arz yoktur. Yönetim emirleri kapanıştan sonra kapalıdır.
 
 ## Pazar ölçümü (V22, sahibin kararları)
 

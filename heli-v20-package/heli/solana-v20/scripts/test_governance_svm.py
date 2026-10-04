@@ -79,7 +79,7 @@ t.send('no credential is issued even with the current verifier (no free allocati
 q=t.defaults['quote_mint']
 fee={'fee_base':t.pda(b'fee-base'),'fee_quote':t.pda(b'fee-quote'),'operations':t.pda(b'operations'),'quote_mint':q,'admin':a3.pubkey(),'payer':a3.pubkey()}
 t.call('create_fee_base',acc=fee);t.call('create_fee_quote',acc=fee);t.call('initialize_fee_vaults',{'monthly_cap':50_000,'reserve':0},fee)
-t.call('allocate_auction_proceeds',{'amount':t.amount(t.defaults['sale_proceeds'])},fee)
+t.call('allocate_auction_proceeds',{'amount':1},fee,reject='Reserve funds move only when an approved expense is paid',label='the reserve is not moved ahead of an expense')
 loot=t.token_account(q,thief.pubkey());e={'expense':t.pda(b'expense',struct.pack('<Q',0)),'destination':loot,'proposer':a3.pubkey()}|fee
 t.call('propose_expense',{'nonce':0,'amount':10_000,'purpose':[9]*32},e)
 t.call('recovery_cancel_expense',{},{'expense':e['expense'],'recovery':t.outsider.pubkey()},reject=UNAUTH,label='only the recovery key has the defensive cancel')

@@ -2675,6 +2675,11 @@
           "isSigner": false
         },
         {
+          "name": "saleProceeds",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
@@ -3761,6 +3766,10 @@
                 30
               ]
             }
+          },
+          {
+            "name": "revenueCounted",
+            "type": "u64"
           }
         ]
       }
@@ -4025,6 +4034,10 @@
           {
             "name": "manifestQuoteWithdrawn",
             "type": "u64"
+          },
+          {
+            "name": "revenueTotal",
+            "type": "u64"
           }
         ]
       }
@@ -4069,6 +4082,23 @@
           {
             "name": "saleAllocatedTotal",
             "type": "u64"
+          },
+          {
+            "name": "revenueSpent",
+            "type": "u64"
+          },
+          {
+            "name": "outDay",
+            "type": "i64"
+          },
+          {
+            "name": "outDays",
+            "type": {
+              "array": [
+                "u64",
+                30
+              ]
+            }
           }
         ]
       }
@@ -4726,6 +4756,11 @@
       "code": 6016,
       "name": "FreeAllocationDisabled",
       "msg": "There is no free initial allocation"
+    },
+    {
+      "code": 6017,
+      "name": "ExpenseFundedOnPayment",
+      "msg": "Reserve funds move only when an approved expense is paid"
     }
   ]
 }

@@ -54,7 +54,7 @@ elif mode=='closure':
  setup="""
 fee={'fee_base':t.pda(b'fee-base'),'fee_quote':t.pda(b'fee-quote'),'operations':t.pda(b'operations'),'quote_mint':q,'sale_proceeds':t.defaults['sale_proceeds']}
 t.call('create_fee_base',acc=fee);t.call('create_fee_quote',acc=fee)
-t.call('initialize_fee_vaults',{'monthly_cap':50_000,'reserve':0},fee)
+t.call('initialize_fee_vaults',{'monthly_cap':10**15,'reserve':0},fee)
 """
  body=body.replace("t.call('close_constitution')",setup+"t.call('close_constitution')",1)
  ns={'__name__':'__main__'};exec(compile(body,str(here/'test_market_release_svm.py'),'exec'),ns)
@@ -62,23 +62,26 @@ t.call('initialize_fee_vaults',{'monthly_cap':50_000,'reserve':0},fee)
  c=t.cfg();t.check('program is closed',c['closed'] and not c['live'])
  supply=t.supply();proceeds=t.amount(fee['sale_proceeds']);cash=t.amount(fee['fee_quote'])
  t.check('post-closure sale revenue is waiting in project proceeds',proceeds>=t.U)
- t.call('allocate_auction_proceeds',{'amount':proceeds},fee,label='post-closure sale revenue can be moved to the expense treasury')
+ t.call('allocate_auction_proceeds',{'amount':1},fee,reject='Reserve funds move only when an approved expense is paid',label='the reserve is not moved ahead of an expense after closure')
  donor=t.token_account(q,t.admin.pubkey())
  t.send('TEST quote to donor',[t.Instruction(t.TOKEN,b'\x07'+struct.pack('<Q',1_000),[t.meta(q,True),t.meta(donor,True),t.meta(t.admin.pubkey(),False,True)])])
  t.call('contribute_quote',{'amount':1_000},fee|{'contributor':t.admin.pubkey(),'contributor_quote':donor},label='contributions still accepted after closure')
- t.check('treasury received revenue and contribution',t.amount(fee['fee_quote'])==cash+proceeds+1_000 and t.amount(fee['sale_proceeds'])==0)
- dest=t.token_account(q,t.outsider.pubkey());o=t.read(fee['operations'],'Operations');n=o['nextNonce']
+ t.check('donation received; reserve untouched',t.amount(fee['fee_quote'])==cash+1_000 and t.amount(fee['sale_proceeds'])==proceeds)
+ t.send('TEST quote to project reserve',[t.Instruction(t.TOKEN,b'\x07'+struct.pack('<Q',10_000*t.U),[t.meta(q,True),t.meta(fee['sale_proceeds'],True),t.meta(t.admin.pubkey(),False,True)])])
+ c=t.cfg();o=t.read(fee['operations'],'Operations');rev=c['revenueTotal']-o['revenueSpent']
+ t.check('720-month scenario sale revenue was counted (direct release sales, project asks, management profit)',rev>0)
+ B=t.amount(fee['sale_proceeds']);MAX=t.amount(fee['fee_quote'])+rev+10*t.U+(B-rev)*25//1200
+ dest=t.token_account(q,t.outsider.pubkey());n=o['nextNonce']
  e={'expense':t.pda(b'expense',struct.pack('<Q',n)),'destination':dest,'proposer':t.admin.pubkey()}|fee
- t.call('propose_expense',{'nonce':n,'amount':40_000,'purpose':[9]*32},e,label='expense proposal after closure')
+ t.call('propose_expense',{'nonce':n,'amount':MAX,'purpose':[9]*32},e,label='expense proposal after closure: donations + all revenue + fixed floor + 25%/12 of the reserve')
  e2={'expense':t.pda(b'expense',struct.pack('<Q',n+1)),'destination':dest,'proposer':t.admin.pubkey()}|fee
- t.call('propose_expense',{'nonce':n+1,'amount':20_000,'purpose':[8]*32},e2,label='second proposal after closure')
+ t.call('propose_expense',{'nonce':n+1,'amount':1,'purpose':[8]*32},e2,label='second proposal after closure')
  t.call('execute_expense',acc=e,reject='Invalid calendar window',label='seven-day delay still applies after closure')
  t.clock(t.read(e2['expense'],'Expense')['readyAt'])
  t.call('pause',{'paused':True});t.call('execute_expense',acc=e,reject='Invalid state',label='pause still halts expenses after closure');t.call('pause',{'paused':False})
- t.call('execute_expense',acc=e,label='expense paid after closure')
- t.check('expense paid exactly',t.amount(dest)==40_000)
- t.call('execute_expense',acc=e2,reject='Quota',label='monthly cap still applies after closure')
- t.check('expense month keeps counting after the horizon',t.read(fee['operations'],'Operations')['window']>720)
+ t.call('execute_expense',acc=e,label='expense paid after closure: revenue 100%, reserve share on top')
+ t.check('expense paid exactly; revenue fully used',t.amount(dest)==MAX and t.read(fee['operations'],'Operations')['revenueSpent']==c['revenueTotal'])
+ t.call('execute_expense',acc=e2,reject='Quota',label='reserve spending limit still applies after closure')
  t.call('management_order',{'amount':t.U,'base_deposit':t.U,'price_mantissa':10,'price_exponent':0,'is_bid':False},act,reject='Invalid state',label='management orders stay closed after closure (option B, not C)')
  t.check('no new supply after closure',t.supply()==supply and t.cfg()['stocks']==[0,0,0,0])
  # Owner decision (V22, review finding B2): price observations continue after the close so the remaining
@@ -90,7 +93,7 @@ t.call('initialize_fee_vaults',{'monthly_cap':50_000,'reserve':0},fee)
  t.check('post-closure reference from current outside demand',reference(t.read(t.defaults['policy'],'ReleasePolicy'),C+24*3600)==1_000_000)
  t.call('place_project_ask',{'amount':t.U,'price_mantissa':94,'price_exponent':-2},reject='Order price outside the permitted band',label='post-closure ask below 95% of the current reference rejected')
  t.call('place_project_ask',{'amount':t.U,'price_mantissa':95,'price_exponent':-2},label='post-closure ask at 95% of the current reference accepted')
- extra={'post_closure_allocated_atoms':proceeds,'post_closure_expense_atoms':40_000}
+ extra={'post_closure_revenue_atoms':rev,'post_closure_expense_atoms':MAX}
 else:raise SystemExit('mode: depth|closure')
 result={'mode':mode,'source_sha256':t.actual_source,'binary_sha256':t.actual_binary,'checks_and_transactions':len(t.checks),'all_passed':True,**extra,
  'scope':'Compiled ELF in local LiteSVM, synthetic quote/keys; V22 owner-decision checks on top of the 720-month market scenario. Not a deployment or audit.'}

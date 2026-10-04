@@ -201,5 +201,6 @@ pub fn withdraw_quote(ctx:Context<WithdrawProjectQuote>,amount:u64)->Result<()> 
  let seed=[c.manifest_trader_bump];let sign:&[&[u8]]=&[b"manifest-trader",&seed];
  token::transfer(CpiContext::new_with_signer(a.token_program.to_account_info(),Transfer{
    from:a.manifest_quote.to_account_info(),to:a.sale_proceeds.to_account_info(),authority:a.trader.to_account_info()},&[sign]),amount)?;
- let c=&mut ctx.accounts.config;c.manifest_quote_withdrawn=c.manifest_quote_withdrawn.checked_add(amount).ok_or(ErrorCode::Math)?;Ok(())
+ // Project ask proceeds are sale revenue (owner decision V22: 100% spendable on approved expenses).
+ let c=&mut ctx.accounts.config;c.manifest_quote_withdrawn=c.manifest_quote_withdrawn.checked_add(amount).ok_or(ErrorCode::Math)?;c.revenue_total=c.revenue_total.checked_add(amount).ok_or(ErrorCode::Math)?;Ok(())
 }

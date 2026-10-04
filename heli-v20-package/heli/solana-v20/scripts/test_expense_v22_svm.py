@@ -3,7 +3,10 @@ Fresh local LiteSVM ledger, synthetic quote mint and keys; no public transaction
 1. An expense cannot pay a token account controlled by the program (fee-quote itself, auction
    proceeds, other program PDAs): cash would stay in the treasury while spent_total grows, or
    be counted as revenue again.
-2. The expense month keeps counting after the 720-month supply calendar ends.
+2. (Replaced by the owner's expense rule, 4 Oct 2026.) The reserve is drawn only when an approved expense is
+   paid. Donations pay first; sale revenue is 100% spendable; beyond it, reserve spending over any rolling
+   30 days is limited to a fixed technical floor of 10 quote units plus 25%/12 of the reserve (25% a year),
+   and the reserve keeps 1,000 quote units except for spending within the fixed floor.
 """
 import json,struct
 import svm_fixture as t
@@ -13,8 +16,8 @@ f=bootstrap(t,1000)
 q=t.defaults['quote_mint']
 fee={'fee_base':t.pda(b'fee-base'),'fee_quote':t.pda(b'fee-quote'),'operations':t.pda(b'operations'),'quote_mint':q,'sale_proceeds':t.defaults['sale_proceeds']}
 t.call('create_fee_base',acc=fee);t.call('create_fee_quote',acc=fee)
-t.call('initialize_fee_vaults',{'monthly_cap':50_000,'reserve':0},fee)
-t.call('allocate_auction_proceeds',{'amount':t.amount(t.defaults['sale_proceeds'])},fee)
+t.call('initialize_fee_vaults',{'monthly_cap':10**15,'reserve':0},fee)
+t.call('allocate_auction_proceeds',{'amount':1},fee,reject='Reserve funds move only when an approved expense is paid',label='the reserve is not moved ahead of an expense')
 # Synthetic donation so the post-horizon payments below are funded.
 donor=t.token_account(q,t.admin.pubkey())
 t.send('TEST quote to donor',[t.Instruction(t.TOKEN,b'\x07'+struct.pack('<Q',1_000_000),[t.meta(q,True),t.meta(donor,True),t.meta(t.admin.pubkey(),False,True)])])
@@ -54,29 +57,40 @@ ok=propose(private,10_000,label='external wallet destination is still accepted')
 t.clock(t.read(ok['expense'],'Expense')['readyAt'])
 t.call('execute_expense',acc=ok,label='external expense executes')
 t.check('external expense moves cash and spent_total together',t.amount(fee['fee_quote'])==cash-10_000 and ops()['spentTotal']==spent+10_000 and t.amount(private)==10_000)
-t.check('expense window during the supply calendar equals the supply month (1)',ops()['window']==1)
 
-# Finding 2: month counter after month 720. fixture boundary(n) = start of month n+1 (start is the 31st, so day clamps).
-for month in [2,13,720]:
- pay_at(t.boundary(month-1)+t.DAY,1,f'payment in month {month}')
- t.check(f'expense window {month} matches supply month {month}',ops()['window']==month)
-pay_at(t.boundary(1)-1,1,'payment one second before month 2 starts')
-t.check('one second before boundary stays in month 1',ops()['window']==1)
-pay_at(t.boundary(1),1,'payment exactly at the month-2 boundary (clamped 28 Feb)')
-t.check('boundary second opens month 2',ops()['window']==2)
-pay_at(t.boundary(720)+10*t.DAY,50_000,'month 721 uses the full cap')
-t.check('window 721 after the supply horizon',ops()['window']==721)
-pay_at(t.boundary(720)+20*t.DAY,1,'month 721 cap still enforced',reject='Quota exceeded')
-paid=pay_at(t.boundary(721)+10*t.DAY,1,'month 722 opens a new expense month')
-t.check('month 722 payment paid',paid==1 and ops()['window']==722)
-pay_at(t.boundary(721)+12*t.DAY,49_999,'month 722 remaining cap')
-pay_at(t.boundary(721)+14*t.DAY,1,'month 722 cap enforced',reject='Quota exceeded')
-pay_at(t.boundary(1199)+t.DAY,50_000,'month 1200 (100 years) payment')
-t.check('window keeps counting (1200)',ops()['window']==1200)
+# Owner's expense rule.
+U=t.U;FIXED=10*U;KEEP=1000*U
+res=lambda:t.amount(fee['sale_proceeds'])
+def mint_reserve(n):t.send('TEST quote to project reserve',[t.Instruction(t.TOKEN,b'\x07'+struct.pack('<Q',n),[t.meta(q,True),t.meta(fee['sale_proceeds'],True),t.meta(t.admin.pubkey(),False,True)])])
+def pay(amount,label,reject=None):
+ a=propose(private,amount);t.clock(t.read(a['expense'],'Expense')['readyAt'])
+ before=t.amount(private);t.call('execute_expense',acc=a,label=label,reject=reject)
+ if reject:t.call('cancel_expense',acc=a)
+ return t.amount(private)-before
+donated=t.amount(fee['fee_quote']);r0=res()
+t.check('donations paid first: an expense equal to the donation balance leaves the reserve untouched',pay(donated,'expense paid from donations')==donated and res()==r0 and t.amount(fee['fee_quote'])==0)
+mint_reserve(1005*U-res());t.check('reserve set to 1,005 quote units',res()==1005*U)
+pay(20*U,'20 units would leave the reserve below 1,000 beyond the fixed floor',reject='Collateral deficit')
+t.check('within the fixed floor the reserve may go below 1,000 (keeper keeps running)',pay(FIXED,'10-unit technical expense from the reserve')==FIXED and res()==995*U)
+pay(1,'beyond the fixed floor the 1,000-unit reserve minimum holds',reject='Collateral deficit')
+T=t.svm.get_clock().unix_timestamp+31*t.DAY;t.clock(T-7*t.DAY)
+mint_reserve(100_000*U-res());t.clock(T)
+B=res();L=FIXED+B*25//1200
+n=next(k for k in range(1,1300) if t.boundary(k)>T+40*t.DAY)
+P=t.boundary(n)-2*t.DAY
+a=propose(private,L);a2=propose(private,1);t.clock(P);t.call('execute_expense',acc=a,label='fixed floor + 25%/12 of the reserve paid in one 30-day window')
+t.check('reserve spending recorded in the rolling window',sum(ops()['outDays'])==L and res()==B-L)
+a=a2;t.clock(P+t.DAY);t.call('execute_expense',acc=a,reject='Quota exceeded',label='one atom more within 30 days rejected')
+t.clock(t.boundary(n)+t.DAY);t.call('execute_expense',acc=a,reject='Quota exceeded',label='a new calendar month does not reset the 30-day window')
+t.clock(P+30*t.DAY);t.call('execute_expense',acc=a,label='after 30 days the window has rolled')
+t.check('no sale revenue without a market: nothing counted as revenue',t.cfg()['revenueTotal']==0 and ops()['revenueSpent']==0)
+L2=FIXED+res()*25//1200
+a=propose(private,L2+1);t.clock(t.boundary(1199)+t.DAY);t.call('execute_expense',acc=a,reject='Quota exceeded',label='100 years on: the same limit applies')
+t.call('cancel_expense',acc=a);a=propose(private,L2);t.clock(t.boundary(1199)+t.DAY+7*t.DAY);t.call('execute_expense',acc=a,label='100 years on: payment within the limit')
 cfg=t.cfg()
-t.check('supply settlement state untouched by expense months',cfg['lastSettledEpoch']<=720)
+t.check('supply settlement state untouched by expenses',cfg['lastSettledEpoch']<=720)
 
 result={'source_sha256':t.actual_source,'binary_sha256':t.actual_binary,'checks_and_transactions':len(t.checks),'checks':t.checks,'all_passed':True,
- 'scope':'Compiled ELF in local LiteSVM, synthetic quote/keys; V22 expense destination and post-horizon month fixes only. Not a deployment or audit.'}
+ 'scope':'Compiled ELF in local LiteSVM, synthetic quote/keys; V22 expense destination fix and the owner revenue/reserve expense rule only. Not a deployment or audit.'}
 (t.ROOT/'expense-v22-svm-verification.json').write_text(json.dumps(result,indent=2),encoding='utf-8')
 print(json.dumps({k:v for k,v in result.items() if k!='checks'},indent=2))
