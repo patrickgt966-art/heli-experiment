@@ -4,6 +4,8 @@ Bu testler gerçek kişiler ve gerçek belgelerle **yalnız proje sahibi** taraf
 
 ## Hazırlık
 
+> **Pilot güncellemesi (4 Ekim 2026, 16:38):** Pilot, `update-pilot.ps1` ile commit `bb7352d` kodlarına güncellendi (manuel onayda canlılık şartı, "reopened" mesajı düzeltmesi). Yayındaki `app.js`, depodaki dosyayla aynı SHA-256'ya sahip (dışarıdan doğrulandı). Sunucu tarafı dosyalar aynı daldan indirildi; dışarıdan hash'leri görülemez.
+
 - [ ] Kimlik sunucusu `claude/heli-v20-token-review-6gocpn` dalındaki güncel kodla yeniden başlatıldı. Eski sürüm M5, N1 ve H4 değişikliklerini içermez.
 - [ ] Yeni, boş bir durum dosyasıyla başlatıldı (eski `.state/claim.sqlite` ayrı bir yere yedeklendi).
 - [ ] Didit tarafındaki **eski oturumlar silinmedi**. 1. test onlara dayanır.
