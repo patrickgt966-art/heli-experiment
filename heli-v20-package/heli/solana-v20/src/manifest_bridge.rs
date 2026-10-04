@@ -3,7 +3,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::{instruction::{AccountMeta,Instruction},program::{invoke,invoke_signed},pubkey,system_instruction};
 use anchor_spl::token::{self,Mint,Token,TokenAccount,Transfer};
-use crate::{Config,ErrorCode,OpeningAuction,UNIT,outgoing,release::{ReleasePolicy,order_bounds,check_order_price,order_expiry}};
+use crate::{Config,ErrorCode,OpeningAuction,outgoing,release::{ReleasePolicy,order_bounds,check_order_price,order_expiry}};
 
 const MANIFEST:Pubkey=pubkey!("MNFSTqtC93rEfYHB6hF82sKdZpUDFWkViLByLd1k1Ms");
 const MARKET_DISCRIMINANT:u64=4859840929024028656;
@@ -58,7 +58,7 @@ pub struct BindManifestMarket<'info> {
 
 pub fn bind(ctx:Context<BindManifestMarket>,market_rent_lamports:u64)->Result<()> {
  let a=&ctx.accounts;let c=&a.config;
- require!(c.live&&!c.closed&&!c.manifest_bound&&!c.dlmm_listed&&!c.meteora_listed&&
+ require!(c.live&&!c.closed&&!c.manifest_bound&&
    market_rent_lamports>=1_000_000&&market_rent_lamports<=100_000_000,ErrorCode::Market);
  check_market(&a.manifest_market.to_account_info(),&a.manifest_program.to_account_info(),&c.mint,&c.quote_mint)?;
  invoke(&system_instruction::transfer(&a.admin.key(),&a.trader.key(),market_rent_lamports),

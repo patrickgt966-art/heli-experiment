@@ -63,9 +63,7 @@ t.check('replacement recovery key installed',G()['recovery']==str(r3.pubkey()))
 
 # Verifier rotation is immediate; old provider signatures stop working at once.
 v2=key()
-t.call('set_verifier',{'verifier':v2.pubkey()},{'admin':t.outsider.pubkey()},reject='has one',label='only the admin rotates the verifier')
-t.call('set_verifier',{'verifier':v2.pubkey()},{'admin':a3.pubkey()})
-t.check('verifier rotated',t.read(t.defaults['identity_policy'],'IdentityPolicy')['verifier']==str(v2.pubkey()))
+t.removed('set_verifier','no verifier exists any more (identity removed with the free allocation)')
 t.removed('issue_credential','no credential can be issued with any verifier (instruction removed with the free allocation)')
 
 # Defensive cancel: the recovery key stops an expense written with a compromised admin key.

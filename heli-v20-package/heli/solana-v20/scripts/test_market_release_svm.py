@@ -7,7 +7,7 @@ from bootstrap_v15 import bootstrap,epoch_accounts
 
 f=bootstrap(t,1_000_000,with_policy=True)
 t.check('90M genesis includes 70M market reserve and 15M management',t.cfg()['stocks']==[70_000_000*t.U,0,0,15_000_000*t.U] and t.supply()==90_000_000*t.U)
-t.check('no rewards or independent liquidity allocation',t.amount(t.defaults['rewards'])==0 and t.amount(t.defaults['liquidity'])==0)
+t.check('the former rewards and liquidity vaults do not exist',t.svm.get_account(t.pda(b'vault',bytes([1]))) is None and t.svm.get_account(t.pda(b'vault',bytes([2]))) is None)
 MANIFEST=t.Pubkey.from_string('MNFSTqtC93rEfYHB6hF82sKdZpUDFWkViLByLd1k1Ms')
 TOKEN22=t.Pubkey.from_string('TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb')
 t.svm.add_program_from_file(MANIFEST,t.ROOT.parent/'manifest-integration/vendor-manifest/manifest-release-v3.0.24.so')
@@ -62,7 +62,7 @@ t.call('management_withdraw',{'amount':t.U,'is_base':False},act|{'project_quote'
 
 # Owner decision (V22): no free initial allocation; the whole 5M launch base goes through the auction and market.
 t.clock(t.start+7*t.DAY)
-t.check('no free allocation stock at genesis',t.amount(t.defaults['launch'])==0 and t.cfg()['launchRemaining']==0 and t.cfg()['launchFinalized'] is True)
+t.check('no free allocation stock: the launch transit account does not exist',t.svm.get_account(t.pda(b'launch-claims')) is None)
 first_cap=None
 for n in range(1,13):
  ea=epoch_accounts(t,n);t.clock(t.boundary(n-1))
@@ -86,7 +86,7 @@ for n in range(1,13):
  t.call('settle',acc=monthly)
  e=t.read(ea['epoch'],'Epoch')
  t.check('month '+str(n)+' exact unlock enters canonical sale inventory',t.amount(t.defaults['market_inventory'])==inventory+expected and t.cfg()['stocks'][0]==before['stocks'][0]-expected)
- t.check('month '+str(n)+' no mint no burn no person dividend',t.supply()==supply and e['burned']==0 and e['perPerson']==0 and e['people']==0 and e['humanRemaining']==0)
+ t.check('month '+str(n)+' no mint no burn no person dividend',t.supply()==supply and not any(k in e for k in ('burned','perPerson','people','humanRemaining','staking')))
  t.check('month '+str(n)+' shared cap and authorized sale accounting',e['capacity']==cap and e['humanBudget']==expected and e['founderBudget']==management_budget and t.cfg()['saleAuthorized']==before['saleAuthorized']+expected)
  if n==1:
   first_cap=cap;t.check('first month starts from 5M and unlocks 20112.368685 HELI',cap==20_112_368_685)
@@ -102,7 +102,7 @@ t.call('place_project_ask',{'amount':20*t.U,'price_mantissa':10,'price_exponent'
 t.call('cancel_project_ask',{'sequence':seq})
 t.call('withdraw_project_heli',{'amount':20*t.U})
 t.check('unsold inventory survives cancel and return without restoring locked reserve',t.amount(t.defaults['market_inventory'])==inv_before and t.cfg()['stocks'][0]==reserve_before and t.read(ea['epoch'],'Epoch')['humanBudget']==epoch_before)
-t.check('all twelve unlocks occurred without any monthly participants',t.read(ea['epoch'],'Epoch')['people']==0)
+t.check('all twelve unlocks occurred without any monthly participants','people' not in t.read(ea['epoch'],'Epoch'))
 act=ma|ea
 t.clock(t.boundary(12)-3600);t.call('observe_release_market',label='arm price observations')
 for h in range(24):t.clock(t.boundary(12)+h*3600);t.call('observe_release_market')
@@ -133,7 +133,7 @@ t.call('settle',acc=ma|ea14,reject='calendar',label='missed monthly periods cann
 t.call('settle',acc=ma|ea13,label='monthly unlock proceeds while paused');t.call('settle',acc=ma|ea14)
 t.check('paused program still moved both monthly releases into sale inventory',t.cfg()['stocks'][0]<stock and t.amount(t.defaults['market_inventory'])>inventory and t.cfg()['paused'])
 t.call('pause',{'paused':False})
-t.check('late periods settle once in order with no human burn',t.cfg()['lastSettledEpoch']==14 and t.read(ea14['epoch'],'Epoch')['burned']==0)
+t.check('late periods settle once in order with no human burn',t.cfg()['lastSettledEpoch']==14 and 'burned' not in t.read(ea14['epoch'],'Epoch'))
 # Exercise the complete 720-month calendar and retention of unsold released stock.
 for n in range(15,721):
  ea=epoch_accounts(t,n);t.clock(t.boundary(n-1));t.call('open_epoch',{'number':n},ea)
@@ -145,7 +145,7 @@ for n in range(15,721):
  e=t.read(ea['epoch'],'Epoch')
  assert t.amount(t.defaults['market_inventory'])==inventory+expected
  assert t.cfg()['stocks'][0]==before['stocks'][0]-expected
- assert t.supply()==supply and e['burned']==0 and e['capacity']==cap and e['founderBudget']==management_budget
+ assert t.supply()==supply and e['capacity']==cap and e['founderBudget']==management_budget
 t.check('all 720 months preserve the exact cap and never burn unsold monthly release',t.cfg()['lastSettledEpoch']==720)
 remaining_locked=sum(t.cfg()['stocks']);sale_stock=t.amount(t.defaults['market_inventory']);mint_before=t.supply()
 t.call('close_constitution')

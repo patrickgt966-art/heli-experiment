@@ -41,7 +41,7 @@ TREASURY='Expense destination must be outside the program treasury'
 t.clock(t.start+3*t.DAY)
 propose(fee['fee_quote'],10_000,label='fee-quote cannot pay itself',reject=TREASURY)
 propose(fee['sale_proceeds'],10_000,label='auction proceeds account cannot receive an expense (would be re-counted as revenue)',reject=TREASURY)
-for name,owner in [('config',t.defaults['config']),('management trader',t.pda(b'management-trader')),('manifest trader',t.pda(b'manifest-trader')),('release trader',t.pda(b'release-trader',bytes([3]))),('dlmm funder',t.pda(b'dlmm-funder'))]:
+for name,owner in [('config',t.defaults['config']),('management trader',t.pda(b'management-trader')),('manifest trader',t.pda(b'manifest-trader')),('release trader',t.pda(b'release-trader',bytes([3])))]:
  propose(t.token_account(q,owner),1,label=f'account owned by the {name} PDA is rejected',reject=TREASURY)
 t.check('rejected proposals did not consume a nonce',ops()['nextNonce']==0)
 # A proposal written before V22 (simulated by rewriting the stored destination) is stopped at payment.
@@ -73,6 +73,17 @@ mint_reserve(1005*U-res());t.check('reserve set to 1,005 quote units',res()==100
 pay(20*U,'20 units would leave the reserve below 1,000 beyond the fixed floor',reject='Collateral deficit')
 t.check('within the fixed floor the reserve may go below 1,000 (keeper keeps running)',pay(FIXED,'10-unit technical expense from the reserve')==FIXED and res()==995*U)
 pay(1,'beyond the fixed floor the 1,000-unit reserve minimum holds',reject='Collateral deficit')
+# Review A3: spending counted sale revenue must not take the reserve below 1,000 either. Revenue needs a market;
+# here it is injected into Config.revenue_total (its counting is covered by the policy and lifecycle tests).
+REV_OFF=8+32*3+8+32+5+2+8*3+32+2+8*3
+def set_revenue(n):
+ acc=t.svm.get_account(t.defaults['config']);d=bytearray(acc.data);d[REV_OFF:REV_OFF+8]=n.to_bytes(8,'little')
+ t.svm.set_account(t.defaults['config'],t._Account(acc.lamports,bytes(d),acc.owner,acc.executable,acc.rent_epoch))
+set_revenue(500*U);t.check('revenue injected at the Config.revenue_total offset',t.cfg()['revenueTotal']==500*U)
+mint_reserve(1300*U-res())
+pay(500*U,'500 of counted revenue would leave the reserve at 800: rejected (review A3)',reject='Collateral deficit')
+mint_reserve(200*U)
+t.check('the same revenue is paid once the reserve stays at 1,000',pay(500*U,'revenue expense leaving exactly 1,000')==500*U and res()==KEEP and ops()['revenueSpent']==500*U)
 T=t.svm.get_clock().unix_timestamp+31*t.DAY;t.clock(T-7*t.DAY)
 mint_reserve(100_000*U-res());t.clock(T)
 B=res();L=FIXED+B*25//1200
@@ -82,8 +93,10 @@ a=propose(private,L);a2=propose(private,1);t.clock(P);t.call('execute_expense',a
 t.check('reserve spending recorded in the rolling window',sum(ops()['outDays'])==L and res()==B-L)
 a=a2;t.clock(P+t.DAY);t.call('execute_expense',acc=a,reject='Quota exceeded',label='one atom more within 30 days rejected')
 t.clock(t.boundary(n)+t.DAY);t.call('execute_expense',acc=a,reject='Quota exceeded',label='a new calendar month does not reset the 30-day window')
-t.clock(P+30*t.DAY);t.call('execute_expense',acc=a,label='after 30 days the window has rolled')
-t.check('no sale revenue without a market: nothing counted as revenue',t.cfg()['revenueTotal']==0 and ops()['revenueSpent']==0)
+D0=P//t.DAY
+t.clock((D0+30)*t.DAY);t.call('execute_expense',acc=a,reject='Quota exceeded',label='29 days and some hours later the window still holds the payment (review A4)')
+t.clock((D0+31)*t.DAY);t.call('execute_expense',acc=a,label='after 30 full days the window has rolled')
+t.check('only the injected revenue was counted and it is fully spent',t.cfg()['revenueTotal']==500*U and ops()['revenueSpent']==500*U)
 L2=FIXED+res()*25//1200
 a=propose(private,L2+1);t.clock(t.boundary(1199)+t.DAY);t.call('execute_expense',acc=a,reject='Quota exceeded',label='100 years on: the same limit applies')
 t.call('cancel_expense',acc=a);a=propose(private,L2);t.clock(t.boundary(1199)+t.DAY+7*t.DAY);t.call('execute_expense',acc=a,label='100 years on: payment within the limit')

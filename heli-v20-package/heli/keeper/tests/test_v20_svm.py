@@ -26,7 +26,7 @@ def drain():
    n=job['number'];e=t.read(epoch_accounts(t,n)['epoch'],'Epoch');cap=base*4_022_473_737_086_389//10**18
    t.check('month '+str(n)+' net release cap',e['capacity']==cap)
    t.check('month '+str(n)+' reserve to canonical market inventory',t.amount(t.defaults['market_inventory'])==inventory+e['humanBudget'] and t.cfg()['stocks'][0]==before['stocks'][0]-e['humanBudget'])
-   t.check('month '+str(n)+' no mint burn staking or monthly free dividend',t.supply()==supply and e['burned']==0 and e['staking']==0 and e['perPerson']==0 and e['humanRemaining']==0)
+   t.check('month '+str(n)+' no mint burn staking or monthly free dividend',t.supply()==supply and not any(k in e for k in ('burned','perPerson','people','humanRemaining','staking')))
    ea=epoch_accounts(t,n);t.check('month '+str(n)+' one epoch account only',t.svm.get_account(ea['epoch']) is not None and t.svm.get_account(ea['claim_vault']) is None and t.svm.get_account(ea['reward_vault']) is None)
    if n==1:t.check('first month exactly 20112.368685 HELI',e['humanBudget']==20_112_368_685)
    settled.append(n)

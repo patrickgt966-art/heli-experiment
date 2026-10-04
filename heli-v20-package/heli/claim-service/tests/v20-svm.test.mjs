@@ -18,9 +18,10 @@ test('no free allocation: a service-signed registration is refused by the real p
   const chain=new V20Chain({program,idl,sponsor,connection,store:data,now:()=>now});assert.equal(await connection.getBalance(person.publicKey),0);
   // Owner decision (V22): no free initial allocation. A service-signed credential and registration are refused on chain.
   const proof=await admission.attestation(session);
-  await assert.rejects((async()=>{const plan=await chain.prepare(session,'enroll',proof),tx=web3.Transaction.from(Buffer.from(plan.transaction,'base64'));tx.partialSign(person);await chain.submit(session,plan.ticket,tx.serialize().toString('base64'));})(),/Fallback functions are not supported/);
-  const cfg=await chain.account(chain.pda('config'),'Config');assert.equal(Number(cfg.launch_remaining??cfg.launchRemaining),0);
-  const destination=spl.getAssociatedTokenAddressSync(new web3.PublicKey(cfg.mint),person.publicKey);assert.equal(await connection.getAccountInfo(destination),null,'no free HELI delivered');
+  await assert.rejects((async()=>{const plan=await chain.prepare(session,'enroll',proof),tx=web3.Transaction.from(Buffer.from(plan.transaction,'base64'));tx.partialSign(person);await chain.submit(session,plan.ticket,tx.serialize().toString('base64'));})(),/Fallback functions are not supported|Invalid HELI account/);
+  // The archived service's frozen IDL no longer matches the slimmed program accounts: it cannot even read the config.
+  await assert.rejects(chain.account(chain.pda('config'),'Config'),/Invalid HELI account/);
+  const destination=spl.getAssociatedTokenAddressSync(chain.pda('mint'),person.publicKey);assert.equal(await connection.getAccountInfo(destination),null,'no free HELI delivered');
   assert.equal(await connection.getBalance(person.publicKey),0,'applicant SOL remains zero');
   writeFileSync(new URL('../v20-claim-svm-verification.json',import.meta.url),JSON.stringify({checkedDate:'2026-10-04',scope:'Actual ELF in local LiteSVM; synthetic provider decision, ephemeral keys, no public network',passed:true,checks:['wallet-bound provider approval still produces an attestation off chain','on-chain registration refused: there is no free initial allocation','no free HELI delivered','applicant SOL remains zero'],programSourceHash:JSON.parse(readFileSync(new URL('../../solana-v20/compiled-source.json',import.meta.url))).source_sha256},null,2)+'\n');
  }finally{child.stdin.end(JSON.stringify({method:'stop'})+'\n');reader.close();child.kill();data.close();}

@@ -93,7 +93,7 @@ def set_upgrade_authority(key):
  svm.set_account(PROGRAM_DATA,_Account(a.lamports,bytes(d),a.owner,a.executable,a.rent_epoch))
 set_upgrade_authority(admin.pubkey())
 defaults={'config':pda(b'config'),'program':PROGRAM,'program_data':PROGRAM_DATA,'mint':pda(b'mint'),'admin':admin.pubkey(),'payer':admin.pubkey(),'account_payer':admin.pubkey(),'owner':admin.pubkey(),'token_program':TOKEN,'system_program':SYSTEM,'rent':RENT,'market':pda(b'market')}
-for i,n in enumerate(['human','rewards','liquidity','founder']):defaults[n]=pda(b'vault',bytes([i]))
+for i,n in [(0,'human'),(3,'founder')]:defaults[n]=pda(b'vault',bytes([i]))
 for n in ['base_pool','quote_pool','quote_treasury','founder_quote']:defaults[n]=pda(n.replace('_','-').encode())
 def instruction(name,arguments=None,accounts=None):
  d=INSTRUCTIONS[name];a=defaults| (accounts or {})
