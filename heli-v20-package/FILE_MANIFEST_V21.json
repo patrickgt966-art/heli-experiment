@@ -40,13 +40,13 @@
     },
     {
       "path": "V21_CODEX_PROMPT.md",
-      "bytes": 2518,
-      "sha256": "c2becb3fe9599019185dc1d7a5102f58429d84fbe7a5c241d5d53f3ea71a106c"
+      "bytes": 2504,
+      "sha256": "84caf603912c6dd0c3a98594547a0ee77a8e506867a13ec0a618e66be83e8746"
     },
     {
       "path": "V21_DURUM.md",
-      "bytes": 6359,
-      "sha256": "bb0669ef7da02710e192728c62ad6a1e12b39511687caab9b14232271e44d860"
+      "bytes": 6726,
+      "sha256": "e7efe0fa2512cf0adfcbea5b7419880b8799f85292d34814432716f5eed4bc55"
     },
     {
       "path": "application-entry-deployment.json",
@@ -65,8 +65,8 @@
     },
     {
       "path": "heli/claim-service/admission.mjs",
-      "bytes": 5914,
-      "sha256": "978ab4037d63b046886e936498db0a36ca7171947c9dcb99a76a0159b2958081"
+      "bytes": 7984,
+      "sha256": "f545211e87df69b52cbdb9da41f9e24b33b30c03fef91c3672495a4f076baab7"
     },
     {
       "path": "heli/claim-service/app.js",
@@ -132,6 +132,11 @@
       "path": "heli/claim-service/tests/claim.test.mjs",
       "bytes": 9242,
       "sha256": "8fceb82bdeb0b8a1908a5c9689ab7108496f7ab35bc11c286579216b2a29e563"
+    },
+    {
+      "path": "heli/claim-service/tests/decision-order.test.mjs",
+      "bytes": 5630,
+      "sha256": "5782e61afcb01f759320fd672287c60ff69c747f2c900b39418e651b0d615b02"
     },
     {
       "path": "heli/claim-service/tests/hardening.test.mjs",
