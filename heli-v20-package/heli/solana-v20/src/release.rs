@@ -157,13 +157,19 @@ pub fn observe(ctx:Context<ObserveReleaseMarket>)->Result<()>{
  p.sequence_mark=sequence;p.mark_time=now.unix_timestamp;Ok(())
 }
 /// Owner policy for project and management orders (quote atoms per HELI): with a live reference price,
-/// asks >= 95% and bids <= 105% of it; without one, asks >= the opening auction price (the announced
-/// floor if the auction sold nothing) and reserve-funded bids only through the crash exception
-/// (management::order with crash_ceiling).
+/// asks >= 95% and bids <= 105% of it; without one, asks >= the larger of the opening auction price (the
+/// announced floor if the auction sold nothing) and 95% of the last outside reference if that is at most
+/// 30 days old, and reserve-funded bids only through the crash exception (management::order with
+/// crash_ceiling). Owner decision (V22, Grok finding 2): stalling observations, e.g. with a book full of
+/// skipped dust, therefore cannot lower the sale floor.
 pub(crate) fn order_bounds(p:&ReleasePolicy,auction:&OpeningAuction,now:i64)->(u64,Option<u64>){
  match reference_price(p,now) {
   Ok(r)=>((r as u128*95/100)as u64,Some((r as u128*105/100)as u64)),
-  Err(_)=>(if auction.clearing_price>0 {auction.clearing_price}else{auction.floor},None),
+  Err(_)=>{
+   let opening=if auction.clearing_price>0 {auction.clearing_price}else{auction.floor};
+   let recent=if p.last_reference>0&&now.saturating_sub(p.last_reference_time)<=30*86400 {(p.last_reference as u128*95/100)as u64}else{0};
+   (opening.max(recent),None)
+  }
  }
 }
 /// Manifest prices are mantissa*10^exponent quote atoms per base atom; HELI has 6 decimals.

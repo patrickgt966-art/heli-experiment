@@ -127,11 +127,12 @@ pub fn order(mut ctx:Context<ManagementAction>,amount:u64,base_deposit:u64,manti
    check_order_price(mantissa,exponent,true,(0,Some(crash_ceiling(&a.policy,&a.auction,t))))?;
   } else {check_order_price(mantissa,exponent,is_bid,bounds)?;}
   if is_bid {
-   // All reserve-funded bids: placed quote over any rolling 30 days <= 10% of the project quote reserve.
+   // All reserve-funded bids: placed quote over any rolling 30 days <= 10% of the current project quote
+   // reserve balance (Grok finding 3: the window is not added to the base).
    roll(&mut a.management_book,now.unix_timestamp.div_euclid(86_400));let b=&mut a.management_book;
    let window:u64=b.bid_days.iter().try_fold(0u64,|s,x|s.checked_add(*x)).ok_or(ErrorCode::Math)?;
-   let cost=order_quote(amount,mantissa,exponent)?;let base=a.project_quote.amount.checked_add(window).ok_or(ErrorCode::Math)?;
-   require!(window.checked_add(cost).ok_or(ErrorCode::Math)?<=base/10,ErrorCode::Quota);
+   let cost=order_quote(amount,mantissa,exponent)?;
+   require!(window.checked_add(cost).ok_or(ErrorCode::Math)?<=a.project_quote.amount/10,ErrorCode::Quota);
    let slot=b.bid_day.rem_euclid(30) as usize;b.bid_days[slot]=b.bid_days[slot].checked_add(cost).ok_or(ErrorCode::Math)?;
   }}
  let a=&ctx.accounts;let expiry=order_expiry(&now)?;
