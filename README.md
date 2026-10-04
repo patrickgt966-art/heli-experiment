@@ -8,15 +8,11 @@ Website: https://heli-experiment.pages.dev · Full rules: [`heli-v20-package/hel
 
 **Supply**
 - Initial mint: 100 million HELI. Initial burn: 10 million. Maximum remaining supply: 90 million.
-- Initial release base: 5 million — 1 million for a free initial allocation, 4 million for the market (opening auction).
+- Initial release base: 5 million, all sold through the opening auction and the market. There is no free allocation, presale or private round.
 - Locked: Monthly Market Release Reserve 70 million; HELI Management Treasury 15 million (former founder, market-support and staking allocations combined).
 - Shared monthly release cap: about 0.402247% of the supply already released and not burned (first month: 20,112.368685 HELI), over 720 months. This is an upper path, not a promise.
 - Staking is cancelled. There is no monthly free dividend.
 - At the 60-year close, only still-locked stock is burned; unsold released inventory is protected.
-
-**Free initial allocation**
-- Up to 1,000 verified people, 1,000 HELI each, one allocation per person, during the first six months.
-- Identity checks use a third-party provider (Didit). A seven-day waiting period follows registration; a registration can be disputed only in that window and appealed within six months.
 
 **Management Treasury and market**
 - No new treasury releases in the first 12 months. Afterward the treasury shares the monthly cap: at most 20% of monthly capacity and one quarter of releases outside the treasury.
@@ -37,9 +33,9 @@ A project reserve is not a guaranteed redemption backing. HELI makes no claim of
 
 | Area | Status |
 |---|---|
-| Program (V22) | Built reproducibly (Agave 2.1.21). ELF SHA-256 `d35b5917198c043184f67befcd702a7806d39a3de331e30aed62fc6132d09c40`. |
-| Local tests | All 720 monthly periods and treasury, price, governance, expense and entitlement controls pass in a local Solana simulator (LiteSVM) with the real program and Manifest binaries; Node suite 107/107. Counts are overlapping local checks, not an audit. |
-| Identity pilot | Live tests with real documents by the project owner: duplicate person caught, manual review, lost-link recovery and phone wallet-to-browser handoff passed. Identity only; no tokens distributed. |
+| Program (V22) | Built reproducibly (Agave 2.1.21). ELF SHA-256 `e16495fcf257c2bb7927f0335d7d7d16cdba1c32e72eb8417c40d543204d0077`. |
+| Local tests | All 720 monthly periods and treasury, price, governance, expense and entitlement controls pass in a local Solana simulator (LiteSVM) with the real program and Manifest binaries; Node suite 112/112. Counts are overlapping local checks, not an audit. |
+| Free allocation | Removed by owner decision (4 October 2026). The earlier identity-verified free allocation and its live pilot tests are archived in `reviews/`; the program rejects those instructions. |
 | Website | Published on Cloudflare Pages with the V22 rules. |
 
 Details: [`heli-v20-package/V22_DURUM.md`](heli-v20-package/V22_DURUM.md), [`reviews/v22/V22_DUZELTME_2026-10-04.md`](reviews/v22/V22_DUZELTME_2026-10-04.md), [`reviews/KIMLIK_CANLI_TEST_LISTESI.md`](reviews/KIMLIK_CANLI_TEST_LISTESI.md).
@@ -48,10 +44,10 @@ Details: [`heli-v20-package/V22_DURUM.md`](heli-v20-package/V22_DURUM.md), [`rev
 
 - Devnet deployment with a real Manifest market and the keeper, then continuous-operation tests.
 - Verifiable build (`solana-verify`) and an independent security audit before any mainnet decision.
-- Permanent hosting and own domain for the website and identity service.
+- Permanent hosting and own domain for the website.
 - Legal and privacy review for the chosen jurisdiction.
 
-No wallet secrets or personal identity data are included in this repository.
+No wallet secrets or personal data are included in this repository.
 
 ## Türkçe
 

@@ -8,7 +8,7 @@ Bu belge, inceleme sonrası düzeltmelerle (H1, M9, C2b, C3) değişen kurulum s
 |---|---|---|
 | **Yönetici** | Günlük kullanılan cüzdan | Satış/yönetim emirleri (fiyat bandı içinde), gider teklifi ve iptali, duraklatma, doğrulayıcı değiştirme, olağan yönetici devri |
 | **Kurtarma** | Çevrimdışı (donanım cüzdanı veya kağıt); yine aynı tek yöneticiye aittir | Kayıp yönetici yerine 7 gün sonra yeni yönetici önermek; bekleyen gideri iptal etmek; kendini değiştirmek |
-| **Doğrulayıcı** | Kimlik sunucusu (sıcak) | Didit onayından sonra kimlik imzası |
+| **Doğrulayıcı** | Kullanılmaz (ücretsiz pay yok) | Kurulumda atılmış rastgele bir anahtar verilir |
 | **Upgrade yetkisi** | Kurulumda yönetici, sonra çevrimdışı kurtarma anahtarı | Program kodunu değiştirebilir; çalınırsa tüm kasalar risk altındadır |
 | **Keeper** | Ayrı ücret cüzdanı | Yalnız izinli bakım işleri; hiçbir yetkisi yoktur |
 
@@ -76,10 +76,11 @@ Kurucu ve ekip HELI pazarında yalnız **ilan edilmiş** cüzdanlardan işlem ya
 
 O ayki yönetim release'leri ve doğrudan release satışlarının **toplamı** (`epoch.founder`) çağrı anındaki alış derinliğinin %2'sini (`depth/50`) aşamaz. Aylık bütçe sınırları (kapasitenin %20'si, insan bütçesinin ¼'ü) ayrıca geçerlidir. İnce pazarda payın kullanılmayan kısmı o ay kullanılamaz.
 
-## Ücretsiz pay: iptal, itiraz ve kimlik durumu
+## Ücretsiz pay yok (sahibin kararı, 4 Ekim 2026)
 
-- **İptal penceresi:** `dispute_launch(reason)` yalnız kaydın 7 günlük bekleme süresi içinde ve ilk 6 ay içinde çalışır. Bekleme süresi dolan hak kesinleşir; hiçbir anahtar onu geri alamaz.
-- **Gerekçe:** Her iptal, geri alma ve kimlik durumu değişikliği, yazılı gerekçenin SHA-256 parmak izini (`reason`) ister. Bu iz zincirde saklanır ve olay olarak yayınlanır. Gerekçe metni kişisel bilgi içerebileceği için zincire değil yönetici kayıtlarına yazılır. İtirazda gösterilen metin bu izle karşılaştırılabilir.
-- **İtiraz:** `restore_launch(reason)` iptal edilmiş kaydı ilk 6 ay içinde yeniden geçerli yapar ve yeni bir 7 günlük bekleme başlatır.
-- **Kimlik bilgisi:** `set_credential_active(active, reason)` yalnız yönetici tarafından çağrılır. Pasif kimlik yeni kayıt açamaz. Bekleme süresindeki bir hakkı durdurmak için kaydın kendisi `dispute_launch` ile iptal edilir. Kesinleşmiş haklar kimlik iptalinden etkilenmez.
-- **Bilinen sınır:** Sahte bir kayıt 7 gün içinde fark edilmezse 1.000 HELI'yi çekebilir.
+- Başlangıç tabanı 5M'nin tamamı açılış ihalesi ve piyasa envanterine gider (`genesis`), ihalede 5M satışa çıkar (`OFFER_HELI`).
+- Ücretsiz pay kasası 0'dır ve başlangıçta kapanmış sayılır (`launch_finalized=true`); keeper 6. ay işini planlamaz.
+- `issue_credential`, `enroll_launch`, `claim_launch`, `dispute_launch`, `restore_launch`, `set_credential_active`, `finalize_launch` IDL uyumluluğu için duruyor ama her zaman `FreeAllocationDisabled` döner.
+- `initialize_identity` kurulum adımı olarak kaldı; doğrulayıcı anahtarı hiç kullanılmaz. Kurulumda kimsenin elinde olmayan, rastgele üretilip atılmış bir anahtar verilmesi yeterli.
+- Kimlik servisi (`heli/claim-service`) ve canlı test kayıtları arşivdir; lansmanda çalıştırılmaz.
+

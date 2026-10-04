@@ -4712,6 +4712,11 @@
       "code": 6015,
       "name": "ExpenseDestination",
       "msg": "Expense destination must be outside the program treasury"
+    },
+    {
+      "code": 6016,
+      "name": "FreeAllocationDisabled",
+      "msg": "There is no free initial allocation"
     }
   ]
 }

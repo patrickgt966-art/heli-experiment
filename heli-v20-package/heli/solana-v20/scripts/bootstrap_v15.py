@@ -18,7 +18,7 @@ def bootstrap(t, auction_quantity=1000, with_policy=False, min_depth=5000, rejec
  ac={'person':t.alice.pubkey(),'owner':t.alice.pubkey(),'credential':t.pda(b'human',nul),'wallet_identity':t.pda(b'id-wallet',bytes(t.alice.pubkey())),'destination':hw}
  message=b'HELI_IDENTITY_V15\0'+bytes(t.PROGRAM)+bytes(t.defaults['config'])+bytes(t.alice.pubkey())+nul+dig+struct.pack('<qq',now,now+600)
  data=b'\x01\x00'+struct.pack('<7H',48,65535,16,65535,112,len(message),65535)+bytes(verifier.pubkey())+bytes(verifier.sign_message(message))+message
- t.send('native test provider credential',[t.Instruction(t.Pubkey.from_string('Ed25519SigVerify111111111111111111111111111'),data,[]),t.instruction('issue_credential',{'nullifier':list(nul),'proof_digest':list(dig),'issued_at':now,'expires_at':now+600},ac)],[t.alice])
+ t.send('free allocation disabled: provider credential rejected',[t.Instruction(t.Pubkey.from_string('Ed25519SigVerify111111111111111111111111111'),data,[]),t.instruction('issue_credential',{'nullifier':list(nul),'proof_digest':list(dig),'issued_at':now,'expires_at':now+600},ac)],[t.alice],reject='There is no free initial allocation')
  return {'wallet':hw,'quote_wallet':qw,'identity':ac,'verifier':verifier}
 def epoch_accounts(t,n):
  seed=struct.pack('<H',n);return {'epoch':t.pda(b'epoch',seed),'claim_vault':t.pda(b'claims',seed),'reward_vault':t.pda(b'reward-claims',seed)}

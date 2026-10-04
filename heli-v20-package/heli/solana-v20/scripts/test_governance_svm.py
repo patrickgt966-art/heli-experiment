@@ -72,8 +72,8 @@ def credential(person,verifier,seed):
  data=b'\x01\x00'+struct.pack('<7H',48,65535,16,65535,112,len(msg),65535)+bytes(verifier.pubkey())+bytes(verifier.sign_message(msg))+msg
  acc={'person':person.pubkey(),'credential':t.pda(b'human',nul),'wallet_identity':t.pda(b'id-wallet',bytes(person.pubkey()))}
  return [t.Instruction(t.Pubkey.from_string('Ed25519SigVerify111111111111111111111111111'),data,[]),t.instruction('issue_credential',{'nullifier':list(nul),'proof_digest':list(dig),'issued_at':now,'expires_at':now+600},acc)]
-t.send('credential signed by the retired verifier',credential(t.bob,f['verifier'],b'bob'),[t.bob],reject='Invalid credential')
-t.send('credential signed by the new verifier',credential(t.bob,v2,b'bob'),[t.bob])
+t.send('credential signed by the retired verifier',credential(t.bob,f['verifier'],b'bob'),[t.bob],reject='There is no free initial allocation')
+t.send('no credential is issued even with the current verifier (no free allocation)',credential(t.bob,v2,b'bob'),[t.bob],reject='There is no free initial allocation')
 
 # Defensive cancel: the recovery key stops an expense written with a compromised admin key.
 q=t.defaults['quote_mint']

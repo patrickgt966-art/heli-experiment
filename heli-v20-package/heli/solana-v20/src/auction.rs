@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint,Token,TokenAccount};
 use crate::{Config,ErrorCode,UNIT,incoming,outgoing};
 pub const LEVELS:usize=256;
-pub const OFFER_HELI:u64=4_000_000;
+pub const OFFER_HELI:u64=5_000_000;
 const FREEZE_SECONDS:i64=300;
 #[account]
 pub struct OpeningAuction {

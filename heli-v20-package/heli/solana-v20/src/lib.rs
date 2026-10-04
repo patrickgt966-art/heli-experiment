@@ -17,7 +17,7 @@ pub mod heli_core_v20 {
   let now=Clock::get()?.unix_timestamp;require!(start>=now+7*DAY&&start<=now+30*DAY,ErrorCode::Time);
   require!(ctx.accounts.quote_mint.decimals==6||ctx.accounts.quote_mint.decimals==9,ErrorCode::State);
   let c=&mut ctx.accounts.config;c.admin=ctx.accounts.admin.key();c.mint=ctx.accounts.mint.key();c.quote_mint=ctx.accounts.quote_mint.key();c.history=ctx.accounts.history.key();c.start=start;c.cursor=start;c.bump=ctx.bumps.config;
-  c.stocks=[70_000_000*UNIT,0,0,15_000_000*UNIT];c.apr_bps=0;c.launch_per_person=1_000*UNIT;c.launch_remaining=1_000_000*UNIT;c.market_remaining=4_000_000*UNIT;c.sale_authorized=4_000_000*UNIT;
+  c.stocks=[70_000_000*UNIT,0,0,15_000_000*UNIT];c.apr_bps=0;c.launch_per_person=0;c.launch_remaining=0;c.market_remaining=5_000_000*UNIT;c.sale_authorized=5_000_000*UNIT;c.launch_finalized=true;
   ctx.accounts.history.load_init()?;Ok(())
  }
  pub fn create_launch_claims(ctx:Context<CreateLaunchClaims>)->Result<()> {require!(!ctx.accounts.config.live&&!ctx.accounts.config.closed,ErrorCode::State);Ok(())}
@@ -39,58 +39,20 @@ pub mod heli_core_v20 {
   for(v,a)in[(&ctx.accounts.human,70_000_000*UNIT),(&ctx.accounts.rewards,0),(&ctx.accounts.liquidity,0),(&ctx.accounts.founder,15_000_000*UNIT)] {
    outgoing(ctx.accounts.token_program.to_account_info(),ctx.accounts.launch.to_account_info(),v.to_account_info(),c.to_account_info(),c.bump,a)?;
   }
-  outgoing(ctx.accounts.token_program.to_account_info(),ctx.accounts.launch.to_account_info(),ctx.accounts.market_inventory.to_account_info(),c.to_account_info(),c.bump,4_000_000*UNIT)?;
+  outgoing(ctx.accounts.token_program.to_account_info(),ctx.accounts.launch.to_account_info(),ctx.accounts.market_inventory.to_account_info(),c.to_account_info(),c.bump,5_000_000*UNIT)?;
   token::burn(CpiContext::new_with_signer(ctx.accounts.token_program.to_account_info(),Burn{mint:ctx.accounts.mint.to_account_info(),from:ctx.accounts.launch.to_account_info(),authority:c.to_account_info()},sign),10_000_000*UNIT)?;
   token::set_authority(CpiContext::new_with_signer(ctx.accounts.token_program.to_account_info(),SetAuthority{current_authority:c.to_account_info(),account_or_mint:ctx.accounts.mint.to_account_info()},sign),AuthorityType::MintTokens,None)?;
   ctx.accounts.config.live=true;Ok(())
  }
  pub fn initialize_identity(ctx:Context<InitializeIdentity>,verifier:Pubkey)->Result<()> {identity::initialize(ctx,verifier)}
- pub fn issue_credential(ctx:Context<IssueCredential>,nullifier:[u8;32],proof_digest:[u8;32],issued_at:i64,expires_at:i64)->Result<()> {
-  identity::verify_admission(&ctx.accounts.instructions.to_account_info(),&ctx.accounts.identity_policy,&ctx.accounts.config.key(),&ctx.accounts.person.key(),&nullifier,&proof_digest,issued_at,expires_at)?;
-  require!(ctx.accounts.config.live&&!ctx.accounts.config.closed&&nullifier!=[0;32]&&proof_digest!=[0;32],ErrorCode::State);
-  let p=&mut ctx.accounts.credential;p.owner=ctx.accounts.person.key();p.nullifier=nullifier;p.proof_digest=proof_digest;p.active=true;
-  ctx.accounts.wallet_identity.credential=p.key();Ok(())
- }
- pub fn enroll_launch(ctx:Context<EnrollLaunch>)->Result<()> {
-  let c=&mut ctx.accounts.config;let now=Clock::get()?.unix_timestamp;
-  require!(c.live&&!c.closed&&!c.paused&&!c.launch_finalized&&now>=c.start&&now<boundary(c.start,6)-7*DAY,ErrorCode::Time);
-  require!(ctx.accounts.credential.active&&ctx.accounts.credential.owner==ctx.accounts.person.key()&&c.launch_people<1000,ErrorCode::Identity);
-  c.launch_people+=1;let r=&mut ctx.accounts.receipt;r.owner=ctx.accounts.person.key();r.valid=true;r.eligible_at=now.checked_add(7*DAY).ok_or(ErrorCode::Math)?;Ok(())
- }
- // Entitlement review (review M4, owner decision): a registration can be disputed only during its seven-day
- // waiting period, always with the hash of an off-chain written reason; after that the right is final.
- pub fn dispute_launch(ctx:Context<DisputeLaunch>,reason:[u8;32])->Result<()> {
-  let now=Clock::get()?.unix_timestamp;let c=&mut ctx.accounts.config;let r=&mut ctx.accounts.receipt;
-  require!(reason!=[0;32],ErrorCode::State);
-  require!(!c.launch_finalized&&now<boundary(c.start,6)&&now<r.eligible_at&&r.valid&&!r.claimed,ErrorCode::Time);
-  r.valid=false;r.reason=reason;c.launch_people=c.launch_people.checked_sub(1).ok_or(ErrorCode::Math)?;
-  emit!(LaunchDisputed{credential:ctx.accounts.credential.key(),owner:r.owner,reason});Ok(())
- }
- // Appeal: the administrator can reinstate a disputed registration during the first six months; a fresh
- // seven-day waiting period starts.
- pub fn restore_launch(ctx:Context<DisputeLaunch>,reason:[u8;32])->Result<()> {
-  let now=Clock::get()?.unix_timestamp;let c=&mut ctx.accounts.config;let r=&mut ctx.accounts.receipt;
-  require!(reason!=[0;32],ErrorCode::State);
-  require!(!c.launch_finalized&&now<boundary(c.start,6)&&!r.valid&&!r.claimed,ErrorCode::Time);
-  require!(ctx.accounts.credential.active&&c.launch_people<1000,ErrorCode::Identity);
-  r.valid=true;r.reason=reason;r.eligible_at=now.checked_add(7*DAY).ok_or(ErrorCode::Math)?;c.launch_people+=1;
-  emit!(LaunchRestored{credential:ctx.accounts.credential.key(),owner:r.owner,reason,eligible_at:r.eligible_at});Ok(())
- }
- // A deactivated credential cannot register; rights already past their waiting period are unaffected.
- pub fn set_credential_active(ctx:Context<CredentialStatus>,active:bool,reason:[u8;32])->Result<()> {
-  require!(reason!=[0;32],ErrorCode::State);
-  let p=&mut ctx.accounts.credential;require!(p.active!=active,ErrorCode::State);p.active=active;p.reason=reason;
-  emit!(CredentialStatusChanged{credential:p.key(),owner:p.owner,active,reason});Ok(())
- }
- pub fn finalize_launch(ctx:Context<RegistryLaunch>)->Result<()> {
-  let c=&mut ctx.accounts.config;require!(c.live&&!c.closed&&!c.launch_finalized&&Clock::get()?.unix_timestamp>=boundary(c.start,6),ErrorCode::Time);
-  require!(ctx.accounts.launch.amount>=c.launch_remaining&&c.launch_remaining>=launch_reserved(c)?,ErrorCode::Collateral);
-  let reserved=launch_reserved(c)?;let unused=c.launch_remaining.checked_sub(reserved).ok_or(ErrorCode::Math)?;
-  outgoing(ctx.accounts.token_program.to_account_info(),ctx.accounts.launch.to_account_info(),ctx.accounts.market_inventory.to_account_info(),c.to_account_info(),c.bump,unused)?;
-  c.launch_remaining=reserved;c.market_remaining=c.market_remaining.checked_add(unused).ok_or(ErrorCode::Math)?;
-  c.sale_authorized=c.sale_authorized.checked_add(unused).ok_or(ErrorCode::Math)?;
-  c.launch_finalized=true;Ok(())
- }
+ // Owner decision (V22): there is no free initial allocation; the whole 5M launch base is sold through the
+ // opening auction and the market. Identity and entitlement instructions are kept for IDL compatibility only.
+ pub fn issue_credential(_ctx:Context<IssueCredential>,_nullifier:[u8;32],_proof_digest:[u8;32],_issued_at:i64,_expires_at:i64)->Result<()> {err!(ErrorCode::FreeAllocationDisabled)}
+ pub fn enroll_launch(_ctx:Context<EnrollLaunch>)->Result<()> {err!(ErrorCode::FreeAllocationDisabled)}
+ pub fn dispute_launch(_ctx:Context<DisputeLaunch>,_reason:[u8;32])->Result<()> {err!(ErrorCode::FreeAllocationDisabled)}
+ pub fn restore_launch(_ctx:Context<DisputeLaunch>,_reason:[u8;32])->Result<()> {err!(ErrorCode::FreeAllocationDisabled)}
+ pub fn set_credential_active(_ctx:Context<CredentialStatus>,_active:bool,_reason:[u8;32])->Result<()> {err!(ErrorCode::FreeAllocationDisabled)}
+ pub fn finalize_launch(_ctx:Context<RegistryLaunch>)->Result<()> {err!(ErrorCode::FreeAllocationDisabled)}
  pub fn prepare_auction_quote(ctx:Context<PrepareAuctionQuote>)->Result<()> {require!(!ctx.accounts.config.closed,ErrorCode::State);Ok(())}
  pub fn open_auction(ctx:Context<OpenAuction>,floor_quote_atoms_per_heli:u64,tick_size:u64)->Result<()> {
   auction::open(ctx,floor_quote_atoms_per_heli,tick_size)
@@ -235,11 +197,7 @@ pub mod heli_core_v20 {
   let old=ctx.accounts.identity_policy.verifier;ctx.accounts.identity_policy.verifier=verifier;
   emit!(VerifierChanged{old,new:verifier});Ok(())
  }
- pub fn claim_launch(ctx:Context<ClaimLaunch>)->Result<()> {
-  require!(ctx.accounts.receipt.valid&&!ctx.accounts.receipt.claimed&&Clock::get()?.unix_timestamp>=ctx.accounts.receipt.eligible_at,ErrorCode::Time);
-  let a=ctx.accounts.config.launch_per_person;outgoing(ctx.accounts.token_program.to_account_info(),ctx.accounts.launch.to_account_info(),ctx.accounts.destination.to_account_info(),ctx.accounts.config.to_account_info(),ctx.accounts.config.bump,a)?;
-  ctx.accounts.config.launch_remaining=ctx.accounts.config.launch_remaining.checked_sub(a).ok_or(ErrorCode::Math)?;ctx.accounts.config.launch_claimed=ctx.accounts.config.launch_claimed.checked_add(1).ok_or(ErrorCode::Math)?;ctx.accounts.receipt.claimed=true;Ok(())
- }
+ pub fn claim_launch(_ctx:Context<ClaimLaunch>)->Result<()> {err!(ErrorCode::FreeAllocationDisabled)}
  pub fn open_epoch(ctx:Context<OpenMarketEpoch>,number:u16)->Result<()> {market_release::open(ctx,number)}
  pub fn enroll(_ctx:Context<Enroll>)->Result<()> {err!(ErrorCode::MonthlyDividendDisabled)}
  pub fn dispute_entry(_ctx:Context<DisputeEntry>)->Result<()> {err!(ErrorCode::MonthlyDividendDisabled)}
@@ -350,7 +308,7 @@ pub const GOVERNANCE_DELAY:i64=7*DAY;
 // Large histories use external rent-funded zero accounts and in-place access. No 10KB CPI allocation.
 #[account(zero_copy(unsafe))] #[repr(C)] pub struct GlobalBook {pub low:[u64;720],pub high:[u64;720],pub cutoff:[i64;720],pub rate:[u64;720]}
 #[account(zero_copy(unsafe))] #[repr(C)] pub struct UserBook {pub low:[u64;720],pub high:[u64;720],pub claimed:[u64;12]}
-#[error_code] pub enum ErrorCode {#[msg("Invalid state")]State,#[msg("Invalid calendar window")]Time,#[msg("Quota exceeded")]Quota,#[msg("Invalid credential")]Identity,#[msg("Arithmetic error")]Math,#[msg("Collateral deficit")]Collateral,#[msg("Checkpoint required")]Checkpoint,#[msg("Market guard rejected")]Market,#[msg("Staking policy is fixed")]FixedStakingPolicy,#[msg("Staking is disabled")]StakingDisabled,#[msg("Liquidity inventory is disabled")]LiquidityDisabled,#[msg("Monthly free dividends are disabled; only the initial allocation is free")]MonthlyDividendDisabled,#[msg("Only the program upgrade authority can initialize")]InitializerNotAuthorized,#[msg("Order price outside the permitted band")]PriceOutsideBand,#[msg("Signer is not authorized for this governance action")]Unauthorized,#[msg("Expense destination must be outside the program treasury")]ExpenseDestination}
+#[error_code] pub enum ErrorCode {#[msg("Invalid state")]State,#[msg("Invalid calendar window")]Time,#[msg("Quota exceeded")]Quota,#[msg("Invalid credential")]Identity,#[msg("Arithmetic error")]Math,#[msg("Collateral deficit")]Collateral,#[msg("Checkpoint required")]Checkpoint,#[msg("Market guard rejected")]Market,#[msg("Staking policy is fixed")]FixedStakingPolicy,#[msg("Staking is disabled")]StakingDisabled,#[msg("Liquidity inventory is disabled")]LiquidityDisabled,#[msg("Monthly free dividends are disabled; only the initial allocation is free")]MonthlyDividendDisabled,#[msg("Only the program upgrade authority can initialize")]InitializerNotAuthorized,#[msg("Order price outside the permitted band")]PriceOutsideBand,#[msg("Signer is not authorized for this governance action")]Unauthorized,#[msg("Expense destination must be outside the program treasury")]ExpenseDestination,#[msg("There is no free initial allocation")]FreeAllocationDisabled}
 
 // Account validation is kept in one source file for reproducible Playground builds.
 include!("accounts.rs");
