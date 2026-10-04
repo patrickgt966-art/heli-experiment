@@ -1,9 +1,9 @@
 {
   "date": "2026-10-04",
-  "deploymentUrl": "https://5278edb5.heli-experiment.pages.dev",
+  "deploymentUrl": "https://637407fa.heli-experiment.pages.dev",
   "productionUrl": "https://heli-experiment.pages.dev",
   "branch": "main (Cloudflare Pages production)",
-  "sourceCommit": "7f782bb",
+  "sourceCommit": "see git log (V22 rules text)",
   "files": [
     "index.html",
     "apply.html",
@@ -15,12 +15,14 @@
     "heli-rules.txt"
   ],
   "verifiedFromOutside": {
-    "index": "200, 'Status as of October 4, 2026'",
-    "apply": "pilot status check loaded; reported 'Identity pilot online.' in Chromium against the live tunnel",
-    "heliRules": "200, dated October 4, 2026",
-    "csp": "connect-src https://*.trycloudflare.com"
+    "heliRules": "200, contains V22 draft / 2% / 60-year close lines",
+    "index": "200, contains 2% monthly depth rule",
+    "appJs": "200, contains 2% rule",
+    "apply": "200 (/apply)"
   },
   "pilotOrigin": "https://practical-wallet-magnet-months.trycloudflare.com",
   "pilotServerVersion": "previous claim-service (no CORS header; review fixes N1/H4/M5 not yet running)",
-  "tokenDelivery": false
+  "tokenDelivery": false,
+  "previousDeploymentUrl": "https://5278edb5.heli-experiment.pages.dev",
+  "change": "V22 rules text: monthly 2% depth total for treasury releases, post-closure expenses, no expense back into project accounts, V22 draft wording"
 }

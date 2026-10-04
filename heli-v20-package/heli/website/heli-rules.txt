@@ -26,17 +26,19 @@ Monthly settlement requires a transaction; anyone can trigger the fixed amount a
 An administrative pause halts sales, treasury operations and expenses, but never the monthly release rule.
 Delayed periods are settled in order. Unused management permissions expire.
 At the 60-year close, only still-locked stock follows the existing final burn rule; unsold released inventory is protected.
+After the 60-year close no new HELI is released and management orders end; sale revenue can still pay expenses under the same monthly cap and seven-day wait.
 New Management Treasury HELI releases are locked for the first 12 months.
 Afterward, sales and newly released liquidity inventory share at most 20% of monthly capacity
 and one quarter of actual releases outside the Management Treasury, checked against a 24-hour
 reference price built only from bids that rested at least an hour.
+In each month, all Management Treasury releases together may not exceed 2% of the resting bid depth.
 The single manager can direct funded limit buy/sell orders, cancel orders and return assets to project accounts.
 Sales: at least 95% of the reference price (without a reference: at least the opening auction price).
 Reserve-funded bids: at most 105% of the reference price, and none without a reference. Orders expire after about 24 hours.
-Sale revenue returns to the project reserve. Bid liquidity needs actual quote funds. Expenses wait seven days and can be cancelled.
+Sale revenue returns to the project reserve. Bid liquidity needs actual quote funds. Expenses wait seven days, can be cancelled and can never be paid back into project accounts.
 An offline recovery key can replace a lost administrator key after a seven-day window.
 Released working HELI, cancelled orders and bought HELI never refill locked treasury stock or reset release quotas.
-The current V20 draft passes its local test suites using real program binaries in a local Solana simulator,
+The current V22 draft passes its local test suites using real program binaries in a local Solana simulator,
 including all 720 monthly periods, initial free claims, monthly unlocks, market trades and treasury controls,
 and builds reproducibly with a public toolchain. It has not been independently audited.
 It is not deployed, live trading, guaranteed liquidity or buybacks.
