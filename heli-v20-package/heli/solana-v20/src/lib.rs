@@ -154,6 +154,61 @@ pub mod heli_core_v20 {
   let e=&mut ctx.accounts.expense;require!(!e.paid&&!e.cancelled,ErrorCode::State);e.cancelled=true;
   emit!(ExpenseCancelled{nonce:e.nonce,destination:e.destination,amount:e.amount});Ok(())
  }
+ // Key governance (review C3, owner decision B): routine two-step admin handover, a cold recovery key that
+ // can replace a lost admin after a 7-day window the current admin can veto, and immediate verifier rotation.
+ pub fn initialize_governance(ctx:Context<InitializeGovernance>,recovery:Pubkey)->Result<()> {
+  require!(recovery!=Pubkey::default()&&recovery!=ctx.accounts.config.admin,ErrorCode::Unauthorized);
+  let g=&mut ctx.accounts.governance;g.recovery=recovery;g.bump=ctx.bumps.governance;Ok(())
+ }
+ pub fn propose_admin(mut ctx:Context<GovernanceAction>,new_admin:Pubkey)->Result<()> {
+  let a=&mut ctx.accounts;let signer=a.signer.key();let now=Clock::get()?.unix_timestamp;
+  require!(new_admin!=Pubkey::default()&&new_admin!=a.governance.recovery&&new_admin!=a.config.admin,ErrorCode::Unauthorized);
+  let by_recovery=if signer==a.config.admin {false}else{require!(signer==a.governance.recovery,ErrorCode::Unauthorized);true};
+  let g=&mut a.governance;g.pending_admin=new_admin;g.by_recovery=by_recovery;g.ready_at=if by_recovery {now.checked_add(GOVERNANCE_DELAY).ok_or(ErrorCode::Math)?}else{now};
+  emit!(AdminProposed{new_admin,by_recovery,ready_at:g.ready_at});Ok(())
+ }
+ pub fn accept_admin(mut ctx:Context<GovernanceAction>)->Result<()> {
+  let a=&mut ctx.accounts;let g=&mut a.governance;
+  require!(g.pending_admin!=Pubkey::default()&&a.signer.key()==g.pending_admin&&g.pending_admin!=g.recovery,ErrorCode::Unauthorized);
+  require!(Clock::get()?.unix_timestamp>=g.ready_at,ErrorCode::Time);
+  let old=a.config.admin;a.config.admin=g.pending_admin;g.pending_admin=Pubkey::default();g.ready_at=0;g.by_recovery=false;
+  emit!(AdminChanged{old,new:a.config.admin});Ok(())
+ }
+ pub fn cancel_admin_proposal(mut ctx:Context<GovernanceAction>)->Result<()> {
+  let a=&mut ctx.accounts;let signer=a.signer.key();
+  require!(a.governance.pending_admin!=Pubkey::default()&&(signer==a.config.admin||signer==a.governance.recovery),ErrorCode::Unauthorized);
+  let g=&mut a.governance;g.pending_admin=Pubkey::default();g.ready_at=0;g.by_recovery=false;Ok(())
+ }
+ pub fn propose_recovery(mut ctx:Context<GovernanceAction>,new_recovery:Pubkey)->Result<()> {
+  let a=&mut ctx.accounts;let signer=a.signer.key();let now=Clock::get()?.unix_timestamp;
+  require!(new_recovery!=Pubkey::default()&&new_recovery!=a.config.admin&&new_recovery!=a.governance.recovery,ErrorCode::Unauthorized);
+  // The recovery key may move itself at once; the admin may replace a lost recovery key only after the delay.
+  let ready_at=if signer==a.governance.recovery {now}else{require!(signer==a.config.admin,ErrorCode::Unauthorized);now.checked_add(GOVERNANCE_DELAY).ok_or(ErrorCode::Math)?};
+  let g=&mut a.governance;g.pending_recovery=new_recovery;g.recovery_ready_at=ready_at;Ok(())
+ }
+ pub fn accept_recovery(mut ctx:Context<GovernanceAction>)->Result<()> {
+  let a=&mut ctx.accounts;let g=&mut a.governance;
+  require!(g.pending_recovery!=Pubkey::default()&&a.signer.key()==g.pending_recovery&&g.pending_recovery!=a.config.admin,ErrorCode::Unauthorized);
+  require!(Clock::get()?.unix_timestamp>=g.recovery_ready_at,ErrorCode::Time);
+  let old=g.recovery;g.recovery=g.pending_recovery;g.pending_recovery=Pubkey::default();g.recovery_ready_at=0;
+  emit!(RecoveryChanged{old,new:g.recovery});Ok(())
+ }
+ pub fn cancel_recovery_proposal(mut ctx:Context<GovernanceAction>)->Result<()> {
+  let a=&mut ctx.accounts;
+  require!(a.governance.pending_recovery!=Pubkey::default()&&a.signer.key()==a.governance.recovery,ErrorCode::Unauthorized);
+  let g=&mut a.governance;g.pending_recovery=Pubkey::default();g.recovery_ready_at=0;Ok(())
+ }
+ // Defensive power of the cold key: stop a pending expense written by whoever holds the admin key.
+ pub fn recovery_cancel_expense(ctx:Context<RecoveryCancelExpense>)->Result<()> {
+  require_keys_eq!(ctx.accounts.recovery.key(),ctx.accounts.governance.recovery,ErrorCode::Unauthorized);
+  let e=&mut ctx.accounts.expense;require!(!e.paid&&!e.cancelled,ErrorCode::State);e.cancelled=true;
+  emit!(ExpenseCancelled{nonce:e.nonce,destination:e.destination,amount:e.amount});Ok(())
+ }
+ pub fn set_verifier(ctx:Context<SetVerifier>,verifier:Pubkey)->Result<()> {
+  require!(verifier!=Pubkey::default()&&verifier!=ctx.accounts.config.admin,ErrorCode::Identity);
+  let old=ctx.accounts.identity_policy.verifier;ctx.accounts.identity_policy.verifier=verifier;
+  emit!(VerifierChanged{old,new:verifier});Ok(())
+ }
  pub fn claim_launch(ctx:Context<ClaimLaunch>)->Result<()> {
   require!(ctx.accounts.receipt.valid&&!ctx.accounts.receipt.claimed&&Clock::get()?.unix_timestamp>=ctx.accounts.receipt.eligible_at,ErrorCode::Time);
   let a=ctx.accounts.config.launch_per_person;outgoing(ctx.accounts.token_program.to_account_info(),ctx.accounts.launch.to_account_info(),ctx.accounts.destination.to_account_info(),ctx.accounts.config.to_account_info(),ctx.accounts.config.bump,a)?;
@@ -238,6 +293,12 @@ fn market_ready(m:&Market,x:u64,y:u64,now:i64)->Result<bool> {
 #[account] pub struct Expense {pub destination:Pubkey,pub proposer:Pubkey,pub purpose:[u8;32],pub amount:u64,pub ready_at:i64,pub nonce:u64,pub paid:bool,pub cancelled:bool}
 #[event] pub struct ExpenseExecuted {pub nonce:u64,pub destination:Pubkey,pub amount:u64,pub purpose:[u8;32]}
 #[event] pub struct ExpenseCancelled {pub nonce:u64,pub destination:Pubkey,pub amount:u64}
+pub const GOVERNANCE_DELAY:i64=7*DAY;
+#[account] pub struct Governance {pub recovery:Pubkey,pub pending_admin:Pubkey,pub ready_at:i64,pub by_recovery:bool,pub pending_recovery:Pubkey,pub recovery_ready_at:i64,pub bump:u8}
+#[event] pub struct AdminProposed {pub new_admin:Pubkey,pub by_recovery:bool,pub ready_at:i64}
+#[event] pub struct AdminChanged {pub old:Pubkey,pub new:Pubkey}
+#[event] pub struct RecoveryChanged {pub old:Pubkey,pub new:Pubkey}
+#[event] pub struct VerifierChanged {pub old:Pubkey,pub new:Pubkey}
 #[event] pub struct QuoteContribution {pub contributor:Pubkey,pub amount:u64}
 #[event] pub struct AuctionProceedsAllocated {pub amount:u64}
 #[event] pub struct CalendarBoundary {pub number:u16,pub timestamp:i64}
@@ -253,7 +314,7 @@ fn market_ready(m:&Market,x:u64,y:u64,now:i64)->Result<bool> {
 // Large histories use external rent-funded zero accounts and in-place access. No 10KB CPI allocation.
 #[account(zero_copy(unsafe))] #[repr(C)] pub struct GlobalBook {pub low:[u64;720],pub high:[u64;720],pub cutoff:[i64;720],pub rate:[u64;720]}
 #[account(zero_copy(unsafe))] #[repr(C)] pub struct UserBook {pub low:[u64;720],pub high:[u64;720],pub claimed:[u64;12]}
-#[error_code] pub enum ErrorCode {#[msg("Invalid state")]State,#[msg("Invalid calendar window")]Time,#[msg("Quota exceeded")]Quota,#[msg("Invalid credential")]Identity,#[msg("Arithmetic error")]Math,#[msg("Collateral deficit")]Collateral,#[msg("Checkpoint required")]Checkpoint,#[msg("Market guard rejected")]Market,#[msg("Staking policy is fixed")]FixedStakingPolicy,#[msg("Staking is disabled")]StakingDisabled,#[msg("Liquidity inventory is disabled")]LiquidityDisabled,#[msg("Monthly free dividends are disabled; only the initial allocation is free")]MonthlyDividendDisabled,#[msg("Only the program upgrade authority can initialize")]InitializerNotAuthorized,#[msg("Order price outside the permitted band")]PriceOutsideBand}
+#[error_code] pub enum ErrorCode {#[msg("Invalid state")]State,#[msg("Invalid calendar window")]Time,#[msg("Quota exceeded")]Quota,#[msg("Invalid credential")]Identity,#[msg("Arithmetic error")]Math,#[msg("Collateral deficit")]Collateral,#[msg("Checkpoint required")]Checkpoint,#[msg("Market guard rejected")]Market,#[msg("Staking policy is fixed")]FixedStakingPolicy,#[msg("Staking is disabled")]StakingDisabled,#[msg("Liquidity inventory is disabled")]LiquidityDisabled,#[msg("Monthly free dividends are disabled; only the initial allocation is free")]MonthlyDividendDisabled,#[msg("Only the program upgrade authority can initialize")]InitializerNotAuthorized,#[msg("Order price outside the permitted band")]PriceOutsideBand,#[msg("Signer is not authorized for this governance action")]Unauthorized}
 
 // Account validation is kept in one source file for reproducible Playground builds.
 include!("accounts.rs");

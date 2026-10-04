@@ -2623,6 +2623,220 @@
       "args": []
     },
     {
+      "name": "initializeGovernance",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "governance",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "recovery",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "proposeAdmin",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "governance",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "newAdmin",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "acceptAdmin",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "governance",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "cancelAdminProposal",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "governance",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "proposeRecovery",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "governance",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "newRecovery",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "acceptRecovery",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "governance",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "cancelRecoveryProposal",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "governance",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "recoveryCancelExpense",
+      "accounts": [
+        {
+          "name": "governance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "expense",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "recovery",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "setVerifier",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "identityPolicy",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "verifier",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
       "name": "claimLaunch",
       "accounts": [
         {
@@ -4126,6 +4340,42 @@
           }
         ]
       }
+    },
+    {
+      "name": "Governance",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "recovery",
+            "type": "publicKey"
+          },
+          {
+            "name": "pendingAdmin",
+            "type": "publicKey"
+          },
+          {
+            "name": "readyAt",
+            "type": "i64"
+          },
+          {
+            "name": "byRecovery",
+            "type": "bool"
+          },
+          {
+            "name": "pendingRecovery",
+            "type": "publicKey"
+          },
+          {
+            "name": "recoveryReadyAt",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
     }
   ],
   "types": [
@@ -4333,6 +4583,11 @@
       "code": 6013,
       "name": "PriceOutsideBand",
       "msg": "Order price outside the permitted band"
+    },
+    {
+      "code": 6014,
+      "name": "Unauthorized",
+      "msg": "Signer is not authorized for this governance action"
     }
   ]
 }

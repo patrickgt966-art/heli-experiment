@@ -670,6 +670,45 @@ pub struct ExecuteExpense<'info> {
 }
 
 #[derive(Accounts)]
+pub struct InitializeGovernance<'info> {
+ #[account(seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
+ pub config:Box<Account<'info,Config>>,
+ #[account(init,payer=admin,space=8+160,seeds=[b"governance".as_ref()],bump)]
+ pub governance:Box<Account<'info,Governance>>,
+ #[account(mut)]
+ pub admin:Signer<'info>,
+ pub system_program:Program<'info,System>,
+}
+
+// Authorization (admin, recovery key or proposed key) is checked in each handler.
+#[derive(Accounts)]
+pub struct GovernanceAction<'info> {
+ #[account(mut,seeds=[b"config".as_ref()],bump=config.bump)]
+ pub config:Box<Account<'info,Config>>,
+ #[account(mut,seeds=[b"governance".as_ref()],bump=governance.bump)]
+ pub governance:Box<Account<'info,Governance>>,
+ pub signer:Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct RecoveryCancelExpense<'info> {
+ #[account(seeds=[b"governance".as_ref()],bump=governance.bump)]
+ pub governance:Box<Account<'info,Governance>>,
+ #[account(mut,seeds=[b"expense".as_ref(),&expense.nonce.to_le_bytes()],bump)]
+ pub expense:Box<Account<'info,Expense>>,
+ pub recovery:Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct SetVerifier<'info> {
+ #[account(seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
+ pub config:Box<Account<'info,Config>>,
+ #[account(mut,seeds=[b"identity-policy"],bump)]
+ pub identity_policy:Box<Account<'info,IdentityPolicy>>,
+ pub admin:Signer<'info>,
+}
+
+#[derive(Accounts)]
 pub struct CancelExpense<'info> {
  #[account(seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
  pub config:Box<Account<'info,Config>>,
