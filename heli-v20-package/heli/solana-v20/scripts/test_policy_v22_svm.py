@@ -47,6 +47,9 @@ if mode=='depth':
  t.call('management_release',{'amount':left},act,label='release up to 2% of all outside bids within 98% of the reference')
  t.check('month total equals 2% of the outside band',founder()==band//50)
  t.check('monthly management budget still respected',founder()<=t.read(ea['epoch'],'Epoch')['founderBudget'])
+ # Review A2: while a reserve-funded bid may rest, a direct release sale could fill it; it is refused.
+ t.call('management_order',{'amount':t.min_bid(5,-1),'base_deposit':0,'price_mantissa':5,'price_exponent':-1,'is_bid':True},act,label='reserve bid at 0.50')
+ t.call('execute_release_sale',{'kind':3,'amount':t.U},rs,reject='Project orders may not trade with each other',label='direct release sale refused while a reserve bid may rest (review A2)')
  t.clock(t.boundary(13));ea13=ns['epoch_accounts'](t,13);t.call('open_epoch',{'number':13},ea13);t.call('settle',acc=ns['ma']|ea13)
  t.check('new month starts with an empty counter',t.read(ea13['epoch'],'Epoch')['founder']==0)
  extra={'depth_atoms':depth(),'month_total_atoms':limit,'band_month_total_atoms':band//50}

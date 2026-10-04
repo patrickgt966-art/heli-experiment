@@ -3,7 +3,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::{instruction::{AccountMeta,Instruction},program::{invoke,invoke_signed},pubkey,system_instruction};
 use anchor_spl::token::{self,Mint,Token,TokenAccount,Transfer};
-use crate::{Config,ErrorCode,OpeningAuction,outgoing,release::{ReleasePolicy,order_bounds,check_order_price,order_expiry}};
+use crate::{Config,ErrorCode,OpeningAuction,outgoing,release::{ReleasePolicy,order_bounds,check_order_price,order_expiry,price_frac,SELF_TRADE_WINDOW}};
 
 const MANIFEST:Pubkey=pubkey!("MNFSTqtC93rEfYHB6hF82sKdZpUDFWkViLByLd1k1Ms");
 const MARKET_DISCRIMINANT:u64=4859840929024028656;
@@ -98,6 +98,8 @@ pub fn place_ask(ctx:Context<PlaceProjectAsk>,amount:u64,mantissa:u32,exponent:i
  let (base,_)=check_market(&a.manifest_market.to_account_info(),&a.manifest_program.to_account_info(),&c.mint,&c.quote_mint)?;
  require_keys_eq!(a.base_vault.key(),base,ErrorCode::Market);
  let now=Clock::get()?;check_order_price(mantissa,exponent,false,order_bounds(&a.policy,&a.auction,now.unix_timestamp))?;let expiry=order_expiry(&now)?;
+ let(num,den)=price_frac(mantissa,exponent);let t=now.unix_timestamp;
+ if t<c.mgmt_bid_until {require!(num>c.mgmt_bid_max as u128*den,ErrorCode::SelfTrade);}
  let unclaimed=a.auction.reserved_atoms;
  // Anyone can send SPL tokens here. Gifts must neither halt trading nor
  // enlarge constitutionally authorized inventory.
@@ -116,6 +118,8 @@ pub fn place_ask(ctx:Context<PlaceProjectAsk>,amount:u64,mantissa:u32,exponent:i
  cpi(a.manifest_program.to_account_info(),&[a.trader.to_account_info(),a.manifest_market.to_account_info(),
    a.system_program.to_account_info()],update,update_data(None,Some((amount,mantissa,exponent,expiry))),c.manifest_trader_bump)?;
  let c=&mut ctx.accounts.config;c.market_remaining=c.market_remaining.checked_sub(amount).ok_or(ErrorCode::Math)?;
+ let floor=u64::try_from(num/den).map_err(|_|error!(ErrorCode::Math))?;
+ c.ask_min=if t<c.ask_until {c.ask_min.min(floor)}else{floor};c.ask_until=c.ask_until.max(t+SELF_TRADE_WINDOW);
  c.manifest_base_deposited=c.manifest_base_deposited.checked_add(amount).ok_or(ErrorCode::Math)?;Ok(())
 }
 

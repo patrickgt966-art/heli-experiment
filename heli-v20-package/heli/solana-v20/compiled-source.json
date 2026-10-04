@@ -1,6 +1,6 @@
 {
-  "source_sha256": "990c035e3fd3f3cf103e963d6ce91bd9dd744f31774bd5fec1ff54e5b408db32",
-  "binary_sha256": "9c01e4783be8a17e97cdc710711c3c75d20768000a37a71f36a7360667282ab1",
+  "source_sha256": "d6d1cf5bc354cfc31d788ced1ec9333367b3a79f5a2e420e8d02b26b26b21cfb",
+  "binary_sha256": "12ac8cb733fe6c5b53ef2de17e905308f79f0772f2d41784a58599c8c46a0964",
   "toolchain": "agave-2.1.21/platform-tools-v1.43",
   "cargo_toml_sha256": "85e79529e7698bce722f4ede3686a9273a118841dd6fdd97338cc70febcfa185"
 }

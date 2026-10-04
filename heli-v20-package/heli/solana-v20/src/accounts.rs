@@ -5,7 +5,7 @@ pub struct Initialize<'info> {
  pub program:Program<'info,crate::program::HeliCoreV20>,
  #[account(constraint=program_data.upgrade_authority_address==Some(admin.key()) @ ErrorCode::InitializerNotAuthorized)]
  pub program_data:Box<Account<'info,ProgramData>>,
- #[account(init,payer=admin,space=8+242,seeds=[b"config".as_ref()],bump)]
+ #[account(init,payer=admin,space=8+274,seeds=[b"config".as_ref()],bump)]
  pub config:Box<Account<'info,Config>>,
  #[account(init,payer=admin,mint::decimals=6,mint::authority=config,seeds=[b"mint".as_ref()],bump)]
  pub mint:Box<Account<'info,Mint>>,

@@ -4,7 +4,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::{instruction::{AccountMeta,Instruction},program::{invoke,invoke_signed},system_instruction};
 use anchor_spl::token::{self,Mint,Token,TokenAccount,Transfer};
-use crate::{Config,Epoch,ErrorCode,OpeningAuction,boundary,outgoing,manifest_bridge::check_market,release::{ReleasePolicy,reference_price,bid_book,band_depth,order_bounds,check_order_price,order_expiry,outside_shallow,crash_ceiling,order_quote,own_bid_quote}};
+use crate::{Config,Epoch,ErrorCode,OpeningAuction,boundary,outgoing,manifest_bridge::check_market,release::{ReleasePolicy,reference_price,bid_book,band_depth,order_bounds,check_order_price,order_expiry,outside_shallow,crash_ceiling,order_quote,own_bid_quote,price_frac,SELF_TRADE_WINDOW}};
 
 #[account]
 pub struct ManagementBook {pub total_released:u64,pub quote_funded:u64,pub quote_returned:u64,pub trader_bump:u8,pub bid_day:i64,pub bid_days:[u64;31],pub revenue_counted:u64}
@@ -134,7 +134,15 @@ pub fn order(mut ctx:Context<ManagementAction>,amount:u64,base_deposit:u64,manti
    let window:u64=b.bid_days.iter().try_fold(0u64,|s,x|s.checked_add(*x)).ok_or(ErrorCode::Math)?;
    let cost=order_quote(amount,mantissa,exponent)?;
    require!(window.checked_add(cost).ok_or(ErrorCode::Math)?<=a.project_quote.amount/10,ErrorCode::Quota);
+   // Review A8: each bid is at least 1/16 of the 30-day bid budget, so the manager can never keep enough
+   // small bids resting to fill the 192-node observation scan.
+   require!(cost as u128*160>=a.project_quote.amount as u128,ErrorCode::Quota);
    let slot=b.bid_day.rem_euclid(31) as usize;b.bid_days[slot]=b.bid_days[slot].checked_add(cost).ok_or(ErrorCode::Math)?;
+   // Review A1/A2: never buy the project's own resting ask; remember this bid for project asks and release sales.
+   let(num,den)=price_frac(mantissa,exponent);let t=now.unix_timestamp;let c=&mut a.config;
+   if t<c.ask_until {require!(num<c.ask_min as u128*den,ErrorCode::SelfTrade);}
+   let ceil=u64::try_from((num+den-1)/den).map_err(|_|error!(ErrorCode::Math))?;
+   c.mgmt_bid_max=if t<c.mgmt_bid_until {c.mgmt_bid_max.max(ceil)}else{ceil};c.mgmt_bid_until=c.mgmt_bid_until.max(t+SELF_TRADE_WINDOW);
   }}
  let a=&ctx.accounts;let expiry=order_expiry(&now)?;
  if base_deposit>0 {require!(base_deposit<=a.management_base.amount,ErrorCode::Collateral);deposit_or_withdraw(a,true,base_deposit,2)?;}

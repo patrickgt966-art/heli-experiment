@@ -100,6 +100,14 @@ def instruction(name,arguments=None,accounts=None):
  data=hashlib.sha256(('global:'+name).encode()).digest()[:8]
  for f in d['args']:data+=encode(f['type'],(arguments or {})[snake(f['name'])])
  return Instruction(PROGRAM,data,[meta(a[snake(f['name'])],f['isMut'],f['isSigner']) for f in d['accounts']])
+def price_frac(m,e):
+ x=e+6;return (m*10**x,1) if x>=0 else (m,10**(-x))
+def bid_cost(amount,m,e):  # quote atoms locked by a bid, as order_quote rounds (up)
+ num,den=price_frac(m,e);return -(-amount*num//(den*U))
+def min_bid(m,e):  # smallest bid (base atoms) of at least 1/16 of the 30-day budget (reserve/160), review A8
+ need=-(-amount(defaults['sale_proceeds'])//160);num,den=price_frac(m,e);a=-(-need*den*U//num)
+ while bid_cost(a,m,e)<need:a+=1
+ return a
 def removed(name,label=None):
  # Instruction deleted from the program (owner decision, 4 Oct 2026: smaller ELF): its discriminator is unknown.
  assert name not in INSTRUCTIONS,name+' still in the IDL'

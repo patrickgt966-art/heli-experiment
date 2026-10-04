@@ -82,10 +82,17 @@ ask(t.U,95,-2,label='project ask at exactly 95% of reference accepted')
 mgmt(t.U,False,94,-2,t.U,reject=BAND,label='management ask at 94% rejected')
 mgmt(40*t.U,True,40,0,reject=BAND,label='C2a replay: management bid at 40x reference rejected')
 mgmt(t.U,True,106,-2,reject=BAND,label='management bid at 106% of reference rejected')
-slot=t.svm.get_clock().slot
-mgmt(t.U,True,105,-2,label='management bid at exactly 105% accepted')
-price,last=best(160)
-t.check('management bid rests at 1.05 and expires 216,000 slots later',price==1_050_000 and last==slot+216_000)
+mgmt(t.min_bid(105,-2),True,105,-2,reject='Project orders may not trade with each other',label='a reserve bid at 1.05 would buy the project ask resting at 0.95: rejected (review A1)')
+mgmt(1,True,94,-2,reject='Quota exceeded',label='a reserve bid below 1/16 of the 30-day bid budget rejected (review A8)')
+slot=t.svm.get_clock().slot;seq=int.from_bytes(t.svm.get_account(m).data[144:152],'little')
+mgmt(t.min_bid(94,-2),True,94,-2,label='a reserve bid below the resting project ask accepted')
+def node_of(sequence):
+ d=bytes(t.svm.get_account(m).data)
+ for at in range(256,len(d)-79,80):
+  v=d[at+16:at+80]
+  if int.from_bytes(v[24:32],'little')==sequence and v[40]==1:return int.from_bytes(v[0:16],'little')*t.U//10**18,int.from_bytes(v[36:40],'little')
+price,last=node_of(seq)
+t.check('management bid rests at 0.94 and expires 216,000 slots later',price==940_000 and last==slot+216_000)
 mgmt(t.U,False,2,0,t.U,label='management ask above the floor accepted')
 price,last=best(168)
 t.check('management ask carries the same 24-hour expiry',last==slot+216_000)

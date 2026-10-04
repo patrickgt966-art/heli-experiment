@@ -2949,6 +2949,22 @@
           {
             "name": "projectFloor",
             "type": "u64"
+          },
+          {
+            "name": "mgmtBidMax",
+            "type": "u64"
+          },
+          {
+            "name": "mgmtBidUntil",
+            "type": "i64"
+          },
+          {
+            "name": "askMin",
+            "type": "u64"
+          },
+          {
+            "name": "askUntil",
+            "type": "i64"
           }
         ]
       }
@@ -3281,6 +3297,11 @@
       "code": 6011,
       "name": "TokenMetadata",
       "msg": "Invalid or missing token metadata"
+    },
+    {
+      "code": 6012,
+      "name": "SelfTrade",
+      "msg": "Project orders may not trade with each other"
     }
   ]
 }
