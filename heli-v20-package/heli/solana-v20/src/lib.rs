@@ -96,11 +96,11 @@ pub mod heli_core_v20 {
  pub fn management_cancel(ctx:Context<ManagementAction>,sequence:u64)->Result<()> {management::cancel(ctx,sequence)}
  pub fn management_withdraw(ctx:Context<ManagementAction>,amount:u64,is_base:bool)->Result<()> {management::withdraw(ctx,amount,is_base)}
  // Owner decision (4 Oct 2026): `project_floor` is the untouchable part of the project quote reserve, chosen once
- // after the opening auction from the amount actually raised (at least 120 quote units: one year of fixed cost). Reserve-funded bids and
- // reserve-paid expenses may not take the reserve below it (expenses only within the 10-unit technical floor).
+ // after the opening auction from the amount actually raised (at least 120 quote units). Reserve-funded bids and
+ // reserve-paid expenses may not take the reserve below it (except the fixed technical cost allowance).
  pub fn initialize_fee_vaults(ctx:Context<InitializeFeeVaults>,monthly_cap:u64,reserve:u64,project_floor:u64)->Result<()> {
   require!(ctx.accounts.config.live&&!ctx.accounts.config.closed&&monthly_cap>0,ErrorCode::State);
-  // At least one year of the fixed technical floor (12 x 10 quote units), so the system can keep running.
+  // At least 120 quote units (owner decision; about ten months of the 12-unit fixed technical cost).
   require!(project_floor>=120*10u64.pow(ctx.accounts.quote_mint.decimals as u32),ErrorCode::Quota);
   let o=&mut ctx.accounts.operations;o.monthly_cap=monthly_cap;o.reserve=reserve;
   ctx.accounts.config.project_floor=project_floor;Ok(())
@@ -116,13 +116,15 @@ pub mod heli_core_v20 {
   o.earned_total=next_earned;o.donated_total=next_donated;
   emit!(QuoteContribution{contributor:ctx.accounts.contributor.key(),amount});Ok(())
  }
- pub fn propose_expense(ctx:Context<ProposeExpense>,nonce:u64,amount:u64,purpose:[u8;32])->Result<()> {
+ pub fn propose_expense(ctx:Context<ProposeExpense>,nonce:u64,amount:u64,purpose:[u8;32],fixed:bool)->Result<()> {
   let o=&mut ctx.accounts.operations;
   // monthly_cap (set once at setup) is now a per-proposal ceiling; spending limits apply at payment.
   require!(ctx.accounts.proposer.key()==ctx.accounts.config.admin&&nonce==o.next_nonce&&amount>0&&amount<=o.monthly_cap&&purpose!=[0;32],ErrorCode::Quota);
+  // A fixed technical cost (server, RPC) is at most the fixed allowance of a 30-day window.
+  require!(!fixed||amount<=fixed_cost(ctx.accounts.quote_mint.decimals),ErrorCode::Quota);
   require!(!treasury_owned(&ctx.accounts.destination.owner,&ctx.accounts.config.key(),ctx.program_id),ErrorCode::ExpenseDestination);
   let now=Clock::get()?.unix_timestamp;
-  let p=&mut ctx.accounts.expense;p.destination=ctx.accounts.destination.key();p.proposer=ctx.accounts.proposer.key();p.purpose=purpose;p.amount=amount;
+  let p=&mut ctx.accounts.expense;p.destination=ctx.accounts.destination.key();p.proposer=ctx.accounts.proposer.key();p.purpose=purpose;p.amount=amount;p.fixed=fixed;
   p.ready_at=now.checked_add(7*DAY).ok_or(ErrorCode::Math)?;p.nonce=nonce;
   o.next_nonce=o.next_nonce.checked_add(1).ok_or(ErrorCode::Math)?;Ok(())
  }
@@ -134,31 +136,36 @@ pub mod heli_core_v20 {
   // Checked again at payment: a proposal written before this rule existed must not pay the treasury itself.
   require!(a.destination.key()!=a.fee_quote.key()&&!treasury_owned(&a.destination.owner,&a.config.key(),ctx.program_id),ErrorCode::ExpenseDestination);
   // Owner decision (V22, expenses): the expense treasury (donations) pays first, keeping its own reserve;
-  // the rest is drawn from the project reserve at payment time. Sale revenue is 100% spendable; beyond it,
-  // reserve spending over any rolling 30 days is limited to a fixed technical floor (10 quote units) plus
-  // 25%/12 of the reserve excluding unspent revenue (25% a year). The reserve keeps the project floor
-  // except for spending within the fixed floor, so the keeper can keep running.
+  // the rest is drawn from the project reserve at payment time.
+  // Owner decision (5 Oct 2026): the fixed technical cost (12 quote units per rolling 30 days: 10 plus a 20%
+  // margin) has its own allowance that neither the project floor nor other spending can block, so the system
+  // keeps running. Other expenses: sale revenue is 100% spendable; beyond it, reserve spending over any rolling
+  // 30 days is limited to 25%/12 of the reserve excluding unspent revenue (25% a year), and every such payment
+  // keeps the project floor.
   let amount=a.expense.amount;let o=&mut a.operations;
   let from_fee=amount.min(a.fee_quote.amount.saturating_sub(o.reserve));let r=amount-from_fee;
   if r>0 {
-   let unit=10u64.pow(a.quote_mint.decimals as u32);let fixed=10*unit;let keep=a.config.project_floor;
-   let balance=a.sale_proceeds.amount;require!(balance>=r,ErrorCode::Collateral);
-   let revenue_left=a.config.revenue_total.saturating_sub(o.revenue_spent);let from_revenue=r.min(revenue_left);let rest=r-from_revenue;let mut below_ok=false;
-   if rest>0 {
-    let day=now.div_euclid(DAY);
-    // 31 daily slots: today plus the 30 days before, so the window always covers at least 30 full days.
-    if day.saturating_sub(o.out_day)>=31 {o.out_days=[0;31];}
-    else {let mut d=o.out_day+1;while d<=day {o.out_days[d.rem_euclid(31) as usize]=0;d+=1;}}
-    o.out_day=o.out_day.max(day);
-    let window=o.out_days.iter().try_fold(0u64,|s,x|s.checked_add(*x)).ok_or(ErrorCode::Math)?.checked_add(rest).ok_or(ErrorCode::Math)?;
-    let share=(balance.saturating_sub(revenue_left) as u128*25/1200) as u64;
-    require!(window<=fixed.checked_add(share).ok_or(ErrorCode::Math)?,ErrorCode::Quota);
-    below_ok=from_revenue==0&&window<=fixed;
-    let slot=o.out_day.rem_euclid(31) as usize;o.out_days[slot]=o.out_days[slot].checked_add(rest).ok_or(ErrorCode::Math)?;
+   let keep=a.config.project_floor;let balance=a.sale_proceeds.amount;require!(balance>=r,ErrorCode::Collateral);
+   let revenue_left=a.config.revenue_total.saturating_sub(o.revenue_spent);let from_revenue=r.min(revenue_left);
+   // 31 daily slots: today plus the 30 days before, so a window always covers at least 30 full days.
+   let day=now.div_euclid(DAY);
+   if day.saturating_sub(o.out_day)>=31 {o.out_days=[0;31];o.fix_days=[0;31];}
+   else {let mut d=o.out_day+1;while d<=day {let k=d.rem_euclid(31) as usize;o.out_days[k]=0;o.fix_days[k]=0;d+=1;}}
+   o.out_day=o.out_day.max(day);let slot=o.out_day.rem_euclid(31) as usize;
+   if a.expense.fixed {
+    let window=o.fix_days.iter().try_fold(0u64,|s,x|s.checked_add(*x)).ok_or(ErrorCode::Math)?.checked_add(r).ok_or(ErrorCode::Math)?;
+    require!(window<=fixed_cost(a.quote_mint.decimals),ErrorCode::Quota);
+    o.fix_days[slot]=o.fix_days[slot].checked_add(r).ok_or(ErrorCode::Math)?;
+   } else {
+    let rest=r-from_revenue;
+    if rest>0 {
+     let window=o.out_days.iter().try_fold(0u64,|s,x|s.checked_add(*x)).ok_or(ErrorCode::Math)?.checked_add(rest).ok_or(ErrorCode::Math)?;
+     require!(window as u128<=balance.saturating_sub(revenue_left) as u128*25/1200,ErrorCode::Quota);
+     o.out_days[slot]=o.out_days[slot].checked_add(rest).ok_or(ErrorCode::Math)?;
+    }
+    // The project floor applies to every other reserve payment, revenue included (review A3).
+    require!(balance-r>=keep,ErrorCode::Collateral);
    }
-   // The project floor applies to every reserve payment, revenue included; only a payment made purely
-   // within the fixed technical floor may go below it (review A3).
-   require!(balance-r>=keep||below_ok,ErrorCode::Collateral);
    o.revenue_spent=o.revenue_spent.checked_add(from_revenue).ok_or(ErrorCode::Math)?;
    o.earned_total=o.earned_total.checked_add(r).ok_or(ErrorCode::Math)?;o.sale_allocated_total=o.sale_allocated_total.checked_add(r).ok_or(ErrorCode::Math)?;
    outgoing(a.token_program.to_account_info(),a.sale_proceeds.to_account_info(),a.destination.to_account_info(),a.config.to_account_info(),a.config.bump,r)?;
@@ -239,6 +246,8 @@ pub mod heli_core_v20 {
 fn incoming<'a>(program:AccountInfo<'a>,from:AccountInfo<'a>,to:AccountInfo<'a>,owner:AccountInfo<'a>,amount:u64)->Result<()> {if amount>0 {token::transfer(CpiContext::new(program,Transfer{from,to,authority:owner}),amount)?;}Ok(())}
 // Quote paid to a token account controlled by the program would stay in the treasury while
 // spent_total grows (fee-quote), or could be counted as revenue again (auction proceeds).
+/// Owner decision (5 Oct 2026): fixed technical cost allowance per rolling 30 days, 10 quote units plus 20%.
+fn fixed_cost(decimals:u8)->u64 {12*10u64.pow(decimals as u32)}
 fn treasury_owned(owner:&Pubkey,config:&Pubkey,program:&Pubkey)->bool {
  if owner==config {return true;}
  let seeds:[&[&[u8]];3]=[&[b"manifest-trader"],&[b"management-trader"],&[b"release-trader",&[3]]];
@@ -246,8 +255,8 @@ fn treasury_owned(owner:&Pubkey,config:&Pubkey,program:&Pubkey)->bool {
 }
 fn outgoing<'a>(program:AccountInfo<'a>,from:AccountInfo<'a>,to:AccountInfo<'a>,authority:AccountInfo<'a>,bump:u8,amount:u64)->Result<()> {if amount>0 {let b=[bump];let seeds:&[&[u8]]=&[b"config",&b];token::transfer(CpiContext::new_with_signer(program,Transfer{from,to,authority},&[seeds]),amount)?;}Ok(())}
 #[account] pub struct Config {pub admin:Pubkey,pub mint:Pubkey,pub quote_mint:Pubkey,pub start:i64,pub stocks:[u64;4],pub bump:u8,pub vault_mask:u8,pub live:bool,pub closed:bool,pub paused:bool,pub last_settled_epoch:u16,pub market_remaining:u64,pub sale_authorized:u64,pub sale_total_sold:u64,pub manifest_market:Pubkey,pub manifest_trader_bump:u8,pub manifest_bound:bool,pub manifest_base_deposited:u64,pub manifest_base_returned:u64,pub manifest_quote_withdrawn:u64,pub revenue_total:u64,pub metadata_created:bool,pub project_floor:u64,pub mgmt_bid_max:u64,pub mgmt_bid_until:i64,pub ask_min:u64,pub ask_until:i64,pub mgmt_bid_slot:u64,pub ask_slot:u64}
-#[account] pub struct Operations {pub monthly_cap:u64,pub reserve:u64,pub earned_total:u64,pub spent_total:u64,pub next_nonce:u64,pub donated_total:u64,pub sale_allocated_total:u64,pub revenue_spent:u64,pub out_day:i64,pub out_days:[u64;31]}
-#[account] pub struct Expense {pub destination:Pubkey,pub proposer:Pubkey,pub purpose:[u8;32],pub amount:u64,pub ready_at:i64,pub nonce:u64,pub paid:bool,pub cancelled:bool}
+#[account] pub struct Operations {pub monthly_cap:u64,pub reserve:u64,pub earned_total:u64,pub spent_total:u64,pub next_nonce:u64,pub donated_total:u64,pub sale_allocated_total:u64,pub revenue_spent:u64,pub out_day:i64,pub out_days:[u64;31],pub fix_days:[u64;31]}
+#[account] pub struct Expense {pub destination:Pubkey,pub proposer:Pubkey,pub purpose:[u8;32],pub amount:u64,pub ready_at:i64,pub nonce:u64,pub paid:bool,pub cancelled:bool,pub fixed:bool}
 #[event] pub struct ExpenseExecuted {pub nonce:u64,pub destination:Pubkey,pub amount:u64,pub purpose:[u8;32]}
 #[event] pub struct ExpenseCancelled {pub nonce:u64,pub destination:Pubkey,pub amount:u64}
 pub const GOVERNANCE_DELAY:i64=7*DAY;

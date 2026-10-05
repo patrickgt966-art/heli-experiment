@@ -2281,6 +2281,10 @@
               32
             ]
           }
+        },
+        {
+          "name": "fixed",
+          "type": "bool"
         }
       ]
     },
@@ -3067,6 +3071,15 @@
                 31
               ]
             }
+          },
+          {
+            "name": "fixDays",
+            "type": {
+              "array": [
+                "u64",
+                31
+              ]
+            }
           }
         ]
       }
@@ -3111,6 +3124,10 @@
           },
           {
             "name": "cancelled",
+            "type": "bool"
+          },
+          {
+            "name": "fixed",
             "type": "bool"
           }
         ]

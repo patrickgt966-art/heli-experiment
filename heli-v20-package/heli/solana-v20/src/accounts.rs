@@ -267,7 +267,7 @@ pub struct InitializeFeeVaults<'info> {
  pub mint:Box<Account<'info,Mint>>,
  #[account(address=config.quote_mint)]
  pub quote_mint:Box<Account<'info,Mint>>,
- #[account(init,payer=payer,space=8+320,seeds=[b"operations".as_ref()],bump)]
+ #[account(init,payer=payer,space=8+568,seeds=[b"operations".as_ref()],bump)]
  pub operations:Box<Account<'info,Operations>>,
  pub admin:Signer<'info>,
  #[account(mut)]
@@ -303,7 +303,7 @@ pub struct ProposeExpense<'info> {
  pub config:Box<Account<'info,Config>>,
  #[account(mut,seeds=[b"operations".as_ref()],bump)]
  pub operations:Box<Account<'info,Operations>>,
- #[account(init,payer=proposer,space=8+122,seeds=[b"expense".as_ref(),&nonce.to_le_bytes()],bump)]
+ #[account(init,payer=proposer,space=8+123,seeds=[b"expense".as_ref(),&nonce.to_le_bytes()],bump)]
  pub expense:Box<Account<'info,Expense>>,
  #[account(address=config.quote_mint)]
  pub quote_mint:Box<Account<'info,Mint>>,

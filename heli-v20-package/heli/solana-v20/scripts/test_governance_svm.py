@@ -72,7 +72,7 @@ fee={'fee_base':t.pda(b'fee-base'),'fee_quote':t.pda(b'fee-quote'),'operations':
 t.call('create_fee_base',acc=fee);t.call('create_fee_quote',acc=fee);t.call('initialize_fee_vaults',{'monthly_cap':50_000,'reserve':0,'project_floor':120*t.U},fee)
 t.removed('allocate_auction_proceeds','the reserve is not moved ahead of an expense')
 loot=t.token_account(q,thief.pubkey());e={'expense':t.pda(b'expense',struct.pack('<Q',0)),'destination':loot,'proposer':a3.pubkey()}|fee
-t.call('propose_expense',{'nonce':0,'amount':10_000,'purpose':[9]*32},e)
+t.call('propose_expense',{'nonce':0,'amount':10_000,'purpose':[9]*32,'fixed':True},e)
 t.call('recovery_cancel_expense',{},{'expense':e['expense'],'recovery':t.outsider.pubkey()},reject=UNAUTH,label='only the recovery key has the defensive cancel')
 t.call('recovery_cancel_expense',{},{'expense':e['expense'],'recovery':r3.pubkey()},label='recovery key cancels a hostile expense')
 t.clock(t.read(e['expense'],'Expense')['readyAt'])

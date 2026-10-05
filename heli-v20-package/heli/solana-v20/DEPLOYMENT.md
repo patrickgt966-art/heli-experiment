@@ -48,7 +48,7 @@ Sonradan yönetici değiştirildiğinde keeper bilinçli olarak durur ("Administ
 
 ## Yükleme maliyeti (4 Ekim 2026)
 
-- ELF 1.008.728 bayt (5 Ekim 2026): program verisi kirası ≈ **7,02 SOL** (yaklaşık 6.960 lamport/bayt). Yükleme sırasında aynı boyutta geçici bir tampon hesabı için bir o kadar daha gerekir; yükleme bitince iade edilir.
+- ELF 1.010.656 bayt (5 Ekim 2026): program verisi kirası ≈ **7,04 SOL** (yaklaşık 6.960 lamport/bayt). Yükleme sırasında aynı boyutta geçici bir tampon hesabı için bir o kadar daha gerekir; yükleme bitince iade edilir.
 - Upgrade anahtarı kalıcı olarak kaldırıldığında bu kira geri alınamaz. Önceki sürümler büyürse `solana program extend` ile alan eklenir; yüklemede gereksiz boş alan ayırmayın (kullandığınız CLI sürümünün `--max-len` varsayılanını kontrol edin).
 - Program `no-idl` ile derlenir: zincir üstü IDL hesabı yoktur (`anchor idl init` kullanılamaz). IDL depoda (`idl.json`) yayımlanır.
 
@@ -67,8 +67,9 @@ Sonradan yönetici değiştirildiğinde keeper bilinçli olarak durur ("Administ
 - Gider hedefi programın kendi hazinesindeki bir token hesabı olamaz: `fee-quote`, ihale/satış geliri hesabı (`auction-proceeds`) ve config, manifest, yönetim, release ve DLMM PDA'larına ait hesaplar reddedilir (`ExpenseDestination`). Kural hem teklifte hem ödemede uygulanır; V22'den önce yazılmış böyle bir teklif ödenemez, iptal edilmelidir.
 - **Gider kuralı (sahibin kararı, 4 Ekim 2026):** Rezerv giderden önce taşınmaz (eski `allocate_auction_proceeds` talimatı programdan silindi). Onaylı gider ödenirken (`execute_expense`) önce gider kasasındaki bağışlar (`fee-quote`, `reserve` kadarı kalır), kalanı doğrudan proje rezervinden (`auction-proceeds`) ödenir.
 - **Gelir %100 harcanabilir:** `Config.revenue_total` doğrudan release satışlarının gelirini, `withdraw_project_quote` ile çekilen proje satış gelirini ve yönetimin net kârını (geri dönen > aktarılan, bir kez) sayar. İhale geliri gelir değildir (başlangıç rezervi). Harcanan gelir `Operations.revenue_spent`.
-- **Gelirin ötesinde:** kayan son 30 günde rezervden harcanan (`out_day`, `out_days[31]`, 31 gün dilimi) ≤ **10 quote birimi sabit teknik taban** + (rezerv − harcanmamış gelir) × 25/1200 (yılda %25). Takvim ayında sıfırlanmaz.
-- **Proje tabanı:** ödeme rezervi proje tabanının (`Config.project_floor`) altına indiremez; gelirden ödenen giderler dahil. Tek istisna, tamamen 10 birimlik sabit teknik taban içindeki gelirsiz ödeme (keeper çalışmaya devam etsin diye).
+- **Gelirin ötesinde:** kayan son 30 günde rezervden harcanan (`out_day`, `out_days[31]`, 31 gün dilimi) ≤ (rezerv − harcanmamış gelir) × 25/1200 (yılda %25). Takvim ayında sıfırlanmaz.
+- **Sabit teknik gider (sahibin kararı, 5 Ekim 2026):** `propose_expense(..., fixed=true)` ile önerilen gider (sunucu, RPC) kendi ayrı hakkından ödenir: kayan 30 günde en fazla **12 quote birimi** (10 + %20 hata payı; `Operations.fix_days[31]`). Proje tabanı ve diğer harcamalar bu hakkı engelleyemez; satış geliri varsa önce o kullanılır. 12 birimden büyük sabit gider önerisi reddedilir.
+- **Proje tabanı:** sabit gider dışındaki hiçbir ödeme rezervi proje tabanının (`Config.project_floor`) altına indiremez; gelirden ödenen giderler dahil.
 - `initialize_fee_vaults(monthly_cap, reserve)`: `monthly_cap` artık yalnız **tek teklif** için üst sınırdır; harcama sınırı ödemede uygulanır. Bekleyen gideri yönetici (`cancel_expense`) veya kurtarma anahtarı (`recovery_cancel_expense`) iptal edebilir.
 - 60. yıl kapanışından sonra (sahibin kararı, bulgu 3-B): aynı kurallarla giderler sürer, `contribute_quote` ile bağış alınabilir; 7 gün bekleme ve pause geçerli. Yeni arz yoktur. Yönetim emirleri kapanıştan sonra kapalıdır.
 
@@ -82,7 +83,7 @@ Sonradan yönetici değiştirildiğinde keeper bilinçli olarak durur ("Administ
 - **Referanssız satış tabanı (sahibin kararı, Grok bulgu 2):** Canlı referans yokken proje ve yönetim satışları, açılış ihale fiyatı ile son dış referansın %95'inden (en fazla 30 gün eskiyse) büyük olanın altına inemez. Tarama sınırını (192 düğüm) tozla doldurup gözlemi durdurmak tabanı düşürmez; yalnız gözlemi ve doğrudan release satışını durdurur. Keeper gözlem hatalarını izlemeli.
 - **Kendi kendine işlem yok (A1/A2, sahibin kararı):** Rezervle verilen alış emri hem iki gün hem de Manifest'teki son geçerli slotuna kadar hatırlanır (`Config.mgmt_bid_max/mgmt_bid_until/mgmt_bid_slot`); bu sürede proje ve yönetim satış emirleri o fiyatın üstünde olmalı ve doğrudan release satışı (`execute_release_sale`) reddedilir. Proje ve yönetim satış emirleri de aynı şekilde hatırlanır (`ask_min/ask_until/ask_slot`); rezerv alışları onların altında olmalı. Hata: `SelfTrade` (6012). Slot sınırı, ağ yavaşlar veya durursa emrin iki günden uzun yaşamasına karşıdır (Codex F2); yönetim satışları da kapsamdadır (Codex F3). İptal bu süreyi kısaltmaz.
 - **Asgari rezerv alış büyüklüğü (A8):** her rezerv alış emri en az (proje quote rezervi / 160), yani 30 günlük alış bütçesinin 1/16'sı olmalı; böylece aynı anda birkaç düzine emirden fazlası durmaz ve yönetim 192 düğümlük gözlem taramasını kendi emirleriyle dolduramaz.
-- **Proje tabanı:** `initialize_fee_vaults(monthly_cap, reserve, project_floor)` ile **açılış ihalesinden sonra**, toplanan tutara göre bir kez seçilir; en az **120 quote birimi** (10 birimlik sabit teknik maliyetin bir yılı). Yönetim emirlerine aktarılamaz ve giderler bu tabanı delemez. Bu ayar yapılmadan `management_fund_quote` çalışmaz.
+- **Proje tabanı:** `initialize_fee_vaults(monthly_cap, reserve, project_floor)` ile **açılış ihalesinden sonra**, toplanan tutara göre bir kez seçilir; en az **120 quote birimi**. Yönetim emirlerine aktarılamaz ve giderler bu tabanı delemez. Bu ayar yapılmadan `management_fund_quote` çalışmaz.
 - **Kapanıştan sonra gözlem:** 60. yıl kapanışından sonra da fiyat gözlemleri sürer (keeper yalnız gözlem planlar); yönetim emirleri kapalıdır.
 
 ## Ekip işlem taahhüdü (sahibin kararı, 4 Ekim 2026)
@@ -92,6 +93,17 @@ Kurucu ve ekip CHTA pazarında yalnız **ilan edilmiş** cüzdanlardan işlem ya
 ## Yönetim release sınırı (V22, sahibin kararı, bulgu 4-B)
 
 O ayki yönetim release'leri ve doğrudan release satışlarının **toplamı** (`epoch.founder`) dış alış derinliğinin %2'sini (`depth/50`) aşamaz. Derinlik (inceleme sonrası, sahibin kararı): en az bir saattir bekleyen (`sequence_mark` öncesi), projeye ait olmayan, fiyatı referansın **%98'inden düşük olmayan** tüm alış emirleri. Doğrudan release satışı da fiyat ve derinliği yalnız bir saattir bekleyen emirlerden ölçer. Aylık bütçe sınırları (kapasitenin %20'si, insan bütçesinin ¼'ü) ayrıca geçerlidir. İnce pazarda payın kullanılmayan kısmı o ay kullanılamaz.
+
+## Lansman parametreleri (sahibin kararları, 5 Ekim 2026)
+
+| Talimat | Değer | Anlamı (USDC, 6 ondalık) |
+|---|---|---|
+| `initialize_release_policy(minimum_quote_depth)` | `25_000_000` | Fiyat ölçümü eşiği 25 USDC (en kötü senaryo: çok küçük pazar) |
+| `open_auction(floor, tick_size)` | `200`, `10` | Taban fiyat 0,0002 USDC/token, basamak 0,00001; ihale fiyatı en fazla ~0,00275 |
+| `initialize_fee_vaults(monthly_cap, reserve, project_floor)` | `project_floor = 120_000_000` | Rezerv tabanı 120 USDC |
+
+- Tabandan tamamı satılırsa ihale 1.000 USDC toplar; bir cüzdan en fazla 250.000 token (50 USDC) alabilir.
+- **İhale 120 USDC'den az toplarsa:** kurucu farkı (ve harcanabilir pay için fazlasını) proje rezerv hesabına (`auction-proceeds`) doğrudan SPL transferiyle koyar ve bunu sitede "kurucunun rezerve katkısı" olarak yayınlar. Bu para gelir sayılmaz, karşılığında token verilmez; tabanın üstündeki kısım yılda %25 kuralıyla harcanır. `contribute_quote` bu amaçla kullanılmaz (o, bağış kasasına gider).
 
 ## Ücretsiz pay yok (sahibin kararı, 4 Ekim 2026)
 
