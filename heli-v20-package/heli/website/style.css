@@ -130,3 +130,4 @@ h2{line-height:1.08}.panel h2,.faq h2,.risk-group>h2,.safety-callout h2,.example
 .token-disc svg{filter:drop-shadow(0 2px 0 #0d2a20) drop-shadow(0 0 18px #a3edcf33)}
 @keyframes shine{0%,55%{transform:translateX(-70%)}85%,100%{transform:translateX(70%)}}
 @media(prefers-reduced-motion:reduce){.token-disc::after{animation:none;opacity:0}}
+.chip:disabled{opacity:.4;cursor:not-allowed}

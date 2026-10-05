@@ -99,6 +99,7 @@ function renderList() {
   $('hs-wallets').textContent = fmt(s.wallets);
   $('hs-held').textContent = `${compact(s.inWallets)} CHTA`;
   $('hs-largest').textContent = s.wallets ? pct(s.largest, total) : '–';
+  $('holder-zoom').disabled = s.wallets === 0;
   $('hs-new').textContent = mode === 'live' && renderList.hadHistory ? `+${fresh.size}` : '–';
   const top = bubbles.filter(b => b.kind === 'wallet').slice(0, 10);
   $('holder-list').replaceChildren(...top.map(b => {
