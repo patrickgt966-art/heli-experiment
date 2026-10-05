@@ -57,22 +57,3 @@ function exploreSupply() {
 }
 yearSlider.addEventListener('input', exploreSupply);
 exploreSupply();
-
-const allocationDetails = {
-  human: { kicker: 'MONTHLY MARKET SUPPLY', title: 'Market Release Reserve', amount: '70M', share: '77.78%', copy: 'This locked reserve releases tokens into sale inventory after each month ends. No tokens are given away; buyers purchase these monthly tokens on the market.', rule: 'The monthly cap is approximately 0.402247% of released, unburned supply, starting from a 5 million base. First cap: about 20,112 CHTA. Management shares the same cap. Unsold inventory waits for buyers, with no monthly burn.' },
-  treasury: { kicker: 'SALES & LIQUIDITY', title: 'Management Treasury', amount: '15M', share: '16.67%', copy: 'One manager can sell released treasury tokens and place funded buy and sell orders within a price band: sales at no less than 95% and reserve-funded bids at no more than 105% of the 24-hour market reference; orders expire after about 24 hours. Reserve-funded bids are capped at 10% of the reserve over any rolling 30 days. Sale proceeds return to the project reserve.', rule: 'New treasury releases are locked for the first 12 months. Sales and new liquidity inventory then share one capped release budget, at most 2% of resting bid depth per month.' },
-  market: { kicker: 'OPENING AUCTION AND MARKET', title: 'Opening auction and market', amount: '5M', share: '5.56%', copy: 'The whole 5 million launch base. Funded auction bids establish the opening price; matching buy and sell orders determine subsequent prices. There is no free allocation, presale or private round.', rule: 'In the opening auction one wallet may bid for at most 250,000 CHTA (5% of the offer). Unsold inventory waits for buyers; an allocation does not mean it has already been sold.' },
-};
-function selectAllocation(key) {
-  const item = allocationDetails[key];
-  if (!item) return;
-  for (const control of document.querySelectorAll('[data-allocation]')) control.setAttribute('aria-pressed', String(control.dataset.allocation === key));
-  for (const field of ['kicker', 'title', 'amount', 'share', 'copy', 'rule']) document.getElementById(`allocation-detail-${field}`).textContent = item[field];
-  document.getElementById('treasury-composition').hidden = key !== 'treasury';
-}
-for (const control of document.querySelectorAll('[data-allocation]')) {
-  control.addEventListener('click', () => selectAllocation(control.dataset.allocation));
-  if (control.tagName.toLowerCase() === 'g') control.addEventListener('keydown', event => {
-    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectAllocation(control.dataset.allocation); }
-  });
-}
