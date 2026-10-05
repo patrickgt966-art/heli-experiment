@@ -1,0 +1,66 @@
+[
+  {
+    "name": "test_crash_record_svm",
+    "exit": 0,
+    "seconds": 0.27
+  },
+  {
+    "name": "test_expense_controls_svm",
+    "exit": 0,
+    "seconds": 0.19
+  },
+  {
+    "name": "test_expense_v22_svm",
+    "exit": 0,
+    "seconds": 0.2
+  },
+  {
+    "name": "test_governance_svm",
+    "exit": 0,
+    "seconds": 0.18
+  },
+  {
+    "name": "test_market_measure_v22_svm",
+    "exit": 0,
+    "seconds": 1.28
+  },
+  {
+    "name": "test_market_release_svm",
+    "exit": 0,
+    "seconds": 1.1
+  },
+  {
+    "name": "test_no_free_allocation_svm",
+    "exit": 0,
+    "seconds": 0.19
+  },
+  {
+    "name": "test_observation_controls_svm",
+    "exit": 0,
+    "seconds": 0.21
+  },
+  {
+    "name": "test_policy_v22_svm-depth",
+    "exit": 0,
+    "seconds": 0.25
+  },
+  {
+    "name": "test_policy_v22_svm-closure",
+    "exit": 0,
+    "seconds": 1.11
+  },
+  {
+    "name": "test_price_bounds_svm",
+    "exit": 0,
+    "seconds": 0.21
+  },
+  {
+    "name": "test_setup_controls_svm",
+    "exit": 0,
+    "seconds": 0.18
+  },
+  {
+    "name": "keeper-svm",
+    "exit": 0
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "mode": "cancellation",
+  "source": "d6d1cf5bc354cfc31d788ced1ec9333367b3a79f5a2e420e8d02b26b26b21cfb",
+  "elf": "12ac8cb733fe6c5b53ef2de17e905308f79f0772f2d41784a58599c8c46a0964",
+  "synthetic_clock": true,
+  "cap": 186000000,
+  "filled": 102000000,
+  "cancelled_quote": 20000000,
+  "old_day_remaining": 20000000,
+  "new_day_remaining": 82000000,
+  "wrong_bucket_refund": true,
+  "new_bid": 104000000,
+  "actual_rolling_commitment": 206000000,
+  "charged_rolling_commitment": 186000000,
+  "filled_age_seconds": 2531520
+}
