@@ -23,7 +23,7 @@ yönetim dışı arzın ¼'ü ve dış alış derinliğinin %2'si. 60. yılda ka
 
 - Fiyat referansı yalnız dış alışlardan (Manifest v3.0.24), saatlik gözlemle; satış ≥ %95, rezervle alış ≤ %105.
 - Rezervle tüm alışlar 30 günde rezerv bakiyesinin en fazla %10'u; çöküş istisnası 24 saat kesintisiz kayıtlı sığlık ister.
-- Giderler: önce bağışlar, satış geliri %100, ötesi 30 günde 10 quote birimi + rezervin yılda %25'i; rezerv, kurulumda seçilen proje tabanının (en az 120) altına yalnız 10 birimlik teknik tabanla iner; 7 gün bekleme, yönetici veya kurtarma anahtarı iptal edebilir.
+- Giderler: önce bağışlar, satış geliri %100, ötesi 30 günde rezervin yılda %25'i ve proje tabanı (en az 120) korunur; sabit teknik gider için ayrı, korumalı hak: 30 günde 12 quote birimi (taban altına da inebilir); 7 gün bekleme, yönetici veya kurtarma anahtarı iptal edebilir.
 - Token meta verisi (ad, sembol, logo) genesis'ten önce bir kez yazılır; basım yetkisi genesis'te kaldırılır.
 
 ## Derleme ve doğrulama

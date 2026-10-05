@@ -5,8 +5,9 @@ Fresh local LiteSVM ledger, synthetic quote mint and keys; no public transaction
    be counted as revenue again.
 2. (Replaced by the owner's expense rule, 4 Oct 2026.) The reserve is drawn only when an approved expense is
    paid. Donations pay first; sale revenue is 100% spendable; beyond it, reserve spending over any rolling
-   30 days is limited to a fixed technical floor of 10 quote units plus 25%/12 of the reserve (25% a year),
-   and the reserve keeps 1,000 quote units except for spending within the fixed floor.
+   30 days is limited to 25%/12 of the reserve (25% a year) and keeps the project floor (1,000 here).
+   Owner decision 5 Oct 2026: the fixed technical cost (12 units per rolling 30 days) has its own allowance
+   that neither the floor nor other spending can block.
 """
 import json,struct
 import svm_fixture as t
@@ -26,9 +27,9 @@ private=t.token_account(q,t.outsider.pubkey())
 nonce=0
 def ops():return t.read(fee['operations'],'Operations')
 def accounts(n,destination):return {'expense':t.pda(b'expense',struct.pack('<Q',n)),'destination':destination,'proposer':t.admin.pubkey()}|fee
-def propose(destination,amount,label=None,reject=None):
+def propose(destination,amount,label=None,reject=None,fixed=False):
  global nonce
- a=accounts(nonce,destination);t.call('propose_expense',{'nonce':nonce,'amount':amount,'purpose':[nonce%250+1]*32},a,label=label,reject=reject)
+ a=accounts(nonce,destination);t.call('propose_expense',{'nonce':nonce,'amount':amount,'purpose':[nonce%250+1]*32,'fixed':fixed},a,label=label,reject=reject)
  if not reject:nonce+=1
  return a
 def pay_at(when,amount,label,reject=None):
@@ -58,46 +59,53 @@ t.clock(t.read(ok['expense'],'Expense')['readyAt'])
 t.call('execute_expense',acc=ok,label='external expense executes')
 t.check('external expense moves cash and spent_total together',t.amount(fee['fee_quote'])==cash-10_000 and ops()['spentTotal']==spent+10_000 and t.amount(private)==10_000)
 
-# Owner's expense rule.
-U=t.U;FIXED=10*U;KEEP=1000*U
+# Owner's expense rule (fixed technical cost: owner decision 5 Oct 2026, 12 units per 30 days, own allowance).
+U=t.U;FIXED=12*U;KEEP=1000*U
 res=lambda:t.amount(fee['sale_proceeds'])
 def mint_reserve(n):t.send('TEST quote to project reserve',[t.Instruction(t.TOKEN,b'\x07'+struct.pack('<Q',n),[t.meta(q,True),t.meta(fee['sale_proceeds'],True),t.meta(t.admin.pubkey(),False,True)])])
-def pay(amount,label,reject=None):
- a=propose(private,amount);t.clock(t.read(a['expense'],'Expense')['readyAt'])
+def pay(amount,label,reject=None,fixed=False):
+ a=propose(private,amount,fixed=fixed);t.clock(t.read(a['expense'],'Expense')['readyAt'])
  before=t.amount(private);t.call('execute_expense',acc=a,label=label,reject=reject)
  if reject:t.call('cancel_expense',acc=a)
  return t.amount(private)-before
 donated=t.amount(fee['fee_quote']);r0=res()
 t.check('donations paid first: an expense equal to the donation balance leaves the reserve untouched',pay(donated,'expense paid from donations')==donated and res()==r0 and t.amount(fee['fee_quote'])==0)
 mint_reserve(1005*U-res());t.check('reserve set to 1,005 quote units',res()==1005*U)
-pay(20*U,'20 units would leave the reserve below 1,000 beyond the fixed floor',reject='Collateral deficit')
-t.check('within the fixed floor the reserve may go below 1,000 (keeper keeps running)',pay(FIXED,'10-unit technical expense from the reserve')==FIXED and res()==995*U)
-pay(1,'beyond the fixed floor the 1,000-unit reserve minimum holds',reject='Collateral deficit')
+pay(20*U,'an ordinary 20-unit expense would leave the reserve below 1,000',reject='Collateral deficit')
+propose(private,FIXED+1,label='a fixed-cost proposal above 12 units is rejected',reject='Quota exceeded',fixed=True)
+t.check('the 12-unit fixed technical cost is paid even below the 1,000-unit floor (keeper keeps running)',pay(FIXED,'12-unit fixed technical cost from the reserve',fixed=True)==FIXED and res()==993*U)
+pay(1,'an ordinary expense still keeps the 1,000-unit reserve minimum',reject='Collateral deficit')
+pay(1,'a second fixed payment beyond 12 units within 30 days is rejected',reject='Quota exceeded',fixed=True)
 # Review A3: spending counted sale revenue must not take the reserve below 1,000 either. Revenue needs a market;
 # here it is injected into Config.revenue_total (its counting is covered by the policy and lifecycle tests).
 REV_OFF=8+32*3+8+32+5+2+8*3+32+2+8*3
 def set_revenue(n):
  acc=t.svm.get_account(t.defaults['config']);d=bytearray(acc.data);d[REV_OFF:REV_OFF+8]=n.to_bytes(8,'little')
  t.svm.set_account(t.defaults['config'],t._Account(acc.lamports,bytes(d),acc.owner,acc.executable,acc.rent_epoch))
-set_revenue(500*U);t.check('revenue injected at the Config.revenue_total offset',t.cfg()['revenueTotal']==500*U)
+t.clock(t.svm.get_clock().unix_timestamp+31*t.DAY)
+set_revenue(3*U);t.check('revenue injected at the Config.revenue_total offset',t.cfg()['revenueTotal']==3*U)
+t.check('with a little sale revenue and the reserve below the floor the fixed cost is still paid (old mixed-payment bug)',pay(10*U,'10-unit fixed cost: 3 from revenue, 7 from the reserve below the floor',fixed=True)==10*U and ops()['revenueSpent']==3*U and res()==983*U)
+set_revenue(503*U)
 mint_reserve(1300*U-res())
 pay(500*U,'500 of counted revenue would leave the reserve at 800: rejected (review A3)',reject='Collateral deficit')
 mint_reserve(200*U)
-t.check('the same revenue is paid once the reserve stays at 1,000',pay(500*U,'revenue expense leaving exactly 1,000')==500*U and res()==KEEP and ops()['revenueSpent']==500*U)
+t.check('the same revenue is paid once the reserve stays at 1,000',pay(500*U,'revenue expense leaving exactly 1,000')==500*U and res()==KEEP and ops()['revenueSpent']==503*U)
 T=t.svm.get_clock().unix_timestamp+31*t.DAY;t.clock(T-7*t.DAY)
 mint_reserve(100_000*U-res());t.clock(T)
-B=res();L=FIXED+B*25//1200
+B=res();L=B*25//1200
 n=next(k for k in range(1,1300) if t.boundary(k)>T+40*t.DAY)
 P=t.boundary(n)-2*t.DAY
-a=propose(private,L);a2=propose(private,1);t.clock(P);t.call('execute_expense',acc=a,label='fixed floor + 25%/12 of the reserve paid in one 30-day window')
+a=propose(private,L);a2=propose(private,1);af=propose(private,FIXED,fixed=True);t.clock(P);t.call('execute_expense',acc=a,label='25%/12 of the reserve paid in one 30-day window')
 t.check('reserve spending recorded in the rolling window',sum(ops()['outDays'])==L and res()==B-L)
+t.call('execute_expense',acc=af,label='the fixed technical cost is still paid when other spending has used its whole window')
+t.check('fixed cost counted in its own window',sum(ops()['fixDays'])==FIXED and sum(ops()['outDays'])==L)
 a=a2;t.clock(P+t.DAY);t.call('execute_expense',acc=a,reject='Quota exceeded',label='one atom more within 30 days rejected')
 t.clock(t.boundary(n)+t.DAY);t.call('execute_expense',acc=a,reject='Quota exceeded',label='a new calendar month does not reset the 30-day window')
 D0=P//t.DAY
 t.clock((D0+30)*t.DAY);t.call('execute_expense',acc=a,reject='Quota exceeded',label='29 days and some hours later the window still holds the payment (review A4)')
 t.clock((D0+31)*t.DAY);t.call('execute_expense',acc=a,label='after 30 full days the window has rolled')
-t.check('only the injected revenue was counted and it is fully spent',t.cfg()['revenueTotal']==500*U and ops()['revenueSpent']==500*U)
-L2=FIXED+res()*25//1200
+t.check('only the injected revenue was counted and it is fully spent',t.cfg()['revenueTotal']==503*U and ops()['revenueSpent']==503*U)
+L2=res()*25//1200
 a=propose(private,L2+1);t.clock(t.boundary(1199)+t.DAY);t.call('execute_expense',acc=a,reject='Quota exceeded',label='100 years on: the same limit applies')
 t.call('cancel_expense',acc=a);a=propose(private,L2);t.clock(t.boundary(1199)+t.DAY+7*t.DAY);t.call('execute_expense',acc=a,label='100 years on: payment within the limit')
 cfg=t.cfg()

@@ -97,8 +97,8 @@ t.send('TEST quote to donor',[t.Instruction(t.TOKEN,b'\x07'+struct.pack('<Q',50*
 t.call('contribute_quote',{'amount':50*t.U},fee|{'contributor':t.admin.pubkey(),'contributor_quote':donor})
 vendor=t.token_account(q,t.bob.pubkey())
 ex={'expense':t.pda(b'expense',struct.pack('<Q',0)),'destination':vendor,'proposer':t.admin.pubkey()}|fee
-t.call('propose_expense',{'nonce':0,'amount':20*t.U,'purpose':[7]*32},ex,label='administrator proposes a 20-unit expense to an outside vendor')
-attack_call('Mallory proposes an expense to herself','propose_expense',{'nonce':1,'amount':20*t.U,'purpose':[8]*32},fee|{'expense':t.pda(b'expense',struct.pack('<Q',1)),'destination':mq,'proposer':MAL.pubkey()})
+t.call('propose_expense',{'nonce':0,'amount':20*t.U,'purpose':[7]*32,'fixed':False},ex,label='administrator proposes a 20-unit expense to an outside vendor')
+attack_call('Mallory proposes an expense to herself','propose_expense',{'nonce':1,'amount':20*t.U,'purpose':[8]*32,'fixed':False},fee|{'expense':t.pda(b'expense',struct.pack('<Q',1)),'destination':mq,'proposer':MAL.pubkey()})
 attack_call('the expense is paid before its seven-day wait','execute_expense',acc=ex)
 now[0]+=7*86400+1;t.clock(now[0])
 attack_call("Mallory redirects the approved expense to her own account",'execute_expense',acc=ex|{'destination':mq})

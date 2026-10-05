@@ -67,12 +67,12 @@ elif mode=='closure':
  t.send('TEST quote to project reserve',[t.Instruction(t.TOKEN,b'\x07'+struct.pack('<Q',10_000*t.U),[t.meta(q,True),t.meta(fee['sale_proceeds'],True),t.meta(t.admin.pubkey(),False,True)])])
  c=t.cfg();o=t.read(fee['operations'],'Operations');rev=c['revenueTotal']-o['revenueSpent']
  t.check('720-month scenario sale revenue was counted (direct release sales, project asks, management profit)',rev>0)
- B=t.amount(fee['sale_proceeds']);MAX=t.amount(fee['fee_quote'])+rev+10*t.U+(B-rev)*25//1200
+ B=t.amount(fee['sale_proceeds']);MAX=t.amount(fee['fee_quote'])+rev+(B-rev)*25//1200
  dest=t.token_account(q,t.outsider.pubkey());n=o['nextNonce']
  e={'expense':t.pda(b'expense',struct.pack('<Q',n)),'destination':dest,'proposer':t.admin.pubkey()}|fee
- t.call('propose_expense',{'nonce':n,'amount':MAX,'purpose':[9]*32},e,label='expense proposal after closure: donations + all revenue + fixed floor + 25%/12 of the reserve')
+ t.call('propose_expense',{'nonce':n,'amount':MAX,'purpose':[9]*32,'fixed':False},e,label='expense proposal after closure: donations + all revenue + 25%/12 of the reserve')
  e2={'expense':t.pda(b'expense',struct.pack('<Q',n+1)),'destination':dest,'proposer':t.admin.pubkey()}|fee
- t.call('propose_expense',{'nonce':n+1,'amount':1,'purpose':[8]*32},e2,label='second proposal after closure')
+ t.call('propose_expense',{'nonce':n+1,'amount':1,'purpose':[8]*32,'fixed':False},e2,label='second proposal after closure')
  t.call('execute_expense',acc=e,reject='Invalid calendar window',label='seven-day delay still applies after closure')
  t.clock(t.read(e2['expense'],'Expense')['readyAt'])
  t.call('pause',{'paused':True});t.call('execute_expense',acc=e,reject='Invalid state',label='pause still halts expenses after closure');t.call('pause',{'paused':False})

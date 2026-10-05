@@ -14,7 +14,7 @@ t.removed('allocate_auction_proceeds','the reserve is not moved ahead of an expe
 private=t.token_account(q,t.admin.pubkey())
 def expense(nonce):return {'expense':t.pda(b'expense',struct.pack('<Q',nonce)),'destination':private,'proposer':t.admin.pubkey()}|fee
 
-e0=expense(0);t.call('propose_expense',{'nonce':0,'amount':10_000,'purpose':[1]*32},e0)
+e0=expense(0);t.call('propose_expense',{'nonce':0,'amount':10_000,'purpose':[1]*32,'fixed':True},e0)
 t.clock(t.read(e0['expense'],'Expense')['readyAt'])
 t.call('pause',{'paused':True})
 t.call('execute_expense',acc=e0,reject='Invalid state',label='paused program halts treasury outflow')
@@ -27,7 +27,7 @@ t.call('execute_expense',acc=e0,reject='Invalid calendar window',label='cancelle
 t.call('cancel_expense',acc=e0,reject='Invalid state',label='cancellation is not repeatable')
 t.check('cancelled proposal paid nothing',t.amount(private)==0)
 
-e1=expense(1);t.call('propose_expense',{'nonce':1,'amount':10_000,'purpose':[2]*32},e1)
+e1=expense(1);t.call('propose_expense',{'nonce':1,'amount':10_000,'purpose':[2]*32,'fixed':True},e1)
 t.call('execute_expense',acc=e1,reject='Invalid calendar window',label='seven-day delay still enforced')
 t.clock(t.read(e1['expense'],'Expense')['readyAt'])
 t.call('execute_expense',acc=e1,label='unpaused, uncancelled proposal executes after the delay')

@@ -20,11 +20,11 @@ Kısaca:
 - Kendi kendine işlem yasağı ve asgari alış büyüklüğü (bölüm 16): rezervle alış projenin kendi satışını alamaz, doğrudan release satışı rezerv alışı dururken yapılamaz, her rezerv alışı 30 günlük bütçenin en az 1/16'sı. Test ajanının bütün bulguları kapandı.
 - Codex son inceleme düzeltmeleri (bölüm 19): iptal iadesi emrin kendi gününe (F1); kendi kendine işlem yasağı emrin slot ömrünü de izler (F2) ve yönetim satışlarını kapsar (F3); genesis politika hesabını ister (F4); proje tabanı ancak ihale bitince seçilir (F5); keeper sığ piyasada gözlemi saatte bir planlar (F6). ELF 1.008.728 bayt (~7,02 SOL).
 - İhale cüzdan sınırı (bölüm 17): bir cüzdan en fazla 250.000 CHTA (teklifin %5'i) isteyebilir; satılmayan kısım proje envanterinde kalır.
-- Küçük başlangıç ayarları (bölüm 15): proje (rezerv) tabanı ihaleden sonra seçilir, en az 120 USDC (bir yıllık sabit teknik maliyet); fiyat ölçümünün asgari derinliği kodda en az 25 USDC (bölüm 20; önce 250, ondan önce 1.000).
+- Küçük başlangıç ayarları (bölüm 15): proje (rezerv) tabanı ihaleden sonra seçilir, en az 120 USDC; fiyat ölçümünün asgari derinliği kodda en az 25 USDC (bölüm 20; önce 250, ondan önce 1.000).
 - Bağımsız test ajanı ve temizlik (bölüm 14): rezerv tabanı gelir ödemelerinde de korunur, 30 günlük pencereler 31 gün dilimi, alıcı dönüşünü gösteren gözlem geri alınmaz, logo adresi alan adı kontrolü; kimlik, staking geçmişi, launch hesabı, 1/2 numaralı kasalar ve kullanılmayan alanlar silindi. ELF 995 KB (~6,93 SOL). Açık: kendi kendine satışla gelir aklama (A1/A2) ve yönetimin gözlemi durdurması (A8).
 - Token meta verisi (bölüm 13): `create_token_metadata` genesis'ten önce ad/sembol/logo adresini bir kez yazar; meta veri yoksa genesis çalışmaz. İsim seçildi: **Charta (CHTA)**; logo adresi site adresi kesinleşene kadar yer tutucu.
 - Küçültme (bölüm 12): ölü talimatlar silindi, zincir üstü IDL kapalı, `opt-level="z"`; ELF 1,42 MB → 1,04 MB (yükleme kirası ~9,9 → ~7,2 SOL).
-- Gider kuralı (bölüm 11): gider ödenirken rezervden tam tutar çekilir; satış geliri %100 harcanabilir; gelirin ötesinde 30 günde 10 birim sabit teknik taban + rezervin yılda %25'i; rezerv 1.000 birimin altına yalnız sabit taban için iner.
+- Gider kuralı (bölüm 11): gider ödenirken rezervden tam tutar çekilir; satış geliri %100 harcanabilir; gelirin ötesinde rezervin yılda %25'i (bölüm 21: sabit teknik gider ayrı ve korumalı, 30 günde 12 birim).
 - Grok bulguları (bölüm 10): referanssız satış tabanı son dış referansın %95'i (30 gün), alış sınırı düz %10 (pencere tabana eklenmez).
 - Manuel kimlik onayında canlılık şartı korunuyor (Codex bulgusu).
 - Sahibin kararı: ücretsiz başlangıç payı kaldırıldı; başlangıç tabanı 5M'nin tamamı açılış ihalesi ve piyasa ile satılır. Kimlik servisi arşivdir.
