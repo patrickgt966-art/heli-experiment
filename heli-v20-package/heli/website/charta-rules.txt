@@ -30,7 +30,7 @@ Afterward, sales and newly released liquidity inventory share at most 20% of mon
 and one quarter of actual releases outside the Management Treasury, checked against a 24-hour
 reference price built only from outside bids that rested at least an hour; the project's own orders never count.
 In each month, all Management Treasury releases together may not exceed 2% of outside bid depth: bids that rested at least an hour, priced no lower than 98% of the reference.
-A reference needs a minimum of outside bids at every hourly observation; the minimum is fixed at launch (at least 250 quote units).
+A reference needs a minimum of outside bids at every hourly observation; the minimum is fixed at launch (at least 25 quote units).
 Crash exception: if outside bids stay below that minimum for at least 24 hours, confirmed by observations no more than two hours apart, reserve-funded bids may still buy,
 at most at 95% of the last outside reference (or of the opening auction price if it is older than 30 days),
 within the shared bid cap below.

@@ -1,0 +1,294 @@
+✔ browser transfer preserves the existing application without exposing credentials in a request URL (3.5372ms)
+✔ malformed browser transfer does not substitute application credentials (0.685ms)
+✔ landing in a new browser restores the same authenticated application, clears the fragment and never creates another session (203.7925ms)
+✔ Refresh displays a declined result and a failed check visibly, then recovers without creating a new application (3.5021ms)
+✔ declining a foreign application link keeps the saved application unchanged (3.0327ms)
+✔ accepting a link only after seeing its wallet replaces the saved application (3.8144ms)
+✔ re-opening the link of the already saved application does not ask again (3.0958ms)
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✔ wallet proof binds application; wrong wallet and expired challenges rejected (11.1603ms)
+✔ accepted identity signs exact V20 on-chain message, without disclosing documents (4.8912ms)
+✔ same person keys across wallets and simultaneous result processing cannot earn twice (3.8501ms)
+✔ different-document national number dedupes; separate family identities are accepted (17.0913ms)
+✔ In Review never opens an entitlement (2.5264ms)
+✔ Declined never opens an entitlement (2.7091ms)
+✔ Expired never opens an entitlement (2.1392ms)
+✔ Kyc Expired never opens an entitlement (1.9511ms)
+✔ Unknown never opens an entitlement (2.6895ms)
+✔ missing checks, missing duplicate evidence, warnings, face matches and underage stay in review (0.7528ms)
+✔ session, vendor and workflow cannot be substituted (5.0009ms)
+✔ raw webhook HMAC verifies full payload, timestamp and rejects test/simple-only deliveries (1.7915ms)
+✔ webhook retries are idempotent and wrong application/environment are rejected (4.4572ms)
+✔ SQLite persists entitlements and enforces one service writer (33.2333ms)
+✔ provider session creation sends only internal ID and callback; untrusted URL rejected (1.9983ms)
+✔ V20 decoder rejects wrong discriminator and truncated program-owned accounts (82.5658ms)
+✔ HTTP demo rejects forged origin, early/repeated claim and serves safe status (183.3271ms)
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+✔ the identity provider link is withheld until explicit consent is recorded (100.9648ms)
+✔ a reopened application keeps its consent; consent is not needed again (16.4329ms)
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✔ old approval cannot overwrite a newer rejection or emit an attestation (101.5588ms)
+✔ a decision arriving between the fetch helper and the state write is also protected (21.711ms)
+✔ stale manual approval cannot install a manual override or audit entry (4.6536ms)
+✔ a new webhook decision invalidates an already pending attestation request (2.6433ms)
+✔ an older timestamp is rejected without changing status or revision (5.141ms)
+✔ equal timestamp cannot automatically reverse a rejection, but a genuinely newer approval can (8.0574ms)
+✔ rejection is accepted even when provider timestamps have equal precision (2.5728ms)
+✔ invalid timestamp never partially records an approval (1.9501ms)
+✔ after a rejected race, a fresh retry succeeds without creating another provider session (6.2573ms)
+✔ a fresh explicit manual review may resolve an equal-time review without bypassing document uniqueness (3.3659ms)
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+✔ one client exhausting its quota does not lock out other applicants (239.6845ms)
+✔ application creation is rate limited more strictly per client (27.7191ms)
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+✔ client spam cannot starve signed provider webhooks (188.4556ms)
+✔ the client IP header is ignored unless the tunnel deployment opts in (30.7808ms)
+✔ a missing static asset returns 404 and the service keeps running (6.9237ms)
+✔ provider sessions stop at the daily cost ceiling (13.0813ms)
+✔ expired unauthenticated challenges are pruned; verified applications are kept (11.1073ms)
+✔ only the configured site may read the public pilot status (5.0005ms)
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✔ webhook queue durably acknowledges before provider lookup, excludes identity data and retries (2.8506ms)
+{"event":"request_rejected","providerHttpStatus":null,"reason":"Request validation rejected"}
+✔ signed provider transport tests acknowledge without touching admission; forged tests fail (67.6161ms)
+✔ identity-only mode requires HTTPS and cannot attach a token delivery backend (0.767ms)
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✔ old-photo application stays in review until a recorded manual approval, which then persists (41.1057ms)
+✔ manual approval needs the Didit console approval, a written reason and a liveness check (4.312ms)
+✔ a duplicate-face signal is refused unless explicitly allowed (3.0891ms)
+✔ the same document on another application is never overridden (4.1009ms)
+✔ automatic evaluation is unchanged: any warning still means review (0.2318ms)
+✔ manual approval cannot bypass a failed or missing liveness check (5.7698ms)
+✔ liveness declined only for duplicate-face warnings passes only with the explicit duplicate flag (3.5821ms)
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✔ a verified applicant who lost the link reopens the same application with a wallet signature (16.7116ms)
+✔ without the wallet key nobody can reopen the application (5.9296ms)
+✔ a declined applicant can start a fresh attempt with the same wallet (4.6248ms)
+✔ the same person on a different wallet is still a duplicate (3.6818ms)
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✔ abandoned plans return their reservation once their blockhash can no longer land (177.9698ms)
+✔ a plan that could still land keeps its reservation (25.1544ms)
+✔ one application cannot keep re-preparing transactions all day (42.2103ms)
+✔ the daily cap still bounds concurrent live plans (41.4393ms)
+✔ a second writer is refused while the first is running (28.7656ms)
+✔ a lock left by a process that no longer exists is recovered, and data survives (138.2819ms)
+✔ a lock without a process ID is not removed automatically (2.9057ms)
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✔ no free allocation: a service-signed registration is refused by the real program in LiteSVM (258.7556ms)
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+✔ V20 observation reserve protects one epoch and two maintenance fees (57.4626ms)
+✔ calendar keeps January 31 anchor and time through leap years and 60 years (1.5649ms)
+✔ keeper recovers earliest month and does not skip missing periods (0.3595ms)
+✔ pause stops price observations but not V20 monthly unlocks (0.241ms)
+✔ the removed free allocation reconciliation is never planned (0.2239ms)
+✔ hourly observation never turns into a burst after an outage (0.2301ms)
+✔ 720 settled months close constitution once; closed state is idle (0.1687ms)
+✔ dry-run cannot sign or send a transaction (0.5092ms)
+✔ dry-run cannot resend a pending transaction left by execution mode (0.2315ms)
+✔ signature is durable before send and restart resends only identical bytes (0.6193ms)
+✔ RPC timeout leaves same pending signature without another budget reservation (0.3652ms)
+✔ confirmed chain error is recorded as failure and backoff applies (0.28ms)
+✔ expired unknown outcome does not issue a replacement transaction (0.3378ms)
+✔ expired allowlisted maintenance can recover after fresh code-pin check (0.2546ms)
+✔ expired transaction can reconcile from independently observed completed action (4.0937ms)
+✔ budget or insufficient balance never sends; concurrent engines cannot enter one step (0.4606ms)
+✔ failed preflight does not burn sponsor budget or send (0.2157ms)
+✔ price observations cannot consume the essential monthly maintenance reserve (0.3081ms)
+✔ code hash, upgrade authority and trailing code mutation fail closed (2.0481ms)
+✔ keeper cannot build a privileged sale, pause, expense or transfer instruction (5.0476ms)
+✔ real V20 IDL creates a one-signer monthly settlement and parses 256-level auction (10.6207ms)
+✔ after the 60-year close only price observations are planned (0.1615ms)
+✔ auction buyer claim is reserved before withdrawal; no double sale (1.5679ms)
+✔ an empty auction permits all 4m but never a second offer beyond the vault (0.2539ms)
+✔ wrong market and inconsistent auction accounting fail closed (0.237ms)
+✔ only unclaimed free entitlement stays reserved at month six (3.109ms)
+✔ uses only the exact announced HELI/quote market (1.5017ms)
+✔ reads both sides and the best prices (1.1159ms)
+✔ wallet setup and client creation use a public key, never a private key (0.3885ms)
+✔ buy and sell are routed to the exchange limit-order instructions (0.3331ms)
+✔ invalid orders cannot reach the exchange SDK (0.3916ms)
+✔ cancel and withdraw are exchange instructions (0.1948ms)
+✔ V20 monthly rent and 720 observations are included with no users (1.2709ms)
+✔ zero fee market volume does not create treasury income (0.2572ms)
+✔ unknown costs do not fabricate full coverage (0.1805ms)
+✔ quote reserve alone cannot pay network SOL fees (0.1483ms)
+✔ 1000 sponsored first applicants include rent and two transactions plus native provider signature (0.1581ms)
+✔ collected revenue and hypothetical fee potential stay separate (0.1404ms)
+✔ invalid currency and overflow inputs fail instead of reporting cheap operation (0.3803ms)
+✔ not-started and dry-run are never a running live service (0.4017ms)
+✔ stale heartbeat, stale balance, backlog, gap and depleted budget raise alerts (0.2548ms)
+✔ public monitor never exports keys, RPC credentials or raw signed transaction (0.4737ms)
+✔ read-only health endpoint fails closed with missing keeper and rejects non-local Host (64.8637ms)
+✔ atomic journal replacement preserves valid JSON and no temp copy (14.4141ms)
+✔ idle RPC polling drops to four minutes and wakes at the next price observation (0.46ms)
+✔ telemetry preserves last chain read time instead of masking an RPC outage (0.3245ms)
+✔ a balance read failure keeps its old timestamp and does not change transactions (0.2169ms)
+ℹ tests 113
+ℹ suites 0
+ℹ pass 113
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2007.6296

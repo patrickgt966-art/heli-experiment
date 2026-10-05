@@ -15,7 +15,7 @@ import json,struct
 import svm_fixture as t
 from bootstrap_v15 import bootstrap,epoch_accounts
 
-f=bootstrap(t,1_000_000,with_policy=True,min_depth=1000,reject_depth=249*t.U)
+f=bootstrap(t,1_000_000,with_policy=True,min_depth=1000,reject_depth=24*t.U)
 t.check('minimum depth of exactly 1,000 quote units accepted',t.read(t.defaults['policy'],'ReleasePolicy')['minimumQuoteDepth']==1000*t.U)
 
 t.check('90M genesis includes 70M market reserve and 15M management',t.cfg()['stocks']==[70_000_000*t.U,0,0,15_000_000*t.U] and t.supply()==90_000_000*t.U)

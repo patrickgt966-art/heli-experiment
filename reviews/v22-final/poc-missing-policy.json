@@ -1,0 +1,21 @@
+{
+  "mode": "missing-policy",
+  "source": "d6d1cf5bc354cfc31d788ced1ec9333367b3a79f5a2e420e8d02b26b26b21cfb",
+  "elf": "12ac8cb733fe6c5b53ef2de17e905308f79f0772f2d41784a58599c8c46a0964",
+  "genesis_without_policy": true,
+  "late_policy_rejected": true,
+  "supply": 90000000000000,
+  "idl_account_borsh_bytes": {
+    "OpeningAuction": 2143,
+    "OpeningBid": 52,
+    "ManagementBook": 297,
+    "ReleasePolicy": 450,
+    "Config": 282,
+    "Operations": 328,
+    "Expense": 130,
+    "Epoch": 52,
+    "Governance": 122
+  },
+  "instruction_names_match": true,
+  "instructions": 53
+}
