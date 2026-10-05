@@ -1,4 +1,6 @@
-# Charta V22 — durum özeti
+# Charta V22 — durum özeti (arşiv)
+
+> Güncel durum: `V23_DURUM.md`. Aşağıdaki hash'ler V22'nin ilk sürümüne aittir.
 
 Tarih: 4 Ekim 2026. V22 = Claude V21 + Codex kimlik karar sırası düzeltmesi (PR #1) + iki gider düzeltmesi + sahibin iki politika kararı. Program ve klasör adları uyumluluk için değişmedi. **Güvenlik denetimi değildir; hiçbir ağa dağıtılmadı.**
 

@@ -1,7 +1,7 @@
-# Charta programı (V22) — `heli_core_v20`
+# Charta programı (V23) — `heli_core_v20`
 
-Program ve klasör adı uyumluluk için "v20" olarak kaldı; içerik V22'dir. **Dağıtılmadı, bağımsız denetimden geçmedi.**
-Ayrıntılı karar ve test kaydı: `../../../reviews/v22/V22_DUZELTME_2026-10-04.md`. Kurulum: `DEPLOYMENT.md`.
+Program ve klasör adı uyumluluk için "v20" olarak kaldı; içerik V23'tür. **Dağıtılmadı, bağımsız denetimden geçmedi.**
+Ayrıntılı karar ve test kaydı: `../../../reviews/v23/V23_NOTLAR.md` ve `../../../reviews/v22/V22_DUZELTME_2026-10-04.md`. Devnet: `DEVNET.md`. Kurulum: `DEPLOYMENT.md`.
 
 ## Arz
 

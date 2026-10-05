@@ -1,0 +1,88 @@
+[
+  {
+    "script": "test_codex_final_svm",
+    "tail": "{\n  \"source_sha256\": \"17fb61bb6a5bc18cb2259b3a4ce6102258f073503ba0432d17d0ba7e0bb6a7de\",\n  \"binary_sha256\": \"ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43\",\n  \"checks_and_transactions\": 113,\n  \"all_passed\": true,\n  \"scope\": \"Compiled ELF and Manifest v3.0.24 ELF in local LiteSVM, synthetic quote/keys; Codex final review fixes F1-F5 only. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_redteam_svm",
+    "tail": "{\n  \"source_sha256\": \"17fb61bb6a5bc18cb2259b3a4ce6102258f073503ba0432d17d0ba7e0bb6a7de\",\n  \"binary_sha256\": \"ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43\",\n  \"attacks_blocked\": 61,\n  \"findings\": [],\n  \"spoof_reference\": [\n    1000000,\n    1391304\n  ],\n  \"checks_and_transactions\": 121,\n  \"all_passed\": true,\n  \"scope\": \"Compiled ELF and Manifest v3.0.24 ELF in local LiteSVM, synthetic quote/keys; red-team attacks by an outsider and a malicious administrator. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_redteam_outside_svm",
+    "tail": "{\n  \"source_sha256\": \"17fb61bb6a5bc18cb2259b3a4ce6102258f073503ba0432d17d0ba7e0bb6a7de\",\n  \"binary_sha256\": \"ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43\",\n  \"attacks_blocked\": 32,\n  \"findings\": [],\n  \"checks_and_transactions\": 158,\n  \"all_passed\": true,\n  \"scope\": \"Compiled ELF and Manifest v3.0.24 ELF in local LiteSVM, synthetic quote/keys; outside attackers only. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_crash_record_svm",
+    "tail": "{\n  \"source_sha256\": \"17fb61bb6a5bc18cb2259b3a4ce6102258f073503ba0432d17d0ba7e0bb6a7de\",\n  \"binary_sha256\": \"ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43\",\n  \"checks_and_transactions\": 84,\n  \"all_passed\": true,\n  \"scope\": \"Compiled ELF and Manifest v3.0.24 ELF in local LiteSVM, synthetic quote/keys; crash-record clearing (review A6) only. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_expense_controls_svm",
+    "tail": "{\n  \"source_sha256\": \"17fb61bb6a5bc18cb2259b3a4ce6102258f073503ba0432d17d0ba7e0bb6a7de\",\n  \"binary_sha256\": \"ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43\",\n  \"checks_and_transactions\": 43,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 ELF in local LiteSVM, synthetic quote/keys; expense pause/cancel controls only. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_expense_v22_svm",
+    "tail": "{\n  \"source_sha256\": \"17fb61bb6a5bc18cb2259b3a4ce6102258f073503ba0432d17d0ba7e0bb6a7de\",\n  \"binary_sha256\": \"ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43\",\n  \"checks_and_transactions\": 96,\n  \"all_passed\": true,\n  \"scope\": \"Compiled ELF in local LiteSVM, synthetic quote/keys; V22 expense destination fix and the owner revenue/reserve expense rule only. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_governance_svm",
+    "tail": "{\n  \"source_sha256\": \"17fb61bb6a5bc18cb2259b3a4ce6102258f073503ba0432d17d0ba7e0bb6a7de\",\n  \"binary_sha256\": \"ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43\",\n  \"checks_and_transactions\": 63,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 ELF in local LiteSVM, synthetic keys; admin/recovery/verifier governance only. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_market_measure_v22_svm",
+    "tail": "{\n  \"source_sha256\": \"17fb61bb6a5bc18cb2259b3a4ce6102258f073503ba0432d17d0ba7e0bb6a7de\",\n  \"binary_sha256\": \"ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43\",\n  \"checks_and_transactions\": 1997,\n  \"all_passed\": true,\n  \"scope\": \"Compiled ELF and Manifest v3.0.24 ELF in local LiteSVM, synthetic quote/keys; V22 market-measurement decisions only. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_market_release_svm",
+    "tail": "{\n  \"source_sha256\": \"17fb61bb6a5bc18cb2259b3a4ce6102258f073503ba0432d17d0ba7e0bb6a7de\",\n  \"binary_sha256\": \"ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43\",\n  \"checks_and_transactions\": 1634,\n  \"all_passed\": true,\n  \"calendar_months\": 720,\n  \"scope\": \"Real V20 and Manifest ELFs in local LiteSVM, synthetic quote/provider; not public deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_no_free_allocation_svm",
+    "tail": "{\n  \"source_sha256\": \"17fb61bb6a5bc18cb2259b3a4ce6102258f073503ba0432d17d0ba7e0bb6a7de\",\n  \"binary_sha256\": \"ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43\",\n  \"checks_and_transactions\": 77,\n  \"all_passed\": true,\n  \"scope\": \"Compiled ELF in local LiteSVM, synthetic keys; no-free-allocation launch only. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_observation_controls_svm",
+    "tail": "{\n  \"source_sha256\": \"17fb61bb6a5bc18cb2259b3a4ce6102258f073503ba0432d17d0ba7e0bb6a7de\",\n  \"binary_sha256\": \"ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43\",\n  \"checks_and_transactions\": 98,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 and Manifest ELFs in local LiteSVM, synthetic quote/keys; price-observation controls only. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_policy_closure_svm",
+    "tail": "{\n  \"mode\": \"closure\",\n  \"source_sha256\": \"17fb61bb6a5bc18cb2259b3a4ce6102258f073503ba0432d17d0ba7e0bb6a7de\",\n  \"binary_sha256\": \"ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43\",\n  \"checks_and_transactions\": 1688,\n  \"all_passed\": true,\n  \"post_closure_revenue_atoms\": 2000000,\n  \"post_closure_expense_atoms\": 232521833,\n  \"scope\": \"Compiled ELF in local LiteSVM, synthetic quote/keys; V22 owner-decision checks on top of the 720-month market scenario. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_policy_depth_svm",
+    "tail": "{\n  \"mode\": \"depth\",\n  \"source_sha256\": \"17fb61bb6a5bc18cb2259b3a4ce6102258f073503ba0432d17d0ba7e0bb6a7de\",\n  \"binary_sha256\": \"ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43\",\n  \"checks_and_transactions\": 223,\n  \"all_passed\": true,\n  \"depth_atoms\": 9984000000,\n  \"month_total_atoms\": 199680000,\n  \"band_month_total_atoms\": 299680000,\n  \"scope\": \"Compiled ELF in local LiteSVM, synthetic quote/keys; V22 owner-decision checks on top of the 720-month market scenario. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_price_bounds_svm",
+    "tail": "{\n  \"source_sha256\": \"17fb61bb6a5bc18cb2259b3a4ce6102258f073503ba0432d17d0ba7e0bb6a7de\",\n  \"binary_sha256\": \"ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43\",\n  \"checks_and_transactions\": 116,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 and Manifest ELFs in local LiteSVM, synthetic quote/keys; order price bounds and expiry only. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "test_setup_controls_svm",
+    "tail": "{\n  \"source_sha256\": \"17fb61bb6a5bc18cb2259b3a4ce6102258f073503ba0432d17d0ba7e0bb6a7de\",\n  \"binary_sha256\": \"ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43\",\n  \"checks_and_transactions\": 31,\n  \"all_passed\": true,\n  \"scope\": \"Compiled V20 ELF in local LiteSVM, synthetic keys; initialization access only. Not a deployment or audit.\"\n}\n"
+  },
+  {
+    "script": "keeper",
+    "tail": "{\"version\": \"v20\", \"all_passed\": true, \"months\": 720, \"jobs\": 1441, \"checks_and_transactions\": 4350, \"source_sha256\": \"17fb61bb6a5bc18cb2259b3a4ce6102258f073503ba0432d17d0ba7e0bb6a7de\", \"binary_sha256\": \"ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43\", \"scope\": \"Local LiteSVM; actual JS planner and adapter plus compiled V20 ELF; synthetic quote/identity, no public deployment\"}\n"
+  },
+  {
+    "script": "node --test (claim-service with archived IDL, keeper, operations, manifest-integration)",
+    "summary": [
+      "# tests 114",
+      "# pass 114",
+      "# fail 0"
+    ]
+  },
+  {
+    "script": "negative controls (mutant)",
+    "result": "A build without the SelfTrade checks and the minimum bid size: test_price_bounds_svm fails at the A1 check, test_market_measure_v22_svm at the A8 check, test_policy_v22_svm depth at the A2 check. Auction wallet cap: with the previous ELF (12ac8cb7) test_no_free_allocation_svm fails at \"one wallet cannot bid for more than 5% of the auction offer\". Codex final fixes: five mutant ELFs (each fix reverted alone) fail test_codex_final_svm at their own check (F1 cancel day, F2 slot window, F3 management ask, F4 genesis without policy, F5 fee vaults before the auction ends); the previous keeper planner fails the new F6 planner test. Depth code floor 25: the previous ELF (78c77fd9, floor 250) rejects the 25-unit policy in test_crash_record_svm. Fixed technical cost: a mutant ELF that applies the project floor to fixed payments, and one that shares the fixed window with other spending, each fail test_expense_v22_svm at their own check."
+  },
+  {
+    "script": "clean rebuild",
+    "binary_sha256": "ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43",
+    "elf_bytes": 1010656
+  },
+  {
+    "script": "test program",
+    "note": "Metaplex Token Metadata 1.14.0 (commit 353d01b) built locally for LiteSVM; not the mainnet binary",
+    "sha256": "03661ba5245d3183fffd1c692c217cd1fb9c20ee23c69afc169335841a86818f"
+  }
+]

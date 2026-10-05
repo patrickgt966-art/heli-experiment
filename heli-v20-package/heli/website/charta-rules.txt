@@ -47,13 +47,13 @@ The administrative pause has no time limit. The administrator or the offline rec
 Team trading commitment: the founder and team trade CHTA only from publicly declared wallets, never from undisclosed accounts.
 Team and any market-maker wallet addresses will be published before launch; the code cannot tell personal wallets apart.
 Released working CHTA, cancelled orders and bought CHTA never refill locked treasury stock or reset release quotas.
-The current V22 draft passes its local test suites using real program binaries in a local Solana simulator,
+The current V23 draft passes its local test suites using real program binaries in a local Solana simulator,
 including all 720 monthly periods, the opening auction, monthly unlocks, market trades and treasury controls,
 and builds reproducibly with a public toolchain. It has not been independently audited.
 It is not deployed, live trading, guaranteed liquidity or buybacks.
 
-The opening auction's minimum price and parameters will be announced.
-Buy and sell orders determine prices after opening. There is no per-buyer purchase limit.
+The opening auction's planned minimum price is 0.0002 USDC per CHTA (price steps of 0.00001); one wallet may bid for at most 250,000 CHTA.
+Buy and sell orders determine prices after opening.
 Unsold Charta is not cash revenue. No fixed price, guaranteed liquidity, buyback or guaranteed operating revenue.
 
 The Charta program was tested in a local Solana simulator.

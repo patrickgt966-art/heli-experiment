@@ -81,3 +81,5 @@ Yalnız yedi statik dosya yayımlandı; özel ayarlar veya başvuru bağlantıla
 Bu ortamdan pages.dev/apply.html isteği 20 saniyede zaman aşımına uğradı;
 Cloudflare yayını başarılı, dış sayfa erişimi bu kontrolde doğrulanamadı.
 Kalıcı kimlik sunucusu barındırması hâlâ gerekli; bu güncelleme coin dağıtımını açmaz.
+
+5 Ekim 2026 V23 depo kopyası: isim Charta (CHTA), ihale cüzdan sınırı 250.000 CHTA, planlanan ihale tabanı 0,0002 USDC, korumalı sabit gider (30 günde 12), kurallar dosyası `charta-rules.txt`. Yayındaki Cloudflare kopyası bu değişikliklerden önceki sürümdür; yeni yayın gerekir.
