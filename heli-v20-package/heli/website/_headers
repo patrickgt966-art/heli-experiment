@@ -1,3 +1,9 @@
+/token.json
+  Access-Control-Allow-Origin: *
+/logo-512.png
+  Access-Control-Allow-Origin: *
+/logo.svg
+  Access-Control-Allow-Origin: *
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer

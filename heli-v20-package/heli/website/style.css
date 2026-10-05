@@ -36,3 +36,6 @@ nav .nav-claim{color:var(--mint);font-weight:650}nav .nav-claim span{margin-left
 @media(max-width:900px){.auction-layout{grid-template-columns:1fr}.auction-page .claim-summary{grid-template-columns:1fr 1fr}}
 @media(max-width:420px){.auction-page .claim-summary{grid-template-columns:1fr}}
 .live-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;margin:0}.live-grid dd{overflow-wrap:anywhere}@media(max-width:760px){.live-grid{grid-template-columns:1fr}}
+.brand-logo{width:34px;height:34px;display:block;flex-shrink:0}@media(max-width:760px){.brand-logo{width:30px;height:30px}}
+.token-disc svg{transform:rotate(18deg)}
+.market-segment.full-segment{flex:1;width:auto;border-radius:8px}
