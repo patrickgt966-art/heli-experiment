@@ -8,6 +8,7 @@ const key=x=>new web3.PublicKey(x);
 function encode(type,value) {
  if(type==='publicKey')return key(value).toBuffer();
  if(type==='bool')return Buffer.from([Number(value)]);
+ if(type==='string'){const b=Buffer.from(String(value),'utf8');const n=Buffer.alloc(4);n.writeUInt32LE(b.length);return Buffer.concat([n,b]);}
  if(typeof type==='string'){const b=Buffer.alloc(Number(type.slice(1))/8);let n=BigInt(value);if(n<0)n=(1n<<BigInt(b.length*8))+n;for(let i=0;i<b.length;i++){b[i]=Number(n&255n);n>>=8n;}if(n!==0n)throw Error('Sayı taşması');return b;}
  if(type.array)return Buffer.concat(value.map(v=>encode(type.array[0],v)));
  throw Error('Desteklenmeyen kodlama');
