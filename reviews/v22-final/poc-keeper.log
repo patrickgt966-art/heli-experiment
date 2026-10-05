@@ -1,0 +1,12 @@
+{
+  "first": {
+    "name": "observe_release_market",
+    "key": "observe:500000"
+  },
+  "second": {
+    "name": "observe_release_market",
+    "key": "observe:500000"
+  },
+  "afterConfirmedDelayMs": 2000,
+  "note": "Successful shallow observations update shallow_seen, not mark_time. Planner continues scheduling before one hour has elapsed; confirmed transactions trigger another poll after two seconds."
+}
