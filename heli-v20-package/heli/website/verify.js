@@ -1,10 +1,11 @@
 // Verify page: reads the program, its program-data account, the CHTA mint, the vaults and the governance keys
 // straight from the chain and compares them with what the project publishes (site-config.js and the IDL).
 import * as D from './dashboard-core.js';
+import * as V from './verify-core.js';
 
 const web3 = window.solanaWeb3, cfg = window.CHARTA_CONFIG ?? {};
 const $ = id => document.getElementById(id);
-const LOADER = 'BPFLoaderUpgradeab1e11111111111111111111111', UNIT = 1_000_000n;
+const UNIT = 1_000_000n;
 const fmt = a => `${(Number(a) / 1e6).toLocaleString('en-US', { maximumFractionDigits: 6 })} CHTA`;
 const hex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
 const key = b => new web3.PublicKey(b).toBase58();
@@ -26,28 +27,23 @@ async function run() {
   const put = (n, s, t) => { results.push(s); mark(n, s, t); };
 
   // 1. Program account
-  if (!prog) { put('program', 'bad', `No account at ${program.toBase58()} on ${cfg.cluster}.`); return results; }
-  const upgradeable = prog.owner.toBase58() === LOADER;
-  put('program', prog.executable && upgradeable ? 'ok' : 'bad', `${program.toBase58()} is ${prog.executable ? 'executable' : 'not executable'}, owned by ${upgradeable ? 'the upgradeable BPF loader' : prog.owner.toBase58()}.`);
-
-  // 2-3. Program data: code hash and upgrade authority
-  const dataAddress = new web3.PublicKey(prog.data.slice(4, 36)), pd = await conn.getAccountInfo(dataAddress);
-  if (!pd) { put('code', 'bad', 'The program-data account is missing.'); put('upgrade', 'bad', '–'); }
+  const P = V.readProgram(prog && { ...prog, ownerBase58: prog.owner.toBase58() });
+  if (!P.ok) { put('program', 'bad', P.why); put('code', 'none', '–'); put('upgrade', 'none', '–'); }
   else {
-    const exp = cfg.expectedProgram, code = pd.data.slice(45);
-    let end = code.length; while (end > 0 && code[end - 1] === 0) end--;
-    const stripped = hex(await crypto.subtle.digest('SHA-256', code.slice(0, end)));
-    if (exp?.sha256 && exp?.length) {
-      const exact = hex(await crypto.subtle.digest('SHA-256', code.slice(0, exp.length)));
-      const tail = code.slice(exp.length).every(x => x === 0);
-      put('code', exact === exp.sha256 && tail ? 'ok' : 'bad', exact === exp.sha256 && tail
-        ? `The ${exp.length.toLocaleString('en-US')} bytes on chain hash to ${exact}, the published build.`
-        : `On-chain code hashes to ${exact} over the published length, expected ${exp.sha256}.`);
-    } else put('code', 'warn', `No build hash is published for this deployment yet. On-chain code (trailing zeros removed, as solana-verify does) hashes to ${stripped}.`);
-    const hasAuthority = pd.data[12] === 1;
-    put('upgrade', hasAuthority ? 'warn' : 'ok', hasAuthority
-      ? `An upgrade key still exists: ${key(pd.data.slice(13, 45))}. Whoever holds it can replace the program. The plan is to remove it after an independent audit.`
-      : 'The upgrade key has been removed: nobody can change the program any more.');
+    put('program', 'ok', `${program.toBase58()} is executable and owned by the upgradeable BPF loader.`);
+    // 2-3. Program data: code hash and upgrade authority
+    const pdInfo = await conn.getAccountInfo(new web3.PublicKey(P.programData));
+    const PD = V.readProgramData(pdInfo && { ...pdInfo, ownerBase58: pdInfo.owner.toBase58() });
+    if (!PD.ok) { put('code', 'bad', PD.why); put('upgrade', 'bad', PD.why); }
+    else {
+      const exp = cfg.expectedProgram, c = await V.checkCode(PD.code, exp, async b => hex(await crypto.subtle.digest('SHA-256', b)));
+      put('code', c.state, c.state === 'warn' ? `No build hash is published for this deployment yet. On-chain code (trailing zeros removed, as solana-verify does) hashes to ${c.stripped}.`
+        : c.state === 'ok' ? `The ${exp.length.toLocaleString('en-US')} bytes on chain hash to ${c.exact}, the published build, followed only by zero padding.`
+        : c.why ?? `On-chain code hashes to ${c.exact} over the published length${c.padded ? '' : ' and has non-zero bytes after it'}; expected ${exp.sha256}.`);
+      put('upgrade', PD.authority ? 'warn' : 'ok', PD.authority
+        ? `An upgrade key still exists: ${key(PD.authority)}. Whoever holds it can replace the program. The plan is to remove it after an independent audit.`
+        : 'The upgrade key has been removed: nobody can change the program any more.');
+    }
   }
 
   // 4-5. Mint
@@ -80,9 +76,8 @@ async function run() {
 async function go() {
   $('summary').textContent = 'Checking…'; $('summary').className = 'pill neutral';
   try {
-    const r = await run(), bad = r.filter(s => s === 'bad').length, warn = r.filter(s => s === 'warn').length;
-    $('summary').textContent = bad ? `${bad} mismatch${bad > 1 ? 'es' : ''}` : warn ? `Passed · ${warn} to note` : 'All passed';
-    $('summary').className = bad ? 'pill bad' : 'pill';
+    const r = V.summarize(await run());
+    $('summary').textContent = r.text; $('summary').className = r.cls;
     $('checked').textContent = `Checked ${new Date().toLocaleString()} on ${cfg.cluster}`;
   } catch (e) { $('summary').textContent = 'Could not read the chain'; $('checked').textContent = String(e?.message ?? e); }
 }

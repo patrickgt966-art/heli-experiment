@@ -21,7 +21,7 @@ const texts = {
   program: { kicker: 'HELD BY A PROGRAM', copy: 'Tokens held by another on-chain program, typically CHTA resting in sell orders on the order book.', rule: 'These tokens belong to the traders whose orders they back.' },
 };
 
-let links = [], linkCtx = null, linksAt = 0, mode = 'example', bubbles = [], total = H.TOTAL, nodes = [], selected = null, walletsOnly = false, partial = false, fresh = new Set(), frame = 0;
+let showAll = false, lastData = '', links = [], linkCtx = null, linksAt = 0, mode = 'example', bubbles = [], total = H.TOTAL, nodes = [], selected = null, walletsOnly = false, partial = false, fresh = new Set(), frame = 0;
 
 function el(name, attrs = {}, parent) { const e = document.createElementNS(NS, name); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); parent?.append(e); return e; }
 function hue(id) { let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h % 5; }
@@ -111,7 +111,10 @@ function renderList() {
   $('hs-largest').textContent = s.wallets ? pct(s.largest, total) : '–';
   $('holder-zoom').disabled = s.wallets === 0;
   $('hs-new').textContent = mode === 'live' && renderList.hadHistory ? `+${fresh.size}` : '–';
-  const top = bubbles.filter(b => b.kind === 'wallet').slice(0, 10);
+  const wallets = bubbles.filter(b => b.kind === 'wallet'), top = showAll ? wallets : wallets.slice(0, 10);
+  $('holder-all').hidden = wallets.length <= 10;
+  $('holder-all').textContent = showAll ? 'Show the top 10' : `Show all ${wallets.length} wallets`;
+  $('holder-list').classList.toggle('all', showAll);
   $('holder-list').replaceChildren(...top.map(b => {
     const li = document.createElement('li'), btn = document.createElement('button');
     btn.type = 'button'; btn.dataset.id = b.id; btn.setAttribute('aria-pressed', String(selected === b.id));
@@ -191,7 +194,9 @@ function show(accounts, known, animate) {
   const sum = bubbles.reduce((s, b) => s + b.amount, 0n);
   total = partial || sum === 0n ? H.TOTAL : sum;
   if (frame === 0) { walletsOnly = H.stats(bubbles).wallets >= 5; syncZoom(); }
-  remember(); renderList(); layout(animate); frame++;
+  // Re-pack only when holders or balances changed; an unchanged refresh just updates the time.
+  const data = bubbles.map(b => `${b.id}:${b.amount}`).join('|'), changed = data !== lastData; lastData = data;
+  remember(); renderList(); if (changed || animate) layout(animate); frame++;
   if (!selected || !bubbles.some(b => b.id === selected)) select((bubbles.find(b => b.kind === 'wallet') ?? bubbles[0])?.id);
   else select(selected);
 }
@@ -218,6 +223,7 @@ function startExample(reason) {
 }
 
 function syncZoom() { $('holder-zoom').textContent = walletsOnly ? 'Show project vaults' : 'Wallets only'; }
+$('holder-all').addEventListener('click', () => { showAll = !showAll; renderList(); });
 $('holder-zoom').addEventListener('click', () => { walletsOnly = !walletsOnly; syncZoom(); layout(true); });
 
 if (!cfg.programId) startExample('Example: the program is not deployed yet. These wallets are made up to show how the map will look; live holders replace them at launch.');
