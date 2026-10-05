@@ -1,5 +1,12 @@
 # Charta ilk web sitesi
 
+6 Ekim 2026 baloncuk haritası ve canlı arka plan:
+- "90 million" bölümü Bubblemaps tarzı sahip haritasına dönüştü (`holders.js`, `holders-core.js`). Her sahip bir baloncuk, alanı CHTA miktarıyla orantılı.
+- Veriler zincirden okunuyor ve 30 saniyede bir yenileniyor. Yeni alıcılar baloncuk olarak ekleniyor; son ziyaretten beri gelen cüzdanlar halkayla işaretleniyor.
+- Program yayınlanana kadar harita, açıkça "Example" etiketli uydurma cüzdanlarla bir önizleme gösteriyor.
+- `bg.js`: tüm sayfalarda canvas arka plan. Nane, Solana moru ve kum rengi ışık bulutları; fareyi izleyen noktalı ızgara; ızgara çizgilerinde kayan ışık izleri.
+- Hero madalyonundaki dikdörtgen hale kenarı kaldırıldı; madalyona para kenarı ve parlama eklendi.
+
 6 Ekim 2026 görsel kimlik güncellemesi:
 - Yazı tipleri: başlıklarda serif Fraunces, sayılarda ve etiketlerde IBM Plex Mono. İkisi de OFL lisanslı ve kendi sunucumuzda (`fonts/`, lisans metinleriyle). CSP değişmedi.
 - İkinci renk olarak sıcak kum tonu eklendi; arka planda kâğıt dokusu (`grain.svg`) var.
