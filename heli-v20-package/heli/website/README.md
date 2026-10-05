@@ -1,5 +1,16 @@
 # Charta ilk web sitesi
 
+6 Ekim 2026 doğrulama, güncellemeler ve transfer çizgileri:
+- `verify.html` / `verify.js`: tarayıcı zincirden şunları okuyup kontrol eder:
+  - program ve kodun hash'i (`site-config.js` içindeki `expectedProgram` ile karşılaştırılır);
+  - güncelleme anahtarı;
+  - mint ve dondurma yetkisi;
+  - toplam arz ≤ 90M;
+  - kasa bakiyeleri, yönetici/kurtarma anahtarı ve duraklatma.
+  - Yerel doğrulayıcıda gerçek programla denendi: kod hash'i ce1949d9… ile eşleşti.
+- `updates.html` ve `feed.xml` (RSS): tarihli değişiklik günlüğü.
+- Sahip haritasına transfer çizgileri eklendi: en büyük 30 cüzdanın son 15 işleminden, cüzdandan cüzdana doğrudan CHTA transferleri bulunuyor. Sonuç tarayıcıda 10 dakika önbellekte tutuluyor. Emir defteri üzerinden yapılan alım-satımlar çizgi oluşturmuyor.
+
 6 Ekim 2026 baloncuk haritası ve canlı arka plan:
 - "90 million" bölümü Bubblemaps tarzı sahip haritasına dönüştü (`holders.js`, `holders-core.js`). Her sahip bir baloncuk, alanı CHTA miktarıyla orantılı.
 - Veriler zincirden okunuyor ve 30 saniyede bir yenileniyor. Yeni alıcılar baloncuk olarak ekleniyor; son ziyaretten beri gelen cüzdanlar halkayla işaretleniyor.

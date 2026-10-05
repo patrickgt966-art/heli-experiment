@@ -27,3 +27,23 @@ test('the example is labelled, stays within the 5M launch base and the layout ha
  for(const set of [b,b.filter(x=>x.kind==='wallet')]){const n=H.settle(H.initialNodes(set,900,600),900,600);assert.equal(H.overlaps(n),0);
   for(const x of n){assert.ok(x.x>-200&&x.x<1100&&x.y>-200&&x.y<800);}}
 });
+test('transfer links: one sender to known wallets; trades, foreign mints, failures and strangers are ignored',()=>{
+ const bal=(i,owner,amount,mint='CHTA')=>({accountIndex:i,mint,owner,uiTokenAmount:{amount:String(amount)}});
+ const tx=(pre,post,err=null)=>({meta:{err,preTokenBalances:pre,postTokenBalances:post}});
+ const wallets=new Set(['alice','bob','carol','dave']);
+ const links=H.linksFromTransactions([
+  tx([bal(0,'alice',500),bal(1,'bob',0)],[bal(0,'alice',300),bal(1,'bob',200)]),        // alice -> bob 200
+  tx([bal(0,'bob',200)],[bal(0,'bob',100),bal(2,'alice',100)]),                         // bob -> alice 100 (new account)
+  tx([bal(0,'alice',300),bal(1,'carol',0),bal(2,'dave',0)],[bal(0,'alice',0),bal(1,'carol',100),bal(2,'dave',200)]), // one to two
+  tx([bal(0,'alice',10),bal(1,'vault',90)],[bal(0,'alice',20),bal(1,'vault',80)]),      // order book trade: vault is not a wallet
+  tx([bal(0,'alice',10,'USDC'),bal(1,'bob',0,'USDC')],[bal(0,'alice',0,'USDC'),bal(1,'bob',10,'USDC')]), // other mint
+  tx([bal(0,'alice',10),bal(1,'bob',0)],[bal(0,'alice',0),bal(1,'bob',10)],{InstructionError:[0,'x']}),  // failed
+ ],'CHTA',wallets);
+ const key=l=>`${l.a}-${l.b}:${l.amount}:${l.count}`;
+ assert.deepEqual(links.map(key).sort(),['alice-bob:300:2','alice-carol:100:1','alice-dave:200:1']);
+});
+test('example links form clusters and linked layouts stay overlap-free',()=>{
+ const b=H.groupHolders(H.exampleAccounts(),H.EXAMPLE_KNOWN),l=H.exampleLinks(b);
+ assert.ok(l.length>=6);const ids=new Set(b.map(x=>x.id));for(const x of l){assert.ok(ids.has(x.a)&&ids.has(x.b));assert.notEqual(x.a,x.b);}
+ assert.equal(H.overlaps(H.settle(H.initialNodes(b,900,600),900,600,l)),0);
+});
