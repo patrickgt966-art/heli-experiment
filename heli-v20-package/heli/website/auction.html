@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Charta opening auction: one open, uniform-price auction for the first 5 million CHTA, with live bids read directly from the chain.">
+  <meta name="theme-color" content="#080d12"><title>Opening auction · Charta</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css">
+  <script src="site-config.js" defer></script><script src="vendor/solana-web3.iife.min.js" defer></script><script type="module" src="auction.js"></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="site-header"><a class="brand" href="index.html#home" aria-label="Charta home"><span class="brand-icon" aria-hidden="true">C</span>Charta<span class="brand-sub">MONETARY EXPERIMENT</span></a><nav aria-label="Main navigation"><a href="index.html#home">About Charta</a><a href="index.html#transparency">Transparency</a><a href="live.html">Live data</a><a href="auction.html" aria-current="page">Auction</a></nav></header>
+<main id="content" class="page auction-page">
+  <section class="claim-page-heading">
+    <div>
+      <p class="eyebrow">OPENING AUCTION</p>
+      <h1>One open auction.<br><span>One price for everyone.</span></h1>
+      <p class="lede">Bid the highest price you are willing to pay. When the auction ends, everyone pays the same clearing price; the difference is refunded. All bids are public on the chain and shown here live.</p>
+    </div>
+    <div class="claim-amount-card" aria-live="polite">
+      <span id="phase-label">LOADING</span>
+      <strong id="est-price">–<small> USDC</small></strong>
+      <p id="est-note">Estimated clearing price if the auction ended now.</p>
+      <div class="auction-clock"><span>Bidding closes in</span><b id="countdown">–</b></div>
+    </div>
+  </section>
+  <section class="claim-summary" aria-label="Auction summary">
+    <div><span>Offered</span><strong>5,000,000 CHTA</strong></div>
+    <div><span>Total bids</span><strong id="sum-demand">–</strong></div>
+    <div><span>Bidding wallets</span><strong id="sum-wallets">–</strong></div>
+    <div><span>Minimum price</span><strong id="sum-floor">–</strong></div>
+    <div><span>Per wallet</span><strong>at most 250,000 CHTA</strong></div>
+    <div><span>Locked bid funds</span><strong id="sum-locked">–</strong></div>
+  </section>
+  <p id="not-live" class="note" hidden></p>
+
+  <div class="auction-layout">
+    <section class="panel" aria-labelledby="wallet-title">
+      <div class="section-heading"><h2 id="wallet-title">Your bid</h2><span class="pill neutral" id="wallet-pill">Not connected</span></div>
+      <button class="button primary" id="connect" type="button">Connect wallet</button>
+      <p class="small" id="wallet-hint">Phantom, Solflare or another Solana wallet. Each action is signed in your wallet; you pay the network fee (about 0.003–0.005 SOL the first time, for the bid account).</p>
+      <dl id="wallet-info" hidden>
+        <div><dt>Wallet</dt><dd id="w-address">–</dd></div>
+        <div><dt>USDC balance</dt><dd id="w-usdc">–</dd></div>
+        <div><dt>Your current bid</dt><dd id="w-bid">None</dd></div>
+        <div><dt>Estimated allocation now</dt><dd id="w-alloc">–</dd></div>
+      </dl>
+      <form id="bid-form" hidden>
+        <label for="qty">Amount (CHTA, at most 250,000)</label>
+        <input id="qty" type="number" min="1" max="250000" step="1" value="100000" inputmode="numeric" required>
+        <label for="price">Maximum price (USDC per CHTA)</label>
+        <input id="price" type="number" min="0" step="0.00001" inputmode="decimal" required>
+        <p class="small" id="bid-preview">–</p>
+        <button class="button primary" id="place" type="submit">Place bid</button>
+      </form>
+      <div class="auction-actions">
+        <button class="button secondary" id="cancel" type="button" hidden>Cancel my bid</button>
+        <button class="button primary" id="claim" type="button" hidden>Claim my CHTA</button>
+      </div>
+      <p class="note" id="tx-status" role="status" hidden></p>
+    </section>
+
+    <section class="panel" aria-labelledby="demand-title">
+      <div class="section-heading"><h2 id="demand-title">Live demand</h2><span class="pill" id="live-pill">Live</span></div>
+      <p class="small">Each row is a price level with bids. "From the top" adds up all bids at that price or higher; the clearing price is the highest level where that reaches 5,000,000 CHTA (otherwise everyone pays the minimum price).</p>
+      <div class="table-scroll"><table id="demand-table"><thead><tr><th scope="col">Price (USDC)</th><th scope="col">Bids (CHTA)</th><th scope="col">From the top</th></tr></thead><tbody><tr><td colspan="3">–</td></tr></tbody></table></div>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="bids-title">
+    <div class="section-heading"><h2 id="bids-title">All bids</h2><span class="small" id="updated">–</span></div>
+    <div class="table-scroll"><table id="bids-table"><thead><tr><th scope="col">Wallet</th><th scope="col">Amount (CHTA)</th><th scope="col">Max price (USDC)</th><th scope="col">Status</th></tr></thead><tbody><tr><td colspan="4">–</td></tr></tbody></table></div>
+  </section>
+
+  <section class="faq">
+    <h2>How the auction works</h2>
+    <details open><summary>Who pays what?</summary><p>Bids are sorted from the highest price down. The clearing price is the highest price level at which bids from that level up add up to 5,000,000 CHTA. Everyone who bid at or above it pays that same price; bids exactly at the clearing level share the remainder pro rata; lower bids get nothing and are fully refunded. If fewer than 5,000,000 CHTA are bid in total, everyone pays the minimum price and the unsold part stays in the project inventory under the market sale floor.</p></details>
+    <details><summary>Why can't I change my bid at the very end?</summary><p>New bids and cancellations stop 5 minutes before the end, so nobody can move the price in the last seconds.</p></details>
+    <details><summary>Can one person buy everything?</summary><p>One wallet may bid for at most 250,000 CHTA (5% of the offer). The code cannot tell people apart, so this is a limit per wallet, made visible here.</p></details>
+    <details><summary>What do I need?</summary><p>A Solana wallet with USDC for the bid (amount × your maximum price is locked until the end) and a little SOL for fees. After the auction is finalized, claim your CHTA here; the unused part of your locked USDC comes back in the same step.</p></details>
+  </section>
+</main>
+<footer><div><a class="brand" href="index.html#home"><span class="brand-icon" aria-hidden="true">C</span>Charta</a><p>A monetary experiment on Solana.<br>Not audited. Prices can fall; nothing here is a promise of returns.</p></div><div class="footer-links"><a href="index.html#home">About Charta</a><a href="live.html">Live data</a><a href="charta-rules.txt">Experiment rules ↓</a><a href="https://github.com/patrickgt966-art/heli-experiment" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div></footer>
+</body>
+</html>
