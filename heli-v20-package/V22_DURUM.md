@@ -1,4 +1,6 @@
-# Charta V22 — durum özeti
+# Charta V22 — durum özeti (arşiv)
+
+> Güncel durum: `V23_DURUM.md`. Aşağıdaki hash'ler V22'nin ilk sürümüne aittir.
 
 Tarih: 4 Ekim 2026. V22 = Claude V21 + Codex kimlik karar sırası düzeltmesi (PR #1) + iki gider düzeltmesi + sahibin iki politika kararı. Program ve klasör adları uyumluluk için değişmedi. **Güvenlik denetimi değildir; hiçbir ağa dağıtılmadı.**
 
@@ -18,6 +20,7 @@ Kısaca:
 - Bağımsız inceleme düzeltmeleri (bölüm 8): toz emir koruması (192 düğüm), %2 sınırı referansın %98'ine kadar tüm dış alışlar, kapanıştan sonra gözlem sürer, doğrudan satış taze emirleri saymaz. Açık: M4 (Manifest bağımlılığı, ~49. yıl slot alanı), L3.
 - Sahibin kararları (bölüm 9): tüm rezerv alışları (normal + çöküş) kayan 30 günde rezervin %10'u ile sınırlı; iptal edilen alışın dolmamış kısmı geri verilir; rezerv tabanı (`quote_floor`) en az 1.000; çöküş kaydı en fazla 2 saat arayla kesintisiz teyit ister. Tartışılacak: gider tavanına üst sınır.
 - Kendi kendine işlem yasağı ve asgari alış büyüklüğü (bölüm 16): rezervle alış projenin kendi satışını alamaz, doğrudan release satışı rezerv alışı dururken yapılamaz, her rezerv alışı 30 günlük bütçenin en az 1/16'sı. Test ajanının bütün bulguları kapandı.
+- Devnet hazırlığı (5 Ekim 2026): `DEVNET.md` rehberi, salt okunur hazırlık kontrolü (Manifest/Metaplex varlığı ve sürümü, SOL, test USDC) ve kaldığı yerden devam eden kurulum betiği; ihale öncesi 15 adım Agave 4.0 yerel validator'da gerçek Manifest/Metaplex ile başarılı. Test edilen Manifest ikilisi SBPF v3 (Agave ≥ 4.0 gerekir).
 - Codex son inceleme düzeltmeleri (bölüm 19): iptal iadesi emrin kendi gününe (F1); kendi kendine işlem yasağı emrin slot ömrünü de izler (F2) ve yönetim satışlarını kapsar (F3); genesis politika hesabını ister (F4); proje tabanı ancak ihale bitince seçilir (F5); keeper sığ piyasada gözlemi saatte bir planlar (F6). ELF 1.008.728 bayt (~7,02 SOL).
 - İhale cüzdan sınırı (bölüm 17): bir cüzdan en fazla 250.000 CHTA (teklifin %5'i) isteyebilir; satılmayan kısım proje envanterinde kalır.
 - Küçük başlangıç ayarları (bölüm 15): proje (rezerv) tabanı ihaleden sonra seçilir, en az 120 USDC; fiyat ölçümünün asgari derinliği kodda en az 25 USDC (bölüm 20; önce 250, ondan önce 1.000).

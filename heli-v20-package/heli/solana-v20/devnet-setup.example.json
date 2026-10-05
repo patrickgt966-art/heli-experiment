@@ -1,0 +1,17 @@
+{
+ "rpcUrl": "https://api.devnet.solana.com",
+ "program": "HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv",
+ "adminKeyFile": "/path/outside/the/repo/devnet-admin.json",
+ "recovery": "DEVNET_RECOVERY_PUBLIC_KEY",
+ "quoteMint": "DEVNET_TEST_USDC_MINT (6 decimals)",
+ "start": 0,
+ "minimumQuoteDepth": 25000000,
+ "metadata": {"name": "Charta", "symbol": "CHTA", "uri": "https://heli-experiment.pages.dev/token.json"},
+ "auction": {"floor": 200, "tick": 10},
+ "marketKeyFile": "/path/outside/the/repo/devnet-manifest-market.json",
+ "marketRentLamports": 10000000,
+ "feeVaults": {"monthlyCap": 1000000000, "reserve": 0, "projectFloor": 120000000},
+ "releaseSeatRentLamports": 10000000,
+ "managementRentLamports": 10000000,
+ "keeperConfigOut": "/path/outside/the/repo/keeper.devnet.json"
+}

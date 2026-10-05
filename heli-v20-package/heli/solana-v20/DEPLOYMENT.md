@@ -24,6 +24,8 @@ Bilinen sınır: Yönetici anahtarını çalan kişi sizden önce davranıp yön
 
 ## Kurulum sırası
 
+Devnet denemesi için adım adım rehber ve betikler: `DEVNET.md` (`scripts/devnet_readiness.mjs`, `scripts/devnet_setup.mjs`).
+
 `initialize` yalnız programın upgrade yetkilisi imzalarsa çalışır (H1). Bu imzacı yönetici olur. Bu yüzden program, **yönetici anahtarı upgrade yetkilisi olacak şekilde** yüklenir.
 
 1. `solana program deploy` — upgrade yetkisi: yönetici anahtarı.

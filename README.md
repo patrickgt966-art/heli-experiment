@@ -6,7 +6,7 @@ Charta is an experimental token design exploring a rule-based alternative moneta
 
 Website: https://heli-experiment.pages.dev · Full rules: [`heli-v20-package/heli/website/charta-rules.txt`](heli-v20-package/heli/website/charta-rules.txt)
 
-## Rules (V22 design)
+## Rules (V23 design)
 
 **Supply**
 - Initial mint: 100 million CHTA. Initial burn: 10 million. Maximum remaining supply: 90 million.
@@ -34,20 +34,21 @@ Website: https://heli-experiment.pages.dev · Full rules: [`heli-v20-package/hel
 
 A project reserve is not a guaranteed redemption backing. Charta makes no claim of guaranteed price, returns or liquidity.
 
-## Status — 4 October 2026
+## Status — 5 October 2026
 
 | Area | Status |
 |---|---|
-| Program (V22) | Built reproducibly (Agave 2.1.21); 1.00 MB. ELF SHA-256 `12ac8cb733fe6c5b53ef2de17e905308f79f0772f2d41784a58599c8c46a0964`. |
-| Local tests | All 720 monthly periods and treasury, price, governance, expense and entitlement controls pass in a local Solana simulator (LiteSVM) with the real program and Manifest binaries; Node suite 113/113. Counts are overlapping local checks, not an audit. |
+| Program (V23) | Built reproducibly (Agave 2.1.21); 1.01 MB (upload rent ~7.04 SOL). ELF SHA-256 `ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43`. |
+| Local tests | All 720 monthly periods and treasury, price, governance, expense and entitlement controls pass in a local Solana simulator (LiteSVM) with the real program and Manifest binaries; two red-team runs (61 attacks incl. a malicious administrator, 32 outside-only attacks) were all blocked; Node suite 114/114. Counts are overlapping local checks, not an audit. |
+| Devnet | Not deployed. Setup runner, read-only readiness check and guide are ready (`heli-v20-package/heli/solana-v20/DEVNET.md`); the pre-auction setup was rehearsed on a local Agave 4.0 validator with the real Manifest and Metaplex binaries. |
 | Free allocation | Removed by owner decision (4 October 2026). The earlier identity-verified free allocation and its live pilot tests are archived in `reviews/`; the program rejects those instructions. |
-| Website | Published on Cloudflare Pages with the V22 rules. |
+| Website | The repository copy is current (Charta name, V23 rules). The published Cloudflare Pages copy predates the rename and needs a new deploy. |
 
-Details: [`heli-v20-package/V22_DURUM.md`](heli-v20-package/V22_DURUM.md), [`reviews/v22/V22_DUZELTME_2026-10-04.md`](reviews/v22/V22_DUZELTME_2026-10-04.md), [`reviews/KIMLIK_CANLI_TEST_LISTESI.md`](reviews/KIMLIK_CANLI_TEST_LISTESI.md).
+Details: [`heli-v20-package/V23_DURUM.md`](heli-v20-package/V23_DURUM.md), [`reviews/v23/V23_NOTLAR.md`](reviews/v23/V23_NOTLAR.md), [`reviews/v22/V22_DUZELTME_2026-10-04.md`](reviews/v22/V22_DUZELTME_2026-10-04.md), [`reviews/KIMLIK_CANLI_TEST_LISTESI.md`](reviews/KIMLIK_CANLI_TEST_LISTESI.md).
 
 ## Remaining work
 
-- Devnet deployment with a real Manifest market and the keeper, then continuous-operation tests.
+- Devnet deployment with a real Manifest market and the keeper (scripts ready; needs the program key, Devnet keys, ~14 test SOL and a test USDC mint), then continuous-operation tests.
 - Verifiable build (`solana-verify`) and an independent security audit before any mainnet decision.
 - Permanent hosting and own domain for the website.
 - Legal and privacy review for the chosen jurisdiction.
@@ -56,4 +57,4 @@ No wallet secrets or personal data are included in this repository.
 
 ## Türkçe
 
-Charta (CHTA), Solana üzerinde kurallı para arzını araştıran bir deneydir (çalışma adı HELI idi; kod içindeki adlar değişmedi). Ücretsiz dağıtım yoktur; 5 milyon CHTA açılış ihalesi ve piyasa yoluyla satılır. İhalede bir cüzdan en fazla 250.000 CHTA (teklifin %5'i) isteyebilir. Güncel tasarım V22'dir: yerel Solana simülatör testlerinden geçti (eski kimlik pilotu arşivdedir). Devnet veya ana ağda yayınlanmış değildir ve bağımsız güvenlik denetiminden geçmemiştir. Ayrıntılı durum: `heli-v20-package/V22_DURUM.md`.
+Charta (CHTA), Solana üzerinde kurallı para arzını araştıran bir deneydir (çalışma adı HELI idi; kod içindeki adlar değişmedi). Ücretsiz dağıtım yoktur; 5 milyon CHTA açılış ihalesi ve piyasa yoluyla satılır. İhalede bir cüzdan en fazla 250.000 CHTA (teklifin %5'i) isteyebilir. Güncel tasarım V23'dir: yerel Solana simülatör testlerinden geçti (eski kimlik pilotu arşivdedir). Devnet veya ana ağda yayınlanmış değildir ve bağımsız güvenlik denetiminden geçmemiştir. Ayrıntılı durum: `heli-v20-package/V22_DURUM.md`.
