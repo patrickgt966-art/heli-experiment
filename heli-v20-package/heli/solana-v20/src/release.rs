@@ -228,6 +228,9 @@ pub(crate) fn price_frac(mantissa:u32,exponent:i8)->(u128,u128){
 /// bid may rest, project asks must be priced above it and release sales (market sells) are refused, and while
 /// a project ask may rest, management bids must be priced below it.
 pub(crate) const SELF_TRADE_WINDOW:i64=2*86_400;
+/// Review F2: a project order stays matchable until its Manifest expiry slot, which can outlive the time
+/// window when slots slow down or the chain halts, so the self-trade guard holds while either window is open.
+pub(crate) fn within(t:i64,until:i64,slot:u64,until_slot:u64)->bool{t<until||slot<=until_slot}
 pub(crate) fn check_order_price(mantissa:u32,exponent:i8,is_bid:bool,bounds:(u64,Option<u64>))->Result<()>{
  let e=exponent as i32+6;
  let(num,den)=if e>=0 {(mantissa as u128*10u128.pow(e as u32),1u128)}else{(mantissa as u128,10u128.pow((-e) as u32))};
@@ -272,7 +275,7 @@ pub fn execute(mut ctx:Context<ExecuteReleaseSale>,kind:u8,amount:u64)->Result<(
  require!(kind==3,ErrorCode::LiquidityDisabled);
  let a=&mut ctx.accounts;let now=Clock::get()?;let c=&a.config;let e=&a.epoch;
  require!(c.live&&!c.closed&&!c.paused&&c.manifest_bound&&e.settled&&e.number<720&&e.number==c.last_settled_epoch&&now.unix_timestamp>=boundary(c.start,e.number)&&now.unix_timestamp<boundary(c.start,e.number+1)&&amount>0,ErrorCode::Time);
- require!(now.unix_timestamp>=c.mgmt_bid_until,ErrorCode::SelfTrade);
+ require!(!within(now.unix_timestamp,c.mgmt_bid_until,now.slot,c.mgmt_bid_slot),ErrorCode::SelfTrade);
  require!(now.unix_timestamp>=boundary(c.start,12),ErrorCode::Time);let left=e.founder_budget.checked_sub(e.founder).ok_or(ErrorCode::Quota)?;
  require!(amount<=left&&amount<=c.stocks[kind as usize]&&a.source.amount>=c.stocks[kind as usize],ErrorCode::Quota);
  {let dest=Pubkey::find_program_address(&[b"auction-proceeds"],&crate::ID).0;require!(a.destination.key()==dest&&a.destination.owner==c.key(),ErrorCode::Market);let allowance=(e.human_budget as u128)/4;require!(e.founder as u128+amount as u128<=allowance,ErrorCode::Quota);}

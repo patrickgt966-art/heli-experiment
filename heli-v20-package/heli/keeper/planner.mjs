@@ -19,8 +19,10 @@ export function plan(s){
  }
  if(c.manifest_bound&&!c.paused&&s.policy){
   // The program arms on the first call and samples hourly after its mark (only bids that rested since then count).
-  const mark=Number(s.policy.mark_time);
-  if(mark===0||now-mark>=3600)return {name:'observe_release_market',key:'observe:'+Math.floor(now/3600)};
+  // Review F6: a shallow-market confirmation succeeds without moving the mark, so it also waits an hour
+  // (well inside the program's two-hour continuity rule) instead of being planned again at once.
+  const mark=Number(s.policy.mark_time),seen=Number(s.policy.shallow_seen||0);
+  if((mark===0||now-mark>=3600)&&now-seen>=3600)return {name:'observe_release_market',key:'observe:'+Math.floor(now/3600)};
  }
  return null;
 }

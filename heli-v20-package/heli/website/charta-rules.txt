@@ -1,13 +1,14 @@
-HELI — experiment rules and status
+Charta — experiment rules and status
 October 4, 2026. Design summary; not a live sale or investment commitment.
 
-Initial mint: 100 million HELI. Initial burn: 10 million. Maximum remaining supply: 90 million.
+Initial mint: 100 million CHTA. Initial burn: 10 million. Maximum remaining supply: 90 million.
 Initial release base: 5 million, all sold through the opening auction and the market.
+Opening auction: one bid per wallet, at most 250,000 CHTA (5% of the offer). Unsold CHTA stays in the project inventory under the sale floor.
 There is no free allocation, presale or private round. Unsold launch inventory waits for buyers; it is not burned.
 Purpose: money that follows a published rule (in the spirit of Friedman's k-percent rule), with limits on the people in charge.
 The monthly cap is a ceiling, not a target: released tokens enter circulation only when someone buys them.
 
-Locked allocations: Monthly Market Release Reserve 70 million and HELI Management Treasury 15 million.
+Locked allocations: Monthly Market Release Reserve 70 million and Charta Management Treasury 15 million.
 The Management Treasury combines the former founder 5M, market-support 5M and staking 5M allocations.
 Staking is cancelled and has no allocation or new deposits/rewards. There is no separate liquidity release budget.
 Shared monthly release cap: approximately 0.402247% of the supply already released and not burned.
@@ -16,15 +17,15 @@ About 4.9% a year is an upper bound, not a forecast. Unsold released inventory s
 No tokens are given away. There is no monthly free dividend.
 The 70 million reserve supplies sale inventory after the first month closes and at subsequent monthly boundaries.
 The rate applies to released, unburned supply, initially 5 million, not to the 70 million reserve balance.
-The first monthly cap is 20,112.368685 HELI. Management, once unlocked, shares this same total cap.
+The first monthly cap is 20,112.368685 CHTA. Management, once unlocked, shares this same total cap.
 The unlocked part moves to the fixed project market inventory. Matching funded orders are needed for a sale.
 Unsold released tokens wait for buyers and are not burned monthly. Cancelling an order does not re-lock stock.
 Monthly settlement requires a transaction; anyone can trigger the fixed amount and destination.
 An administrative pause halts sales, treasury operations and expenses, but never the monthly release rule.
 Delayed periods are settled in order. Unused management permissions expire.
 At the 60-year close, only still-locked stock follows the existing final burn rule; unsold released inventory is protected.
-After the 60-year close no new HELI is released and management orders end; sale revenue can still pay expenses under the same limits and seven-day wait. Price observations continue after the close.
-New Management Treasury HELI releases are locked for the first 12 months.
+After the 60-year close no new Charta is released and management orders end; sale revenue can still pay expenses under the same limits and seven-day wait. Price observations continue after the close.
+New Management Treasury CHTA releases are locked for the first 12 months.
 Afterward, sales and newly released liquidity inventory share at most 20% of monthly capacity
 and one quarter of actual releases outside the Management Treasury, checked against a 24-hour
 reference price built only from outside bids that rested at least an hour; the project's own orders never count.
@@ -34,18 +35,18 @@ Crash exception: if outside bids stay below that minimum for at least 24 hours, 
 at most at 95% of the last outside reference (or of the opening auction price if it is older than 30 days),
 within the shared bid cap below.
 The single manager can direct funded limit buy/sell orders, cancel orders and return assets to project accounts.
-Sales: at least 95% of the reference price. Without a live reference: at least 95% of the last outside reference if it is at most 30 days old, otherwise the opening auction price.
+Sales: at least 95% of the reference price. Without a live reference: at least the larger of the opening auction price and 95% of the last outside reference if it is at most 30 days old.
 Reserve-funded bids: at most 105% of the reference price; without a reference, only under the crash exception above. Orders expire after about 24 hours.
-All reserve-funded bids together, normal and crash, may not exceed 10% of the project quote reserve over any rolling 30 days; cancelling an unfilled bid gives its share back. The project's own orders never trade with each other: while a reserve-funded bid may still rest (two days), project asks must be priced above it and direct release sales pause, and reserve-funded bids must be priced below any resting project ask. Each reserve-funded bid is at least 1/16 of the 30-day bid budget.
+All reserve-funded bids together, normal and crash, may not exceed 10% of the project quote reserve over any rolling 30 days; cancelling an unfilled bid gives its share back. The project's own orders never trade with each other: while a reserve-funded bid may still rest (two days, and until its expiry slot on the market), project and management asks must be priced above it and direct release sales pause, and reserve-funded bids must be priced below any resting project or management ask. Each reserve-funded bid is at least 1/16 of the 30-day bid budget.
 A project floor, fixed after the opening auction and at least one year of the fixed technical cost (120 quote units), can never be moved to market orders.
 Sale revenue returns to the project reserve. Bid liquidity needs actual quote funds.
 Expenses are paid straight from the project reserve when an approved expense is paid, never moved ahead of time. Sale revenue is 100% spendable; beyond it, reserve spending over any rolling 30 days is limited to a fixed technical floor of 10 quote units plus 25% a year of the reserve (25%/12 per 30 days), and the reserve keeps the project floor except for spending within that technical floor. Expenses wait seven days, can be cancelled by the administrator or the offline recovery key and can never be paid back into project accounts.
 An offline recovery key can replace a lost administrator key after a seven-day window.
 Who can still change things today: until the audit and upgrade-key removal, the program can be upgraded. The administrator and the manager may be the same key.
 The administrative pause has no time limit. The administrator or the offline recovery key can cancel a pending expense.
-Team trading commitment: the founder and team trade HELI only from publicly declared wallets, never from undisclosed accounts.
+Team trading commitment: the founder and team trade CHTA only from publicly declared wallets, never from undisclosed accounts.
 Team and any market-maker wallet addresses will be published before launch; the code cannot tell personal wallets apart.
-Released working HELI, cancelled orders and bought HELI never refill locked treasury stock or reset release quotas.
+Released working CHTA, cancelled orders and bought CHTA never refill locked treasury stock or reset release quotas.
 The current V22 draft passes its local test suites using real program binaries in a local Solana simulator,
 including all 720 monthly periods, the opening auction, monthly unlocks, market trades and treasury controls,
 and builds reproducibly with a public toolchain. It has not been independently audited.
@@ -53,9 +54,9 @@ It is not deployed, live trading, guaranteed liquidity or buybacks.
 
 The opening auction's minimum price and parameters will be announced.
 Buy and sell orders determine prices after opening. There is no per-buyer purchase limit.
-Unsold HELI is not cash revenue. No fixed price, guaranteed liquidity, buyback or guaranteed operating revenue.
+Unsold Charta is not cash revenue. No fixed price, guaranteed liquidity, buyback or guaranteed operating revenue.
 
-The HELI program was tested in a local Solana simulator.
+The Charta program was tested in a local Solana simulator.
 Devnet/mainnet deployment and an independent security review remain pending.
 Official live token and market addresses have not been published.
 This website does not collect personal data, private keys or wallet records.

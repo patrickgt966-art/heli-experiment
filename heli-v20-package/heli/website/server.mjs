@@ -1,6 +1,6 @@
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
-const allowed = new Map([['/','index.html'],['/index.html','index.html'],['/apply.html','apply.html'],['/style.css','style.css'],['/app.js','app.js'],['/apply.js','apply.js'],['/favicon.svg','favicon.svg'],['/heli-rules.txt','heli-rules.txt']]);
+const allowed = new Map([['/','index.html'],['/index.html','index.html'],['/apply.html','apply.html'],['/style.css','style.css'],['/app.js','app.js'],['/apply.js','apply.js'],['/favicon.svg','favicon.svg'],['/charta-rules.txt','charta-rules.txt']]);
 const types = { html:'text/html; charset=utf-8', css:'text/css; charset=utf-8', js:'text/javascript; charset=utf-8', svg:'image/svg+xml', txt:'text/plain; charset=utf-8' };
 const server = http.createServer(async (req,res) => {
   const file = allowed.get(new URL(req.url,'http://127.0.0.1').pathname);
@@ -11,4 +11,4 @@ const server = http.createServer(async (req,res) => {
     res.end(req.method==='HEAD'?undefined:bytes);
   } catch { res.writeHead(500); res.end('Unavailable'); }
 });
-server.listen(8780,'127.0.0.1',()=>console.log('HELI site preview: http://127.0.0.1:8780/'));
+server.listen(8780,'127.0.0.1',()=>console.log('Charta site preview: http://127.0.0.1:8780/'));
