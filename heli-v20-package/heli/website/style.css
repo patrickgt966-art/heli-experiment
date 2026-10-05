@@ -39,3 +39,7 @@ nav .nav-claim{color:var(--mint);font-weight:650}nav .nav-claim span{margin-left
 .brand-logo{width:34px;height:34px;display:block;flex-shrink:0}@media(max-width:760px){.brand-logo{width:30px;height:30px}}
 .token-disc svg{transform:rotate(18deg)}
 .market-segment.full-segment{flex:1;width:auto;border-radius:8px}
+.section-heading:has(.section-aside){flex-direction:column;align-items:flex-start;gap:14px}.section-heading .section-aside{max-width:560px;font-size:15px;line-height:1.6}.distribution-bar{height:48px}.distribution-bar span{font-size:17px}.market-note{justify-content:flex-start;align-items:center}.allocation-legend{grid-template-columns:repeat(3,minmax(0,1fr))}.allocation-legend button{white-space:nowrap}#wallet-hint{margin-top:14px}
+@media(max-width:1100px){.allocation-legend{grid-template-columns:1fr}}
+@media(max-width:760px){.section-heading .section-aside{font-size:14px}.allocation-legend{grid-template-columns:1fr}}
+@media(max-width:560px){.mechanism-grid{grid-template-columns:1fr}.mechanism-grid .number{font-size:10px;letter-spacing:1.2px}}
