@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="The risks of Charta, stated plainly: price, code, keys, the people in charge, liquidity and the services it depends on.">
+  <meta property="og:type" content="website"><meta property="og:site_name" content="Charta"><meta property="og:title" content="Risks · Charta"><meta property="og:description" content="The risks of Charta, stated plainly: price, code, keys, the people in charge, liquidity and the services it depends on."><meta property="og:url" content="https://heli-experiment.pages.dev/risks.html"><meta property="og:image" content="https://heli-experiment.pages.dev/logo-512.png"><meta name="twitter:card" content="summary"><link rel="canonical" href="https://heli-experiment.pages.dev/risks.html">
+  <meta name="theme-color" content="#080d12"><title>Risks · Charta</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="site-header"><a class="brand" href="index.html#home" aria-label="Charta home"><img class="brand-logo" src="logo.svg" alt="" width="34" height="34">Charta<span class="brand-sub">MONETARY EXPERIMENT</span></a><nav aria-label="Main navigation"><a href="index.html#home">About<span class="nav-long"> Charta</span></a><a href="index.html#transparency">Transparency</a><a href="live.html">Live data</a><a href="guide.html">Guide</a><a href="auction.html">Auction</a></nav></header>
+<main id="content" class="page auction-page">
+  <div class="page-intro">
+    <p class="eyebrow">RISKS, STATED PLAINLY</p>
+    <h1>What can go wrong,<br><span>before you decide.</span></h1>
+    <p class="lede">Charta is an experiment. A published rule limits supply and the treasury; it does not protect the price. Only put in money you can afford to lose entirely.</p>
+  </div>
+
+  <aside class="safety-callout" aria-label="Summary">
+    <h2>In short</h2>
+    <ul>
+      <li>The price can fall to almost nothing, and there may be no buyer when you want to sell.</li>
+      <li>The program is not independently audited yet and can still be upgraded.</li>
+      <li>Nothing on this site is investment, legal or tax advice, or a promise of returns.</li>
+    </ul>
+  </aside>
+
+  <section class="risk-group" aria-labelledby="r-market">
+    <h2 id="r-market">Market</h2>
+    <div class="guardrail-list">
+      <article><span>01</span><div><h3>The price is not supported</h3><p>The supply rule limits how many CHTA can be released; it does not set or defend a price. The project reserve may place bids only within narrow limits (at most 10% of the reserve over any rolling 30 days), which slows a fall but cannot stop one.</p></div></article>
+      <article><span>02</span><div><h3>Thin liquidity</h3><p>The market starts small. Selling a large amount at once can move the price far down, and at times there may be no bids at all. The program only measures outside demand when at least 25 USDC of outside bids are on the book.</p></div></article>
+      <article><span>03</span><div><h3>Supply grows</h3><p>Released supply may grow by up to about 4.9% a year for 60 years if buyers take it. This is a ceiling, not a schedule, but every release adds to the CHTA in circulation.</p></div></article>
+    </div>
+  </section>
+
+  <section class="risk-group" aria-labelledby="r-code">
+    <h2 id="r-code">Code and keys</h2>
+    <div class="guardrail-list">
+      <article><span>04</span><div><h3>No independent audit yet</h3><p>The program has passed its own test suites, attack scenarios and a local validator rehearsal. Tests written by the project are not an audit; an undiscovered bug could lock or lose funds.</p></div></article>
+      <article><span>05</span><div><h3>The program can still be upgraded</h3><p>Until the upgrade key is removed after an audit, whoever holds it can replace the program, including its rules. Its removal can be checked by anyone on chain.</p></div></article>
+      <article><span>06</span><div><h3>Administrator powers</h3><p>The administrator can pause sales, treasury operations and expenses for an unlimited time (never the monthly release rule) and can cancel pending expenses. The administrator and the treasury manager may be the same key. An offline recovery key can replace the administrator after a seven-day wait.</p></div></article>
+    </div>
+  </section>
+
+  <section class="risk-group" aria-labelledby="r-people">
+    <h2 id="r-people">People and money</h2>
+    <div class="guardrail-list">
+      <article><span>07</span><div><h3>The project spends from its reserve</h3><p>Expenses are paid from sale revenue and, beyond it, up to 25% a year of the reserve plus a protected 12 USDC per 30 days for servers. Each expense waits seven days and is public on the <a class="text-link" href="live.html">Live data</a> page.</p></div></article>
+      <article><span>08</span><div><h3>Commitments outside the code</h3><p>Some promises cannot be enforced by the program, for example that the founder and team trade only from publicly declared wallets. You rely on their word and on public scrutiny for these.</p></div></article>
+      <article><span>09</span><div><h3>The experiment can fail</h3><p>Charta has no established use yet. Demand may never develop, development may stop and the website may go offline. The program and your tokens remain on chain, but nobody is obliged to maintain them.</p></div></article>
+    </div>
+  </section>
+
+  <section class="risk-group" aria-labelledby="r-outside">
+    <h2 id="r-outside">Outside the program</h2>
+    <div class="guardrail-list">
+      <article><span>10</span><div><h3>Services Charta depends on</h3><p>Solana can halt or slow down; the order book is a separate program; USDC is issued by a company that can freeze accounts. Any of these can stop trading or claiming for a while.</p></div></article>
+      <article><span>11</span><div><h3>Your own wallet</h3><p>A lost recovery phrase means lost tokens; nobody can restore them. Scammers copy projects with fake sites, tokens and support accounts. Follow the safety rules in the <a class="text-link" href="guide.html">guide</a>.</p></div></article>
+      <article><span>12</span><div><h3>Law and tax</h3><p>Rules on crypto assets differ by country and change. You are responsible for whether you may take part and for any tax due.</p></div></article>
+    </div>
+  </section>
+
+  <p class="note">The full rules are in the <a class="text-link" href="charta-rules.txt">experiment rules</a> and the program source on <a class="text-link" href="https://github.com/patrickgt966-art/heli-experiment" target="_blank" rel="noopener noreferrer">GitHub ↗</a>. Where this page and the code differ, the code decides.</p>
+</main>
+<footer><div><a class="brand" href="index.html#home"><img class="brand-logo" src="logo.svg" alt="" width="34" height="34">Charta</a><p>A monetary experiment on Solana.<br>Not audited. Prices can fall; nothing here is a promise of returns.</p></div><div class="footer-links"><a href="index.html#home">About Charta</a><a href="index.html#transparency">Transparency</a><a href="live.html">Live data</a><a href="auction.html">Opening auction</a><a href="guide.html">How to take part</a><a href="risks.html">Risks</a><a href="charta-rules.txt" download>Experiment rules ↓</a><a href="https://github.com/patrickgt966-art/heli-experiment" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div><div class="footer-bottom"><span>© 2026 Charta experiment</span><span>Development stage · Not audited · No live trading</span></div></footer>
+</body>
+</html>
