@@ -21,14 +21,16 @@ const texts = {
   program: { kicker: 'HELD BY A PROGRAM', copy: 'Tokens held by another on-chain program, typically CHTA resting in sell orders on the order book.', rule: 'These tokens belong to the traders whose orders they back.' },
 };
 
-let mode = 'example', bubbles = [], total = H.TOTAL, nodes = [], selected = null, walletsOnly = false, partial = false, fresh = new Set(), frame = 0;
+let links = [], linkCtx = null, linksAt = 0, mode = 'example', bubbles = [], total = H.TOTAL, nodes = [], selected = null, walletsOnly = false, partial = false, fresh = new Set(), frame = 0;
 
 function el(name, attrs = {}, parent) { const e = document.createElementNS(NS, name); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); parent?.append(e); return e; }
 function hue(id) { let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h % 5; }
 function nameOf(b) { return b.label ?? (b.kind === 'program' ? `Program ${short(b.owner)}` : `Wallet ${short(b.owner)}`); }
 
 function draw() {
-  svg.querySelector('.bubbles')?.remove();
+  svg.querySelector('.links')?.remove(); svg.querySelector('.bubbles')?.remove();
+  const shownIds = new Set(nodes.map(n => n.id)), lg = el('g', { class: 'links' }, svg);
+  for (const l of links) if (shownIds.has(l.a) && shownIds.has(l.b)) el('line', { 'data-a': l.a, 'data-b': l.b, class: 'link' }, lg).append(Object.assign(document.createElementNS(NS, 'title'), { textContent: `Direct transfers: ${l.count} · ${fmt(chta(l.amount))} CHTA` }));
   const g = el('g', { class: 'bubbles' }, svg);
   for (const n of nodes) {
     const cls = `hb kind-${n.kind}${n.kind === 'wallet' ? ` tone-${hue(n.owner)}` : ''}${fresh.has(n.id) ? ' is-new' : ''}${n.fresh && frame > 0 ? ' pop' : ''}${selected === n.id ? ' is-selected' : ''}`;
@@ -49,6 +51,8 @@ function draw() {
 function move() {
   const byId = new Map(nodes.map(n => [n.id, n]));
   for (const g of svg.querySelectorAll('.hb')) { const n = byId.get(g.dataset.id); if (n) g.setAttribute('transform', `translate(${n.x.toFixed(1)} ${n.y.toFixed(1)})`); }
+  for (const line of svg.querySelectorAll('.link')) { const a = byId.get(line.dataset.a), b = byId.get(line.dataset.b); if (!a || !b) continue;
+    line.setAttribute('x1', a.x.toFixed(1)); line.setAttribute('y1', a.y.toFixed(1)); line.setAttribute('x2', b.x.toFixed(1)); line.setAttribute('y2', b.y.toFixed(1)); }
 }
 
 function fit() {
@@ -65,10 +69,10 @@ function layout(animate) {
   nodes = H.initialNodes(shown.slice(0, 400), W, HGT, walletsOnly === layout.lastZoom ? prev : new Map());
   layout.lastZoom = walletsOnly;
   const start = nodes.map(n => [n.x, n.y]);
-  H.settle(nodes, W, HGT); fit();
-  if (!animate || reduce) { draw(); return; }
+  H.settle(nodes, W, HGT, links); fit();
+  if (!animate || reduce) { draw(); move(); return; }
   const end = nodes.map(n => [n.x, n.y]);
-  nodes.forEach((n, i) => { [n.x, n.y] = start[i]; }); draw();
+  nodes.forEach((n, i) => { [n.x, n.y] = start[i]; }); draw(); move();
   const t0 = performance.now(), tick = t => {
     const k = Math.min(1, (t - t0) / 1200), e = 1 - (1 - k) ** 3;
     nodes.forEach((n, i) => { n.x = start[i][0] + (end[i][0] - start[i][0]) * e; n.y = start[i][1] + (end[i][1] - start[i][1]) * e; });
@@ -80,6 +84,7 @@ function layout(animate) {
 function select(id) {
   selected = id;
   for (const g of svg.querySelectorAll('.hb')) g.classList.toggle('is-selected', g.dataset.id === id);
+  for (const line of svg.querySelectorAll('.link')) line.classList.toggle('is-lit', line.dataset.a === id || line.dataset.b === id);
   for (const li of $('holder-list').querySelectorAll('button')) li.setAttribute('aria-pressed', String(li.dataset.id === id));
   const b = bubbles.find(x => x.id === id); if (!b) return;
   const t = texts[b.kind];
@@ -87,11 +92,16 @@ function select(id) {
   $('allocation-detail-title').textContent = nameOf(b);
   $('allocation-detail-amount').textContent = compact(b.amount);
   $('allocation-detail-share').textContent = pct(b.amount, total);
-  $('allocation-detail-copy').textContent = t ? t.copy : `Holds ${fmt(chta(b.amount))} CHTA, ${pct(b.amount, H.stats(bubbles).inWallets)} of all CHTA held in wallets. Rank ${b.rank} of ${H.stats(bubbles).wallets}.`;
+  $('allocation-detail-copy').textContent = t ? t.copy : `Holds ${fmt(chta(b.amount))} CHTA, ${pct(b.amount, H.stats(bubbles).inWallets)} of all CHTA held in wallets. Rank ${b.rank} of ${H.stats(bubbles).wallets}.${linkText(b.id)}`;
   $('allocation-detail-rule').textContent = t ? t.rule : mode === 'example' ? 'Example wallet: a made-up address, shown before launch.' : 'Every wallet is public on the chain; this one is not identified with any person by the project.';
   $('treasury-composition').hidden = b.kind !== 'treasury';
   const link = $('holder-explorer');
   if (mode === 'live') { link.href = `https://explorer.solana.com/address/${b.kind === 'wallet' ? b.owner : b.address}${cfg.cluster === 'mainnet-beta' ? '' : `?cluster=${cfg.cluster ?? 'devnet'}`}`; link.hidden = false; } else link.hidden = true;
+}
+
+function linkText(id) {
+  const mine = links.filter(l => l.a === id || l.b === id);
+  return mine.length ? ` Linked by direct transfers to ${mine.length} other wallet${mine.length > 1 ? 's' : ''} (lines on the map).` : '';
 }
 
 function renderList() {
@@ -152,11 +162,32 @@ async function liveAccounts() {
     byOwner: { [config]: { kind: 'project', label: 'Project account' } },
     isProgramOwned: o => { try { return !web3.PublicKey.isOnCurve(new web3.PublicKey(o).toBytes()); } catch { return false; } },
   };
+  linkCtx = { conn, mint: mint.toBase58(), web3 };
   return { accounts, known };
+}
+
+// Direct transfers between the 30 largest wallets, from their 15 latest transactions each (at most 150
+// transactions, cached for ten minutes per browser). Trades through the order book do not create lines.
+async function loadLinks() {
+  if (!linkCtx || Date.now() - linksAt < 600_000) return false;
+  linksAt = Date.now();
+  const key = `charta-links:${cfg.cluster}:${cfg.programId}`;
+  try { const c = JSON.parse(localStorage.getItem(key) ?? 'null'); if (c && Date.now() - c.t < 600_000) { links = c.links.map(l => ({ ...l, amount: BigInt(l.amount) })); return true; } } catch {}
+  const { conn, mint, web3 } = linkCtx, all = bubbles.filter(b => b.kind === 'wallet'), sigs = new Set();
+  for (const w of all.slice(0, 30)) {
+    try { for (const s of await conn.getSignaturesForAddress(new web3.PublicKey(w.address), { limit: 15 })) if (!s.err) sigs.add(s.signature); } catch {}
+    if (sigs.size >= 150) break;
+  }
+  const list = [...sigs].slice(0, 150), txs = [];
+  for (let i = 0; i < list.length; i += 4) txs.push(...await Promise.all(list.slice(i, i + 4).map(s => conn.getParsedTransaction(s, { maxSupportedTransactionVersion: 0 }).catch(() => null))));
+  links = H.linksFromTransactions(txs, mint, new Set(all.map(b => b.owner)));
+  try { localStorage.setItem(key, JSON.stringify({ t: Date.now(), links: links.map(l => ({ ...l, amount: String(l.amount) })) })); } catch {}
+  return true;
 }
 
 function show(accounts, known, animate) {
   bubbles = H.groupHolders(accounts, known);
+  if (mode === 'example') links = H.exampleLinks(bubbles);
   const sum = bubbles.reduce((s, b) => s + b.amount, 0n);
   total = partial || sum === 0n ? H.TOTAL : sum;
   if (frame === 0) { walletsOnly = H.stats(bubbles).wallets >= 5; syncZoom(); }
@@ -173,6 +204,7 @@ async function refreshLive(first) {
     if (partial) $('holder-banner').textContent = 'This network only returned the 20 largest accounts; smaller wallets are not shown.';
     $('holder-mode').textContent = 'Live'; $('holder-mode').className = 'pill';
     show(data.accounts, data.known, first);
+    loadLinks().then(changed => { if (changed && links.length) { layout(true); if (selected) select(selected); } }).catch(() => {});
     $('holder-updated').textContent = `Updated ${new Date().toLocaleTimeString()} · ${cfg.cluster}`;
   } catch (e) { if (first) startExample(`Could not read the chain (${e?.message ?? e}); showing the example.`); else $('holder-updated').textContent = 'Reconnecting…'; }
 }

@@ -6,7 +6,7 @@ import {readFileSync,existsSync} from 'node:fs';
 
 const dir=new URL('../',import.meta.url);
 const read=f=>readFileSync(new URL(f,dir),'utf8');
-const pages=['index.html','guide.html','auction.html','live.html','risks.html','404.html'];
+const pages=['index.html','guide.html','auction.html','live.html','risks.html','verify.html','updates.html','404.html'];
 const server=read('server.mjs');
 const navOf=html=>[...html.match(/<nav aria-label="Main navigation">(.*?)<\/nav>/s)[1].matchAll(/href="([^"]+)"/g)].map(m=>m[1].replace(/^\//,'').replace(/^index\.html/,''));
 
