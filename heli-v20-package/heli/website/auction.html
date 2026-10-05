@@ -30,7 +30,7 @@
     <div><span>Total bids</span><strong id="sum-demand">–</strong></div>
     <div><span>Bidding wallets</span><strong id="sum-wallets">–</strong></div>
     <div><span>Minimum price</span><strong id="sum-floor">–</strong></div>
-    <div><span>Per wallet</span><strong>at most 250,000 CHTA</strong></div>
+    <div><span>Per wallet</span><strong class="hl">at most 250,000 CHTA</strong></div>
     <div><span>Locked bid funds</span><strong id="sum-locked">–</strong></div>
   </section>
   <p id="not-live" class="note" hidden></p>
@@ -38,7 +38,7 @@
   <div class="auction-layout">
     <section class="panel" aria-labelledby="wallet-title">
       <div class="section-heading"><h2 id="wallet-title">Your bid</h2><span class="pill neutral" id="wallet-pill">Not connected</span></div>
-      <button class="button primary" id="connect" type="button">Connect wallet</button>
+      <button class="button accent" id="connect" type="button">Connect wallet</button>
       <p class="small" id="wallet-hint">Phantom, Solflare or another Solana wallet. Each action is signed in your wallet; you pay the network fee (about 0.003–0.005 SOL the first time, for the bid account).</p>
       <dl id="wallet-info" hidden>
         <div><dt>Wallet</dt><dd id="w-address">–</dd></div>
@@ -52,11 +52,11 @@
         <label for="price">Maximum price (USDC per CHTA)</label>
         <input id="price" type="number" min="0" step="0.00001" inputmode="decimal" required>
         <p class="small" id="bid-preview">–</p>
-        <button class="button primary" id="place" type="submit">Place bid</button>
+        <button class="button accent" id="place" type="submit">Place bid</button>
       </form>
       <div class="auction-actions">
         <button class="button secondary" id="cancel" type="button" hidden>Cancel my bid</button>
-        <button class="button primary" id="claim" type="button" hidden>Claim my CHTA</button>
+        <button class="button accent" id="claim" type="button" hidden>Claim my CHTA</button>
       </div>
       <p class="note" id="tx-status" role="status" hidden></p>
     </section>
