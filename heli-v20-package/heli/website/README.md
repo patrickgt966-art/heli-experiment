@@ -1,5 +1,12 @@
 # Charta ilk web sitesi
 
+6 Ekim 2026 görsel kimlik güncellemesi:
+- Yazı tipleri: başlıklarda serif Fraunces, sayılarda ve etiketlerde IBM Plex Mono. İkisi de OFL lisanslı ve kendi sunucumuzda (`fonts/`, lisans metinleriyle). CSP değişmedi.
+- İkinci renk olarak sıcak kum tonu eklendi; arka planda kâğıt dokusu (`grain.svg`) var.
+- Hareket: yavaş dönen yörüngeler ve süzülen madalyon, kurallar bandı (ticker), sayaçlar, kaydırınca beliren bölümler, kart ışığı ve okuma çubuğu (`motion.js`).
+- "Hareket azaltma" tercihinde ve JavaScript kapalıyken site durağan.
+- Sistem kartlarındaki ok ve daire simgelerinin yerine çizim SVG'ler geldi: kum saati, terazi, büyüteç.
+
 5 Ekim 2026 site güncellemesi: "How to take part" rehberi (`guide.html`) ve risk sayfası (`risks.html`) eklendi.
 - Tüm sayfalarda aynı menü (Guide eklendi) ve altbilgi kullanılıyor; menü 320 px'e kadar tek satıra sığıyor.
 - Sosyal paylaşım etiketleri (Open Graph) eklendi; ayrıca `404.html`, `robots.txt` ve `sitemap.xml`.
