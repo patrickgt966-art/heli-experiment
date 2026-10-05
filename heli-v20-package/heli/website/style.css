@@ -146,3 +146,19 @@ h2{line-height:1.08}.panel h2,.faq h2,.risk-group>h2,.safety-callout h2,.example
 .update time{font-family:var(--mono);font-size:12px;color:var(--sand);padding-top:6px;text-align:right}.update h3{font-size:21px;margin-bottom:8px}.update p{font-size:15px;color:var(--muted);margin:0 0 8px;max-width:720px}
 .next-up{border-color:#a3edcf40;background:linear-gradient(140deg,#a3edcf0d,#a3edcf03)}.next-up h2{color:var(--mint)}
 @media(max-width:760px){.update-list::before{left:5px}.update{grid-template-columns:1fr;gap:4px;padding:18px 0 18px 26px}.update::before{left:1px;top:24px}.update time{text-align:left;padding:0}.check-list li{gap:12px}.check-mark{width:28px;height:28px}}
+/* Accent: orange marks where we want people to act (the auction and taking part) and the launch figures.
+   Mint stays the brand colour; labels, numbers and dates go quiet so the orange keeps its meaning. */
+:root{--accent:#ff9a3c;--accent-hi:#ffb871}
+.button.accent{background:var(--accent);color:#2b1400;border-color:#ffc896;box-shadow:0 0 0 0 #ff9a3c66,0 10px 34px -12px #ff9a3caa;animation:accent-pulse 3.6s ease-in-out infinite}
+.button.accent:hover{background:var(--accent-hi)}.button.accent:disabled{opacity:.5;animation:none;cursor:not-allowed}
+@keyframes accent-pulse{0%,70%,100%{box-shadow:0 0 0 0 #ff9a3c00,0 10px 34px -12px #ff9a3caa}35%{box-shadow:0 0 0 8px #ff9a3c1f,0 10px 34px -12px #ff9a3caa}}
+nav a[href$="auction.html"]{color:var(--accent);border-color:#ff9a3c88;background:#ff9a3c12}nav a[href$="auction.html"]:hover{color:#2b1400;background:var(--accent);border-color:var(--accent)}nav a[href$="auction.html"][aria-current=page]{color:#2b1400;background:var(--accent);border-color:var(--accent)}
+.hl{color:var(--accent);font-weight:600}
+#est-price{color:var(--accent)}
+.eyebrow{color:var(--mint)}.number{color:#8cab9d}.guardrail-list article>span,.steps li>span{color:var(--mint)}.update time{color:#8cab9d}.holder-list-title{color:var(--mint)}
+.ticker span::after{color:#a3edcf88}
+.page-intro .actions{margin-top:4px}
+.distribution-section .actions{justify-content:flex-start;margin-top:4px}
+@media(prefers-reduced-motion:reduce){.button.accent{animation:none}}
+.market-segment.full-segment{background:linear-gradient(120deg,#ffae5c,#d9701f);color:#2b1400}.distribution-section .market-dot{background:var(--accent)}
+.claim-page-heading h1 span{font-style:italic;font-weight:360}
