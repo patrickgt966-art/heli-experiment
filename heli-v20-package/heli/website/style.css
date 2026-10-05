@@ -35,3 +35,4 @@ nav .nav-claim{color:var(--mint);font-weight:650}nav .nav-claim span{margin-left
 .auction-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}.table-scroll{overflow-x:auto}#demand-table td,#bids-table td{font-variant-numeric:tabular-nums}tr.clearing-row td{color:var(--mint);font-weight:600}tr.mine td{color:#e9fff5;background:#a3edcf0a}
 @media(max-width:900px){.auction-layout{grid-template-columns:1fr}.auction-page .claim-summary{grid-template-columns:1fr 1fr}}
 @media(max-width:420px){.auction-page .claim-summary{grid-template-columns:1fr}}
+.live-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;margin:0}.live-grid dd{overflow-wrap:anywhere}@media(max-width:760px){.live-grid{grid-template-columns:1fr}}

@@ -1,7 +1,7 @@
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
-const allowed = new Map([['/','index.html'],['/index.html','index.html'],['/apply.html','apply.html'],['/style.css','style.css'],['/app.js','app.js'],['/apply.js','apply.js'],['/favicon.svg','favicon.svg'],['/auction.html','auction.html'],['/auction.js','auction.js'],['/auction-core.js','auction-core.js'],['/site-config.js','site-config.js'],['/vendor/solana-web3.iife.min.js','vendor/solana-web3.iife.min.js'],['/charta-rules.txt','charta-rules.txt']]);
-const types = { html:'text/html; charset=utf-8', css:'text/css; charset=utf-8', js:'text/javascript; charset=utf-8', svg:'image/svg+xml', txt:'text/plain; charset=utf-8' };
+const allowed = new Map([['/','index.html'],['/index.html','index.html'],['/apply.html','apply.html'],['/style.css','style.css'],['/app.js','app.js'],['/apply.js','apply.js'],['/favicon.svg','favicon.svg'],['/auction.html','auction.html'],['/auction.js','auction.js'],['/auction-core.js','auction-core.js'],['/site-config.js','site-config.js'],['/live.html','live.html'],['/live.js','live.js'],['/dashboard-core.js','dashboard-core.js'],['/idl.json','idl.json'],['/vendor/solana-web3.iife.min.js','vendor/solana-web3.iife.min.js'],['/charta-rules.txt','charta-rules.txt']]);
+const types = { html:'text/html; charset=utf-8', css:'text/css; charset=utf-8', js:'text/javascript; charset=utf-8', svg:'image/svg+xml', json:'application/json; charset=utf-8', txt:'text/plain; charset=utf-8' };
 const server = http.createServer(async (req,res) => {
   const file = allowed.get(new URL(req.url,'http://127.0.0.1').pathname);
   if (!file || !['GET','HEAD'].includes(req.method)) { res.writeHead(404); res.end('Not found'); return; }

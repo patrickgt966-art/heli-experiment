@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Charta live data: supply, locked stocks, treasury, expenses and price reference read directly from the chain, and your own holdings.">
+  <meta name="theme-color" content="#080d12"><title>Live data · Charta</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css">
+  <script src="site-config.js" defer></script><script src="vendor/solana-web3.iife.min.js" defer></script><script type="module" src="live.js"></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="site-header"><a class="brand" href="index.html#home" aria-label="Charta home"><span class="brand-icon" aria-hidden="true">C</span>Charta<span class="brand-sub">MONETARY EXPERIMENT</span></a><nav aria-label="Main navigation"><a href="index.html#home">About Charta</a><a href="index.html#transparency">Transparency</a><a href="live.html" aria-current="page">Live data</a><a href="auction.html">Auction</a></nav></header>
+<main id="content" class="page auction-page">
+  <div class="page-intro">
+    <p class="eyebrow">LIVE FROM THE CHAIN</p>
+    <h1>Every number,<br><span>checked against the code.</span></h1>
+    <p class="lede">Read directly from the Charta program on Solana every few seconds. Nothing on this page comes from our servers; anyone can verify each figure with a block explorer.</p>
+    <p class="small" id="updated">–</p>
+  </div>
+  <p id="not-live" class="note" hidden></p>
+
+  <section class="panel" aria-labelledby="mine-title">
+    <div class="section-heading"><h2 id="mine-title">My Charta</h2><span class="pill neutral" id="wallet-pill">Not connected</span></div>
+    <button class="button primary" id="connect" type="button">Connect wallet</button>
+    <p class="small" id="wallet-hint">Read-only: connecting shows your own figures and signs nothing. They are public on the chain anyway.</p>
+    <dl id="mine" class="live-grid" hidden>
+      <div><dt>Wallet</dt><dd id="m-wallet">–</dd></div>
+      <div><dt>CHTA balance</dt><dd id="m-balance">–</dd></div>
+      <div><dt>Share of CHTA in circulation</dt><dd id="m-share">–</dd></div>
+      <div><dt>Opening auction</dt><dd id="m-auction">–</dd></div>
+    </dl>
+  </section>
+
+  <div class="transparency-grid">
+    <section class="panel" aria-labelledby="supply-title">
+      <div class="section-heading"><h2 id="supply-title">Supply</h2><span class="pill" id="month-pill">–</span></div>
+      <dl class="live-grid">
+        <div><dt>Total supply (after the 10M initial burn)</dt><dd id="s-supply">–</dd></div>
+        <div><dt>Locked monthly market reserve</dt><dd id="s-reserve">–</dd></div>
+        <div><dt>Locked management treasury</dt><dd id="s-mgmt">–</dd></div>
+        <div><dt>Unsold project inventory</dt><dd id="s-inventory">–</dd></div>
+        <div><dt>In circulation</dt><dd id="s-circ">–</dd></div>
+        <div><dt>Mint authority</dt><dd id="s-mint">–</dd></div>
+        <div><dt>Next monthly boundary</dt><dd id="s-next">–</dd></div>
+        <div><dt>This month's release cap</dt><dd id="s-cap">–</dd></div>
+      </dl>
+    </section>
+    <section class="panel" aria-labelledby="treasury-title">
+      <div class="section-heading"><h2 id="treasury-title">Treasury</h2><span class="pill neutral" id="pause-pill">–</span></div>
+      <dl class="live-grid">
+        <div><dt>Project reserve (USDC)</dt><dd id="t-reserve">–</dd></div>
+        <div><dt>Project floor (never spent)</dt><dd id="t-floor">–</dd></div>
+        <div><dt>Unspent sale revenue</dt><dd id="t-revenue">–</dd></div>
+        <div><dt>Donations available</dt><dd id="t-donations">–</dd></div>
+        <div><dt>Other expenses, last 30 days</dt><dd id="t-share">–</dd></div>
+        <div><dt>Fixed technical cost, last 30 days</dt><dd id="t-fixed">–</dd></div>
+      </dl>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="exp-title">
+    <div class="section-heading"><h2 id="exp-title">Expenses</h2><span class="small">Every proposal waits seven days and can be cancelled before payment.</span></div>
+    <div class="table-scroll"><table id="exp-table"><thead><tr><th scope="col">#</th><th scope="col">Type</th><th scope="col">Amount</th><th scope="col">To</th><th scope="col">Status</th></tr></thead><tbody><tr><td colspan="5">–</td></tr></tbody></table></div>
+  </section>
+
+  <div class="transparency-grid">
+    <section class="panel" aria-labelledby="market-title">
+      <div class="section-heading"><h2 id="market-title">Market measurement</h2></div>
+      <dl class="live-grid">
+        <div><dt>24-hour reference price</dt><dd id="k-ref">–</dd></div>
+        <div><dt>Last outside reference</dt><dd id="k-last">–</dd></div>
+        <div><dt>Minimum outside bid depth</dt><dd id="k-depth">–</dd></div>
+        <div><dt>Manifest market</dt><dd id="k-market">–</dd></div>
+      </dl>
+    </section>
+    <section class="panel" aria-labelledby="gov-title">
+      <div class="section-heading"><h2 id="gov-title">Keys</h2></div>
+      <dl class="live-grid">
+        <div><dt>Administrator</dt><dd id="g-admin">–</dd></div>
+        <div><dt>Offline recovery key</dt><dd id="g-recovery">–</dd></div>
+        <div><dt>Pending key change</dt><dd id="g-pending">–</dd></div>
+        <div><dt>Program</dt><dd id="g-program">–</dd></div>
+      </dl>
+    </section>
+  </div>
+</main>
+<footer><div><a class="brand" href="index.html#home"><span class="brand-icon" aria-hidden="true">C</span>Charta</a><p>A monetary experiment on Solana.<br>Not audited. Prices can fall; nothing here is a promise of returns.</p></div><div class="footer-links"><a href="index.html#home">About Charta</a><a href="auction.html">Opening auction</a><a href="charta-rules.txt">Experiment rules ↓</a><a href="https://github.com/patrickgt966-art/heli-experiment" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div></footer>
+</body>
+</html>
