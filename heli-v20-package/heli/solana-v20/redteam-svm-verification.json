@@ -1,0 +1,382 @@
+{
+  "source_sha256": "332d701e5efaabd3b7bd843b884b7a04e1a30c6c8297cdcbd3e175382569e7da",
+  "binary_sha256": "29186c9f99076d240d0a7c5fa7959191447e9b02538fac94b7d8e4a5c754c0b0",
+  "attacks_blocked": 61,
+  "findings": [],
+  "spoof_reference": [
+    1000000,
+    1391304
+  ],
+  "blocked": [
+    [
+      "Mallory signs create_market_inventory as admin",
+      "Custom(0)"
+    ],
+    [
+      "Mallory signs prepare_auction_proceeds as admin",
+      "Custom(0)"
+    ],
+    [
+      "Mallory signs create_manifest_base as admin",
+      "Custom(0)"
+    ],
+    [
+      "Mallory signs create_manifest_quote as admin",
+      "Custom(0)"
+    ],
+    [
+      "Mallory signs create_release_base as admin",
+      "A seeds constraint was violated"
+    ],
+    [
+      "Mallory signs create_release_quote as admin",
+      "A seeds constraint was violated"
+    ],
+    [
+      "Mallory signs create_management_base as admin",
+      "A seeds constraint was violated"
+    ],
+    [
+      "Mallory signs create_management_quote as admin",
+      "A seeds constraint was violated"
+    ],
+    [
+      "Mallory signs create_fee_base as admin",
+      "A seeds constraint was violated"
+    ],
+    [
+      "Mallory signs create_fee_quote as admin",
+      "A seeds constraint was violated"
+    ],
+    [
+      "Mallory signs create_vault as admin",
+      "A seeds constraint was violated"
+    ],
+    [
+      "Mallory signs create_token_metadata as admin",
+      "A has one constraint was violated"
+    ],
+    [
+      "Mallory signs genesis as admin",
+      "A has one constraint was violated"
+    ],
+    [
+      "Mallory signs prepare_auction_quote as admin",
+      "Custom(0)"
+    ],
+    [
+      "Mallory signs open_auction as admin",
+      "Custom(0)"
+    ],
+    [
+      "Mallory signs bind_manifest_market as admin",
+      "A has one constraint was violated"
+    ],
+    [
+      "Mallory signs place_project_ask as admin",
+      "A has one constraint was violated"
+    ],
+    [
+      "Mallory signs cancel_project_ask as admin",
+      "A has one constraint was violated"
+    ],
+    [
+      "Mallory signs withdraw_project_heli as admin",
+      "A has one constraint was violated"
+    ],
+    [
+      "Mallory signs withdraw_project_quote as admin",
+      "A has one constraint was violated"
+    ],
+    [
+      "Mallory signs initialize_release_policy as admin",
+      "Custom(0)"
+    ],
+    [
+      "Mallory signs initialize_release_seat as admin",
+      "A seeds constraint was violated"
+    ],
+    [
+      "Mallory signs execute_release_sale as admin",
+      "The given account is owned by a different program than expected"
+    ],
+    [
+      "Mallory signs initialize_management as admin",
+      "A seeds constraint was violated"
+    ],
+    [
+      "Mallory signs management_fund_quote as admin",
+      "A has one constraint was violated"
+    ],
+    [
+      "Mallory signs management_release as admin",
+      "A has one constraint was violated"
+    ],
+    [
+      "Mallory signs management_order as admin",
+      "A has one constraint was violated"
+    ],
+    [
+      "Mallory signs management_cancel as admin",
+      "A has one constraint was violated"
+    ],
+    [
+      "Mallory signs management_withdraw as admin",
+      "A has one constraint was violated"
+    ],
+    [
+      "Mallory signs initialize_fee_vaults as admin",
+      "A seeds constraint was violated"
+    ],
+    [
+      "Mallory signs propose_expense as proposer",
+      "The given account is owned by a different program than expected"
+    ],
+    [
+      "Mallory signs cancel_expense as admin",
+      "The given account is owned by a different program than expected"
+    ],
+    [
+      "Mallory signs initialize_governance as admin",
+      "A seeds constraint was violated"
+    ],
+    [
+      "Mallory signs propose_admin as signer",
+      "The given account is owned by a different program than expected"
+    ],
+    [
+      "Mallory signs accept_admin as signer",
+      "The given account is owned by a different program than expected"
+    ],
+    [
+      "Mallory signs cancel_admin_proposal as signer",
+      "The given account is owned by a different program than expected"
+    ],
+    [
+      "Mallory signs propose_recovery as signer",
+      "The given account is owned by a different program than expected"
+    ],
+    [
+      "Mallory signs accept_recovery as signer",
+      "The given account is owned by a different program than expected"
+    ],
+    [
+      "Mallory signs cancel_recovery_proposal as signer",
+      "The given account is owned by a different program than expected"
+    ],
+    [
+      "Mallory signs recovery_cancel_expense as recovery",
+      "The given account is owned by a different program than expected"
+    ],
+    [
+      "Mallory signs pause as admin",
+      "A has one constraint was violated"
+    ],
+    [
+      "Mallory claims alice's auction bid into her own accounts",
+      "A seeds constraint was violated"
+    ],
+    [
+      "alice claims her auction bid a second time",
+      "Invalid state"
+    ],
+    [
+      "Mallory opens an auction bid after the auction ended",
+      "Invalid calendar window"
+    ],
+    [
+      "anyone finalizes the auction a second time",
+      "Invalid calendar window"
+    ],
+    [
+      "an observation bundled with another instruction in one transaction",
+      "Market guard rejected"
+    ],
+    [
+      "observation reads a copied fake market account",
+      "An address constraint was violated"
+    ],
+    [
+      "Mallory proposes an expense to herself",
+      "Quota exceeded"
+    ],
+    [
+      "the expense is paid before its seven-day wait",
+      "Invalid calendar window"
+    ],
+    [
+      "Mallory redirects the approved expense to her own account",
+      "An address constraint was violated"
+    ],
+    [
+      "Mallory passes her own account as the donation vault",
+      "A seeds constraint was violated"
+    ],
+    [
+      "Mallory passes her own account as the project reserve",
+      "A seeds constraint was violated"
+    ],
+    [
+      "Mallory passes a fake operations account",
+      "The program expected this account to be already initialized"
+    ],
+    [
+      "the same expense is paid a second time",
+      "Invalid calendar window"
+    ],
+    [
+      "administrator withdraws management quote into its own account",
+      "A seeds constraint was violated"
+    ],
+    [
+      "administrator withdraws project inventory HELI into its own account",
+      "A seeds constraint was violated"
+    ],
+    [
+      "administrator withdraws project sale quote into its own account",
+      "A seeds constraint was violated"
+    ],
+    [
+      "administrator releases locked management stock in the first twelve months",
+      "Invalid calendar window"
+    ],
+    [
+      "administrator closes the 60-year constitution early",
+      "Invalid calendar window"
+    ],
+    [
+      "anyone settles a month that has not ended",
+      "Invalid calendar window"
+    ],
+    [
+      "anyone opens an epoch out of order",
+      "Invalid calendar window"
+    ]
+  ],
+  "checks_and_transactions": 121,
+  "checks": [
+    "allocate 82",
+    "TEST quote mint",
+    "initialize",
+    "create_market_inventory",
+    "create_vault",
+    "create_vault",
+    "genesis refused without the release policy (it could never be created afterwards)",
+    "initialize_release_policy",
+    "genesis refused before the token has a name (mint authority would be revoked)",
+    "token name, symbol and logo URI written before genesis",
+    "genesis",
+    "prepare_auction_quote",
+    "prepare_auction_proceeds",
+    "open_auction",
+    "project floor cannot be chosen before the opening auction has finished (review F5)",
+    "create SPL account",
+    "create SPL account",
+    "TEST quote to alice",
+    "create_auction_bid",
+    "place_auction_bid",
+    "create SPL account",
+    "create SPL account",
+    "TEST quote to bidder",
+    "create_auction_bid",
+    "place_auction_bid",
+    "create SPL account",
+    "create SPL account",
+    "TEST quote to bidder",
+    "create_auction_bid",
+    "place_auction_bid",
+    "create SPL account",
+    "create SPL account",
+    "TEST quote to bidder",
+    "create_auction_bid",
+    "place_auction_bid",
+    "finalize_auction",
+    "claim_auction_bid",
+    "claim_auction_bid",
+    "SPL transfer",
+    "claim_auction_bid",
+    "SPL transfer",
+    "claim_auction_bid",
+    "SPL transfer",
+    "free allocation removed: the credential instruction no longer exists",
+    "allocate 256",
+    "initialize bound Manifest market",
+    "create_manifest_base",
+    "create_manifest_quote",
+    "bind_manifest_market",
+    "create_management_base",
+    "create_management_quote",
+    "TEST quote to project reserve",
+    "create_fee_base",
+    "create_fee_quote",
+    "project floor chosen after the auction finished (review F5)",
+    "initialize_management",
+    "open_epoch",
+    "management_fund_quote",
+    "create SPL account",
+    "create SPL account",
+    "TEST quote to Mallory",
+    "user seat",
+    "create SPL account",
+    "synthetic quote",
+    "user deposit",
+    "user funded limit order",
+    "arm observation",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "honest reference is the outside 1.0",
+    "a second observation inside the same hour (succeeds by design, A6)",
+    "...but adds no price sample and moves no timestamp",
+    "allocate 256",
+    "user seat",
+    "user deposit",
+    "user funded limit order",
+    "observe_release_market",
+    "a bid placed just before a sample is not counted (fresh)",
+    "observe_release_market",
+    "after resting an hour the spoof is sampled at 10.0",
+    "the newest sample carries no weight yet: the reference is still 1.0",
+    "Mallory cancels her spoof bid",
+    "observe_release_market",
+    "two hours of a 1,000-unit spoof at 10x move the 24-hour reference by 1/23 of the gap (about +39%), not to 10.0",
+    "create SPL account",
+    "TEST quote to donor",
+    "contribute_quote",
+    "create SPL account",
+    "administrator proposes a 20-unit expense to an outside vendor",
+    "the expense is paid to the vendor after seven days",
+    "the vendor received exactly the approved amount",
+    "create SPL account",
+    "create SPL account",
+    "administrator moves 50 units to the management seat",
+    "and withdraws them back to the reserve",
+    "moving reserve money out and back creates no spendable revenue",
+    "Mallory gained no quote or HELI from any attack (her only spend is the resting bid's deposit)",
+    "token supply unchanged by every attack",
+    "locked stocks unchanged (70M market reserve, 15M management)"
+  ],
+  "all_passed": true,
+  "scope": "Compiled ELF and Manifest v3.0.24 ELF in local LiteSVM, synthetic quote/keys; red-team attacks by an outsider and a malicious administrator. Not a deployment or audit."
+}
