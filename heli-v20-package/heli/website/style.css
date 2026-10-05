@@ -52,3 +52,47 @@ nav .nav-claim{color:var(--mint);font-weight:650}nav .nav-claim span{margin-left
 @media(max-width:760px){nav{flex-wrap:nowrap;gap:6px}nav a{font-size:12px}nav a:last-child{padding:6px 11px}.nav-long{display:none}.safety-callout{padding:20px;margin-bottom:30px}.safety-callout li{font-size:14px}.risk-group{grid-template-columns:1fr;gap:6px;padding:24px 0}.risk-group>h2{font-size:24px;padding-top:0}.guide-steps li{gap:14px}.not-found{padding-top:30px}}
 @media(max-width:380px){nav a{font-size:11px}nav a:last-child{padding:5px 9px}.site-header{padding:12px 14px}}@media(max-width:340px){nav{gap:4px}nav a{font-size:10px}}
 .not-found .actions{justify-content:flex-start}
+/* Character layer (6 Oct 2026): self-hosted serif display and mono figures, a warm second accent, paper grain and motion. */
+@font-face{font-family:Fraunces;src:url(fonts/fraunces.woff2) format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:Fraunces;src:url(fonts/fraunces-italic.woff2) format('woff2');font-weight:100 900;font-style:italic;font-display:swap}
+@font-face{font-family:'Plex Mono';src:url(fonts/plex-mono-400.woff2) format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Plex Mono';src:url(fonts/plex-mono-500.woff2) format('woff2');font-weight:500;font-display:swap}
+:root{--sand:#f2c58a;--serif:Fraunces,Georgia,'Times New Roman',serif;--mono:'Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace}
+::selection{background:#a3edcf40;color:#fff}
+body{background:radial-gradient(1200px 700px at 85% -10%,#1d3a3022,transparent 60%),radial-gradient(900px 600px at -10% 40%,#f2c58a0a,transparent 60%),var(--paper)}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;background:url(grain.svg);opacity:.045;mix-blend-mode:overlay}
+h1,h2{font-family:var(--serif);font-weight:420;letter-spacing:-.02em;font-optical-sizing:auto}
+.hero h1,.page-intro h1{letter-spacing:-.025em;font-weight:400}
+.hero h1 span,.page-intro h1 span,.closing h2 span{font-style:italic;font-weight:360;color:var(--mint)}
+h2{line-height:1.08}.panel h2,.faq h2,.risk-group>h2,.safety-callout h2,.example-panel h2{letter-spacing:-.01em}
+.eyebrow,.number,.pill,.chart-axis,.orbit-label,.brand-sub,.formula,.guardrail-list article>span,.steps li>span,.hero-metrics>p{font-family:var(--mono);font-weight:500}
+.eyebrow{color:var(--sand);letter-spacing:1.6px}.number{color:#c8b48f}
+.hero-metrics strong,.chart-value>output,.calculator output,.distribution-visual strong{font-family:var(--serif);font-weight:380;letter-spacing:-.02em}
+.hero-metrics small{font-family:var(--mono);font-size:13px;letter-spacing:.5px}
+.guardrail-list article>span,.steps li>span{color:var(--sand)}
+.text-link{transition:color .2s}.text-link:hover{color:var(--sand)}
+.scroll-progress{position:fixed;left:0;top:0;height:2px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,var(--mint),var(--sand));z-index:60;pointer-events:none}
+.glow{position:relative;isolation:isolate}.glow::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;opacity:0;transition:opacity .35s;background:radial-gradient(380px circle at var(--mx,50%) var(--my,50%),#a3edcf14,transparent 60%)}.glow:hover::before{opacity:1}
+.mechanism-grid article,.progress-grid article{transition:transform .35s cubic-bezier(.2,.7,.2,1),border-color .35s}.mechanism-grid article:hover,.progress-grid article:hover{transform:translateY(-4px);border-color:#a3edcf38}
+.ticker{overflow:hidden;border-block:1px solid var(--border);margin:34px 0 0;padding:14px 0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.ticker-track{display:flex;width:max-content;gap:0;animation:ticker 48s linear infinite}.ticker:hover .ticker-track{animation-play-state:paused}
+.ticker span{font-family:var(--mono);font-size:12px;letter-spacing:.6px;color:#9fb2bf;white-space:nowrap;padding:0 22px;position:relative}.ticker span::after{content:"✦";position:absolute;right:-6px;color:var(--sand);font-size:10px;top:1px}.ticker b{color:var(--navy);font-weight:500}
+@keyframes ticker{to{transform:translateX(-50%)}}
+@keyframes spin-a{from{transform:rotate(-28deg)}to{transform:rotate(332deg)}}
+@keyframes spin-b{from{transform:rotate(48deg)}to{transform:rotate(-312deg)}}
+@keyframes floaty{0%,100%{transform:rotate(-18deg) translateY(0)}50%{transform:rotate(-15deg) translateY(-10px)}}
+@keyframes twinkle{0%,100%{opacity:.35;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+.orbit-a{animation:spin-a 70s linear infinite}.orbit-b{animation:spin-b 110s linear infinite}.orbit-c{animation:spin-a 160s linear infinite}
+.token-disc{animation:floaty 7s ease-in-out infinite}.spark{animation:twinkle 3.2s ease-in-out infinite}.spark-two{animation-delay:1.4s}
+.orbit .spark{left:-4px;top:calc(50% - 4px)}.orbit-b .spark{left:auto;right:-2px;top:calc(50% - 2px)}
+.motion .reveal{opacity:0;transform:translateY(22px);transition:opacity .8s cubic-bezier(.2,.7,.2,1) var(--delay,0ms),transform .8s cubic-bezier(.2,.7,.2,1) var(--delay,0ms)}
+.motion .reveal.is-in{opacity:1;transform:none}
+@media(max-width:760px){.ticker{margin-top:26px;padding:11px 0}.ticker span{font-size:11px;padding:0 16px}.hero-metrics small{font-size:11px}body::after{opacity:.035}}
+@media(prefers-reduced-motion:reduce){.ticker-track,.orbit-a,.orbit-b,.orbit-c,.token-disc,.spark{animation:none}.mechanism-grid article,.progress-grid article{transition:none}.mechanism-grid article:hover,.progress-grid article:hover{transform:none}.ticker{overflow-x:auto}}
+.rule-symbol{font-family:var(--serif);font-weight:380;font-size:34px;letter-spacing:-.02em}.mechanism-symbol.drawn{color:var(--mint)}.mechanism-symbol.drawn svg{width:120px;height:64px;overflow:visible}
+.sym-turn,.sym-beam,.sym-glass{transform-box:fill-box;transform-origin:center;transition:transform .9s cubic-bezier(.3,.7,.2,1)}.sym-beam{transform-origin:50% 0}.sym-sand{color:var(--sand)}
+.mechanism-grid article:hover .sym-turn{transform:rotate(180deg)}.mechanism-grid article:hover .sym-beam{transform:rotate(-7deg)}.mechanism-grid article:hover .sym-glass{transform:translate(-10px,-3px)}
+@media(max-width:760px){.mechanism-symbol.drawn svg{width:100px;height:54px}.rule-symbol{font-size:28px}}
+@media(prefers-reduced-motion:reduce){.sym-turn,.sym-beam,.sym-glass{transition:none}}
+@media(max-width:760px){.hero h1{font-size:clamp(42px,11vw,58px)}.page-intro h1{font-size:44px}}
+.brand{font-family:var(--serif);font-weight:500;letter-spacing:-.01em;font-size:27px}@media(max-width:760px){.brand{font-size:25px}}
