@@ -70,7 +70,7 @@ export class SolanaAdapter{
  async status(signature){return (await this.connection.getSignatureStatuses([signature],{searchTransactionHistory:true})).value[0];}
  async height(){return this.connection.getBlockHeight('confirmed');}
  async balance(){return this.connection.getBalance(this.payer.publicKey,'confirmed');}
- async completed(job){const s=await this.snapshot();if(job.name==='open_epoch')return Boolean(await this.account(this.epoch(job.number).epoch,'Epoch'));if(job.name==='settle')return Number(s.config.last_settled_epoch)>=job.number;if(job.name==='finalize_auction')return Boolean(s.auction?.finalized);if(job.name==='close_constitution')return s.config.closed;if(job.name==='observe_release_market'&&s.policy)return Number(s.policy.mark_time)>=Number(job.key.split(':')[1])*3600;return false;}
+ async completed(job){const s=await this.snapshot();if(job.name==='open_epoch')return Boolean(await this.account(this.epoch(job.number).epoch,'Epoch'));if(job.name==='settle')return Number(s.config.last_settled_epoch)>=job.number;if(job.name==='finalize_auction')return Boolean(s.auction?.finalized);if(job.name==='close_constitution')return s.config.closed;if(job.name==='observe_release_market'&&s.policy)return Math.max(Number(s.policy.mark_time),Number(s.policy.shallow_seen||0))>=Number(job.key.split(':')[1])*3600;return false;}
  // Only maintenance operations may be replaced after blockhash expiry. All
  // financial/user/admin instructions are excluded. Init/settle/finalize guards
  // prevent duplicate allocations; cursor/observations advance monotonically.

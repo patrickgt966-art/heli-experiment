@@ -640,6 +640,11 @@
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "policy",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": []
@@ -2152,6 +2157,11 @@
           "name": "rent",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "auction",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -2782,6 +2792,37 @@
           {
             "name": "revenueCounted",
             "type": "u64"
+          },
+          {
+            "name": "bidSeq",
+            "type": {
+              "array": [
+                "u64",
+                16
+              ]
+            }
+          },
+          {
+            "name": "bidOn",
+            "type": {
+              "array": [
+                "i64",
+                16
+              ]
+            }
+          },
+          {
+            "name": "bidLeft",
+            "type": {
+              "array": [
+                "u64",
+                16
+              ]
+            }
+          },
+          {
+            "name": "bidNext",
+            "type": "u8"
           }
         ]
       }
@@ -2965,6 +3006,14 @@
           {
             "name": "askUntil",
             "type": "i64"
+          },
+          {
+            "name": "mgmtBidSlot",
+            "type": "u64"
+          },
+          {
+            "name": "askSlot",
+            "type": "u64"
           }
         ]
       }

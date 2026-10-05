@@ -70,8 +70,11 @@ ask(t.U,1,-4,label='project ask at the auction price accepted')
 mgmt(t.U,True,1,0,reject=BAND,label='no management bid without a reference price')
 mgmt(t.U,False,99,-6,t.U,reject=BAND,label='management ask under the auction price rejected')
 
+def advance_slots(n):  # t.clock moves only the wall clock; real slots advance too (orders expire after 216,000)
+ from solders.clock import Clock
+ c=t.svm.get_clock();t.svm.set_clock(Clock(c.slot+n,c.epoch_start_timestamp,c.epoch,c.leader_schedule_epoch,c.unix_timestamp))
 # Build a 24-hour reference from the rested 1.0 bid.
-T=t.boundary(1);t.clock(T);t.call('observe_release_market')
+T=t.boundary(1);t.clock(T);advance_slots(216_001);t.call('observe_release_market')
 for h in range(1,25):t.clock(T+h*3600);t.call('observe_release_market')
 from release_ref import reference
 ref=reference(pol(),T+24*3600)

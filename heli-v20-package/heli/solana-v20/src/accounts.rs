@@ -5,7 +5,7 @@ pub struct Initialize<'info> {
  pub program:Program<'info,crate::program::HeliCoreV20>,
  #[account(constraint=program_data.upgrade_authority_address==Some(admin.key()) @ ErrorCode::InitializerNotAuthorized)]
  pub program_data:Box<Account<'info,ProgramData>>,
- #[account(init,payer=admin,space=8+274,seeds=[b"config".as_ref()],bump)]
+ #[account(init,payer=admin,space=8+290,seeds=[b"config".as_ref()],bump)]
  pub config:Box<Account<'info,Config>>,
  #[account(init,payer=admin,mint::decimals=6,mint::authority=config,seeds=[b"mint".as_ref()],bump)]
  pub mint:Box<Account<'info,Mint>>,
@@ -233,6 +233,9 @@ pub struct Genesis<'info> {
  #[account(mut,seeds=[b"vault".as_ref(),&[3]],bump,token::mint=mint,token::authority=config)]
  pub founder:Box<Account<'info,TokenAccount>>,
  pub token_program:Program<'info,Token>,
+ // Review F4: the release policy can be created only before genesis, so genesis requires it to exist.
+ #[account(seeds=[b"release-policy".as_ref()],bump)]
+ pub policy:Box<Account<'info,crate::release::ReleasePolicy>>,
 }
 
 #[derive(Accounts)]
@@ -272,6 +275,9 @@ pub struct InitializeFeeVaults<'info> {
  pub token_program:Program<'info,Token>,
  pub system_program:Program<'info,System>,
  pub rent:Sysvar<'info,Rent>,
+ // Review F5: the project floor is chosen once, after the opening auction has finished.
+ #[account(seeds=[b"opening-auction".as_ref()],bump,constraint=auction.finalized@ErrorCode::State)]
+ pub auction:Box<Account<'info,OpeningAuction>>,
 }
 
 #[derive(Accounts)]

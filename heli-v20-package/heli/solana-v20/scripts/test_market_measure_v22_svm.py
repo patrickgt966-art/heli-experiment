@@ -74,6 +74,9 @@ def keep_shallow(until,label=None):  # hourly observations of a shallow market u
  while x<=until:t.clock(x);t.call('observe_release_market');seen[0]=x;x+=3600
  t.check(label or 'shallowness confirmed hourly up to %d'%until,pol()['shallowSeen']==seen[0])
 def observe_now(at,label=None):t.clock(at);t.call('observe_release_market',label=label);seen[0]=at
+def advance_slots(n):  # t.clock moves only the wall clock; real slots advance too (orders expire after 216,000)
+ from solders.clock import Clock
+ c=t.svm.get_clock();t.svm.set_clock(Clock(c.slot+n,c.epoch_start_timestamp,c.epoch,c.leader_schedule_epoch,c.unix_timestamp))
 clearing=t.read(t.defaults['auction'],'OpeningAuction')['clearingPrice']
 t.check('opening auction cleared at 100 quote atoms per HELI',clearing==100)
 
@@ -155,6 +158,7 @@ mgmt(t.U,True,96,-2,reject=BAND,label='crash bid above 95% of the last outside r
 mgmt(t.min_bid(95,-2),True,95,-2,label='after 24 hours: crash bid at 95% of the last outside reference accepted')
 
 # --- Last reference older than 30 days: ceiling falls back to the opening auction price.
+advance_slots(216_001)  # a month later the earlier reserve bids have expired by slot as well (review F2 guard)
 O=p['lastReferenceTime']+31*86400;keep_shallow(O);t.clock(O)
 mgmt(t.U,True,95,-2,reject=BAND,label='crash ceiling ignores a reference older than 30 days')
 mgmt(t.min_bid(95,-6),True,95,-6,label='old reference: crash bid at 95% of the auction price accepted')
@@ -200,6 +204,7 @@ t.check('last outside reference remembered while observations stall',pol()['last
 mgmt(t.U,True,1,0,reject=BAND,label='no live reference: a normal reserve bid at 1.0 (within 105% of 0.98) is rejected')
 ask(t.U,1,-4,reject=BAND,label='stalled reference: an ask at the opening auction price is rejected')
 ask(t.U,930,-3,reject=BAND,label='stalled reference: an ask below 95% of the last outside reference is rejected')
+advance_slots(216_001)  # weeks later the earlier reserve bids have expired by slot as well (review F2 guard)
 ask(t.U,931,-3,label='stalled reference: an ask at 95% of the last outside reference is accepted')
 t.clock(pol()['lastReferenceTime']+30*86400+1)
 ask(t.U,1,-4,label='after 30 days without a reference the floor returns to the opening auction price')

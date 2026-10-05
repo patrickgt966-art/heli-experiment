@@ -4,17 +4,22 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::{instruction::{AccountMeta,Instruction},program::{invoke,invoke_signed},system_instruction};
 use anchor_spl::token::{self,Mint,Token,TokenAccount,Transfer};
-use crate::{Config,Epoch,ErrorCode,OpeningAuction,boundary,outgoing,manifest_bridge::check_market,release::{ReleasePolicy,reference_price,bid_book,band_depth,order_bounds,check_order_price,order_expiry,outside_shallow,crash_ceiling,order_quote,own_bid_quote,price_frac,SELF_TRADE_WINDOW}};
+use crate::{Config,Epoch,ErrorCode,OpeningAuction,boundary,outgoing,manifest_bridge::check_market,release::{ReleasePolicy,reference_price,bid_book,band_depth,order_bounds,check_order_price,order_expiry,outside_shallow,crash_ceiling,order_quote,own_bid_quote,price_frac,market_sequence,SELF_TRADE_WINDOW,within}};
 
 #[account]
-pub struct ManagementBook {pub total_released:u64,pub quote_funded:u64,pub quote_returned:u64,pub trader_bump:u8,pub bid_day:i64,pub bid_days:[u64;31],pub revenue_counted:u64}
+pub struct ManagementBook {pub total_released:u64,pub quote_funded:u64,pub quote_returned:u64,pub trader_bump:u8,pub bid_day:i64,pub bid_days:[u64;31],pub revenue_counted:u64,
+ pub bid_seq:[u64;BID_SLOTS],pub bid_on:[i64;BID_SLOTS],pub bid_left:[u64;BID_SLOTS],pub bid_next:u8}
+/// Review F1: the last reserve bids (Manifest sequence, placement day, quote charged), so a cancellation gives
+/// quota back only to the day that bid was charged on. Each bid is at least 1/16 of the 30-day budget, so 16
+/// entries cover a window at a steady reserve; a bid whose entry was overwritten simply gets no credit.
+pub const BID_SLOTS:usize=16;
 
 #[derive(Accounts)]
 pub struct InitializeManagement<'info>{
  #[account(seeds=[b"config"],bump=config.bump,has_one=admin)] pub config:Box<Account<'info,Config>>,
  #[account(address=config.mint)] pub mint:Box<Account<'info,Mint>>,
  #[account(address=config.quote_mint)] pub quote_mint:Box<Account<'info,Mint>>,
- #[account(init,payer=admin,space=8+289,seeds=[b"management-book"],bump)] pub management_book:Box<Account<'info,ManagementBook>>,
+ #[account(init,payer=admin,space=8+674,seeds=[b"management-book"],bump)] pub management_book:Box<Account<'info,ManagementBook>>,
  /// CHECK: Fixed System-owned signer PDA; Manifest seat is claimed by CPI.
  #[account(init,payer=admin,space=0,owner=system_program.key(),seeds=[b"management-trader"],bump)] pub management_trader:UncheckedAccount<'info>,
  /// CHECK: Bound market, owner, mints, program and header checked before CPI.
@@ -130,7 +135,7 @@ pub fn order(mut ctx:Context<ManagementAction>,amount:u64,base_deposit:u64,manti
   if is_bid {
    // All reserve-funded bids: placed quote over any rolling 30 days <= 10% of the current project quote
    // reserve balance (Grok finding 3: the window is not added to the base).
-   roll(&mut a.management_book,now.unix_timestamp.div_euclid(86_400));let b=&mut a.management_book;
+   let today=now.unix_timestamp.div_euclid(86_400);roll(&mut a.management_book,today);let b=&mut a.management_book;
    let window:u64=b.bid_days.iter().try_fold(0u64,|s,x|s.checked_add(*x)).ok_or(ErrorCode::Math)?;
    let cost=order_quote(amount,mantissa,exponent)?;
    require!(window.checked_add(cost).ok_or(ErrorCode::Math)?<=a.project_quote.amount/10,ErrorCode::Quota);
@@ -138,11 +143,19 @@ pub fn order(mut ctx:Context<ManagementAction>,amount:u64,base_deposit:u64,manti
    // small bids resting to fill the 192-node observation scan.
    require!(cost as u128*160>=a.project_quote.amount as u128,ErrorCode::Quota);
    let slot=b.bid_day.rem_euclid(31) as usize;b.bid_days[slot]=b.bid_days[slot].checked_add(cost).ok_or(ErrorCode::Math)?;
+   // The order placed below rests under the market's current sequence number.
+   let i=b.bid_next as usize%BID_SLOTS;b.bid_seq[i]=market_sequence(&a.manifest_market.to_account_info())?;b.bid_on[i]=today;b.bid_left[i]=cost;b.bid_next=((i+1)%BID_SLOTS) as u8;
    // Review A1/A2: never buy the project's own resting ask; remember this bid for project asks and release sales.
-   let(num,den)=price_frac(mantissa,exponent);let t=now.unix_timestamp;let c=&mut a.config;
-   if t<c.ask_until {require!(num<c.ask_min as u128*den,ErrorCode::SelfTrade);}
+   let(num,den)=price_frac(mantissa,exponent);let(t,s)=(now.unix_timestamp,now.slot);let until=order_expiry(&now)? as u64;let c=&mut a.config;
+   if within(t,c.ask_until,s,c.ask_slot) {require!(num<c.ask_min as u128*den,ErrorCode::SelfTrade);}
    let ceil=u64::try_from((num+den-1)/den).map_err(|_|error!(ErrorCode::Math))?;
-   c.mgmt_bid_max=if t<c.mgmt_bid_until {c.mgmt_bid_max.max(ceil)}else{ceil};c.mgmt_bid_until=c.mgmt_bid_until.max(t+SELF_TRADE_WINDOW);
+   c.mgmt_bid_max=if within(t,c.mgmt_bid_until,s,c.mgmt_bid_slot) {c.mgmt_bid_max.max(ceil)}else{ceil};c.mgmt_bid_until=c.mgmt_bid_until.max(t+SELF_TRADE_WINDOW);c.mgmt_bid_slot=c.mgmt_bid_slot.max(until);
+  } else {
+   // Review F3: a management ask never meets a resting management bid either, and later bids must stay below it.
+   let(num,den)=price_frac(mantissa,exponent);let(t,s)=(now.unix_timestamp,now.slot);let until=order_expiry(&now)? as u64;let c=&mut a.config;
+   if within(t,c.mgmt_bid_until,s,c.mgmt_bid_slot) {require!(num>c.mgmt_bid_max as u128*den,ErrorCode::SelfTrade);}
+   let floor=u64::try_from(num/den).map_err(|_|error!(ErrorCode::Math))?;
+   c.ask_min=if within(t,c.ask_until,s,c.ask_slot) {c.ask_min.min(floor)}else{floor};c.ask_until=c.ask_until.max(t+SELF_TRADE_WINDOW);c.ask_slot=c.ask_slot.max(until);
   }}
  let a=&ctx.accounts;let expiry=order_expiry(&now)?;
  if base_deposit>0 {require!(base_deposit<=a.management_base.amount,ErrorCode::Collateral);deposit_or_withdraw(a,true,base_deposit,2)?;}
@@ -153,10 +166,13 @@ pub fn order(mut ctx:Context<ManagementAction>,amount:u64,base_deposit:u64,manti
 pub fn cancel(mut ctx:Context<ManagementAction>,sequence:u64)->Result<()> {
  let now=Clock::get()?;
  {let a=&mut ctx.accounts;market(a)?;
-  // Give back the unfilled part of a live bid to the rolling window, newest days first.
-  let mut credit=own_bid_quote(&a.manifest_market.to_account_info(),&now,sequence,&a.management_trader.key())?;
-  if credit>0 {roll(&mut a.management_book,now.unix_timestamp.div_euclid(86_400));let b=&mut a.management_book;let mut d=b.bid_day;
-   for _ in 0..31 {let s=d.rem_euclid(31) as usize;let x=credit.min(b.bid_days[s]);b.bid_days[s]-=x;credit-=x;if credit==0 {break;}d-=1;}}}
+  // Give back the unfilled part of a live bid to the rolling window. Review F1: only to the day that bid was
+  // charged on (if still inside the window), at most what it charged, and once.
+  let credit=own_bid_quote(&a.manifest_market.to_account_info(),&now,sequence,&a.management_trader.key())?;
+  if credit>0 {let today=now.unix_timestamp.div_euclid(86_400);roll(&mut a.management_book,today);let b=&mut a.management_book;
+   if let Some(i)=(0..BID_SLOTS).find(|&i|b.bid_left[i]>0&&b.bid_seq[i]==sequence) {
+    let(day,x)=(b.bid_on[i],credit.min(b.bid_left[i]));b.bid_left[i]=0;
+    if today-day<=30 {let s=day.rem_euclid(31) as usize;b.bid_days[s]-=x.min(b.bid_days[s]);}}}}
  let a=&ctx.accounts;let mut data=vec![6,0];data.extend_from_slice(&1u32.to_le_bytes());data.extend_from_slice(&sequence.to_le_bytes());data.push(0);data.extend_from_slice(&0u32.to_le_bytes());
  invoke_management(a,data,vec![AccountMeta::new(a.management_trader.key(),true),AccountMeta::new(a.manifest_market.key(),false),AccountMeta::new_readonly(a.system_program.key(),false)],vec![a.management_trader.to_account_info(),a.manifest_market.to_account_info(),a.system_program.to_account_info()])
 }
