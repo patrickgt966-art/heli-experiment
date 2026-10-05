@@ -1,5 +1,11 @@
 # Charta ilk web sitesi
 
+5 Ekim 2026 site güncellemesi: "How to take part" rehberi (`guide.html`) ve risk sayfası (`risks.html`) eklendi.
+- Tüm sayfalarda aynı menü (Guide eklendi) ve altbilgi kullanılıyor; menü 320 px'e kadar tek satıra sığıyor.
+- Sosyal paylaşım etiketleri (Open Graph) eklendi; ayrıca `404.html`, `robots.txt` ve `sitemap.xml`.
+- Cloudflare Pages, `404.html` olmadan bilinmeyen adreslere ana sayfayı döndürüyordu; artık 404 sayfası açılıyor.
+- `tests/site-pages.test.mjs` şunları denetler: menü ve altbilgi tutarlılığı, kırık bağlantı, önizleme sunucusu listesi, satır içi stil ve betik olmaması (CSP).
+
 4 Ekim 2026 pazar ölçümü yayını: referans ve derinlik yalnız dış alış emirleriyle; asgari derinlik 1.000 quote birimi; çöküş istisnası (%95, 30 gün, aylık %10). Yayın: https://390e7d50.heli-experiment.pages.dev
 
 4 Ekim 2026 V22 kural metni yayını: hazine release'lerinin aylık toplamı alış derinliğinin %2'si; 60. yıl kapanışından sonra satış geliri gider ödeyebilir, yeni CHTA yok, yönetim emirleri biter; giderler proje hesaplarına geri ödenemez. Cloudflare yayını: https://637407fa.heli-experiment.pages.dev (üretim adresinden doğrulandı).
