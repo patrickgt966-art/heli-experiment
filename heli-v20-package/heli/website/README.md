@@ -1,12 +1,12 @@
-# HELI ilk web sitesi
+# Charta ilk web sitesi
 
 4 Ekim 2026 pazar ölçümü yayını: referans ve derinlik yalnız dış alış emirleriyle; asgari derinlik 1.000 quote birimi; çöküş istisnası (%95, 30 gün, aylık %10). Yayın: https://390e7d50.heli-experiment.pages.dev
 
-4 Ekim 2026 V22 kural metni yayını: hazine release'lerinin aylık toplamı alış derinliğinin %2'si; 60. yıl kapanışından sonra satış geliri gider ödeyebilir, yeni HELI yok, yönetim emirleri biter; giderler proje hesaplarına geri ödenemez. Cloudflare yayını: https://637407fa.heli-experiment.pages.dev (üretim adresinden doğrulandı).
+4 Ekim 2026 V22 kural metni yayını: hazine release'lerinin aylık toplamı alış derinliğinin %2'si; 60. yıl kapanışından sonra satış geliri gider ödeyebilir, yeni CHTA yok, yönetim emirleri biter; giderler proje hesaplarına geri ödenemez. Cloudflare yayını: https://637407fa.heli-experiment.pages.dev (üretim adresinden doğrulandı).
 
 2 Ekim 2026 V20 güncel yayın: yalnız ilk 1M ücretsiz; 70M aylık satış envanteri rezervidir.
 Oran, 5M başlangıç tabanından başlayıp açılmış ve yakılmamış arz üzerinden hesaplanır.
-İlk ay 20.112,368685 HELI; aylık kişi kaydı/ücretsiz hak/burn yoktur.
+İlk ay 20.112,368685 CHTA; aylık kişi kaydı/ücretsiz hak/burn yoktur.
 Baloncuk, tüm açıklamalar ve indirilebilir kurallar İngilizce güncellendi.
 V20 gerçek ELF ile 720 ay ve toplam 1.606 kontrol/işlem geçti. Devnet/mainnet yayımlanmadı.
 Cloudflare üretim yayını Success durumuyla tamamlandı; dış erişim bu ortamdan teyit edilmedi.
@@ -23,7 +23,7 @@ Adres: https://heli-experiment.pages.dev/#token-allocation
 Bu ortamdan herkese açık adrese bağlantı zaman aşımına uğradı; dış erişim teyit edilmedi.
 Aşağıdaki yayınlanmamış sürüm notları tarihsel kayıttır; V19 site değişiklikleri bu yayına dahildir.
 
-2 Ekim 2026 güncel yerel sürüm: HELI Yönetim Hazinesi 15M; Human Dividend 70M;
+2 Ekim 2026 güncel yerel sürüm: Charta Yönetim Hazinesi 15M; Human Dividend 70M;
 ilk ücretsiz dağıtım 1M ve ilk piyasa 4M. Staking ve ayrı likidite tahsisi sıfır.
 Gelir proje rezervinde kalır. V19 gerçek ELF yerel testinde 148 kontrol/işlem geçti.
 İngilizce tablo ve arz grafiği yeniden 90M koşullu üst sınıra göre güncellendi.
@@ -43,7 +43,7 @@ Canlı başvuru, cüzdan bağlantısı, API anahtarı, belge/yüz toplama, token
 Tek kullanımlık Didit bağlantıları ve kişi verileri siteye dahil edilmez.
 
 Yayımlama paketi yalnız bu klasördeki `index.html`, `style.css`, `app.js`, `favicon.svg`,
-`_headers` ve `heli-rules.txt` dosyalarını içermelidir. Bütün heli klasörü yüklenmez.
+`_headers` ve `charta-rules.txt` dosyalarını içermelidir. Bütün heli klasörü yüklenmez.
 Kullanıcı isteğiyle yayımlanan bütün sayfalar ve indirilebilir kurallar İngilizcedir.
 Sunucu betiği ve README yayımlama arşivine dahil edilmez.
 

@@ -1,4 +1,4 @@
-# HELI aylık çalıştırıcı
+# Charta aylık çalıştırıcı
 
 **3 Ekim 2026: çalıştırıcı V20'ye güncellendi. Güncel işleyiş ve testler: [V20 belgesi](V20.md). Aşağıdaki V15 açıklaması tarihsel kayıttır; mevcut sürüm için uygulanmaz.**
 
@@ -16,11 +16,11 @@ Kurucu satış emri, gider aktarımı, kimlik onayı, yönetici değişikliği, 
 
 Günlük tavan, hesap kirası ve işlem ücreti birlikte rezerve edilir. Onay bilinmediğinde ya da işlem reddedildiğinde eski gider rezervi silinmez; bütçe ihtiyatlı kalır. Varsayılan örnek tavan 0,05 SOL/gün, cüzdan tabanı 0,005 SOL'dur. Bunlar harcama hedefi değil üst sınırdır. Yetersiz bakiye/bütçe yeni gönderimi durdurur. Çok uzun geçmiş kuyruğu bütçe yüzünden birkaç günde tamamlanabilir. Talepsiz piyasada başarısız simülasyon işlem göndermediği için zincir ücreti ödemez; RPC/sunucu maliyeti yine olabilir.
 
-Kod özeti, yükseltme yetkisi, yönetici, kimlik doğrulayıcı, zincir ve hesap sahibi/türü doğrulanır. ProgramData'nın yalnız başlığı boş bekleyişte kontrol edilir; kod her gönderim öncesi tam doğrulanır. HELI veya Manifest yükseltilirse eski pin ile devam edilmez. Bunlar RPC'nin dürüstlüğüne bağlıdır; bağımsız ağ güvenliği ispatı değildir. Teknik dayanak: [Solana yükseltme yetkisi](https://solana.com/docs/programs/deploying), [işlem gönderimi ve onay](https://solana.com/docs/rpc/http/sendtransaction), [Loader-v3 ProgramData yapısı](https://docs.rs/crate/solana-loader-v3-interface/latest/source/src/state.rs).
+Kod özeti, yükseltme yetkisi, yönetici, kimlik doğrulayıcı, zincir ve hesap sahibi/türü doğrulanır. ProgramData'nın yalnız başlığı boş bekleyişte kontrol edilir; kod her gönderim öncesi tam doğrulanır. Charta veya Manifest yükseltilirse eski pin ile devam edilmez. Bunlar RPC'nin dürüstlüğüne bağlıdır; bağımsız ağ güvenliği ispatı değildir. Teknik dayanak: [Solana yükseltme yetkisi](https://solana.com/docs/programs/deploying), [işlem gönderimi ve onay](https://solana.com/docs/rpc/http/sendtransaction), [Loader-v3 ProgramData yapısı](https://docs.rs/crate/solana-loader-v3-interface/latest/source/src/state.rs).
 
 ## Kurulum
 
-1. `config.example.json` kopyasını oluştur. Yönetici/doğrulayıcı public key'lerini, HELI/Manifest program yükseltme yetkilerini ve dağıtılmış Manifest ELF özeti/boyutunu bağımsız olarak doğrulayarak doldur. `null` yükseltme yetkisi, gerçekten değiştirme yetkisi kaldırılmış program demektir; rastgele varsayım değildir. Pinler otomatik benimsenmez.
+1. `config.example.json` kopyasını oluştur. Yönetici/doğrulayıcı public key'lerini, Charta/Manifest program yükseltme yetkilerini ve dağıtılmış Manifest ELF özeti/boyutunu bağımsız olarak doğrulayarak doldur. `null` yükseltme yetkisi, gerçekten değiştirme yetkisi kaldırılmış program demektir; rastgele varsayım değildir. Pinler otomatik benimsenmez.
 2. `node heli/keeper/generate-key.mjs` yalnız yerel işlem gideri anahtarını üretir. Özel anahtar `.keys/` altında kalır. Hesaba yetki veya SOL verilmez. `keeperKeyFile` için bu dosyanın tam yolunu kullan. Anahtarı kaynak paketine/derleyiciye gönderme.
 3. Devnet V15 kurulumu, doğru pinler ve yeterli test SOL'u sağlandıktan sonra `node heli/keeper/run.mjs TAM_CONFIG_YOLU --once` salt plan çıkarır. Bu mod anahtar okumaz, imzalamaz ve eski bekleyen işlemi de göndermez.
 4. Yürütme modu `node heli/keeper/run.mjs TAM_CONFIG_YOLU --execute` biçimindedir. Bu mod yalnız Devnet kabul eder. Bu çalışmada yürütme modu açılmadı.

@@ -1,4 +1,4 @@
-# HELI V20 — dağıtım ve anahtar planı
+# Charta V20 — dağıtım ve anahtar planı
 
 Bu belge, inceleme sonrası düzeltmelerle (H1, M9, C2b, C3) değişen kurulum sırasını ve anahtar yönetimini anlatır. Program derleme komutu: `scripts/build_local.sh` (Agave 2.1.21 / platform-tools v1.43). Henüz hiçbir ağa dağıtılmadı ve bağımsız denetimden geçmedi.
 
@@ -31,7 +31,7 @@ Bilinen sınır: Yönetici anahtarını çalan kişi sizden önce davranıp yön
 3. `create_market_inventory`
 4. `initialize_release_policy(minimum_quote_depth)` — `genesis`'ten **önce** olmalı; sonradan oluşturulamaz.
 5. `create_vault(0)` ve `create_vault(3)` (70M aylık arz kasası ve 15M yönetim hazinesi; başka kasa yoktur)
-6. `create_token_metadata(name, symbol, uri)` — cüzdanlarda görünecek ad (≤32 bayt), sembol (≤10 bayt) ve logo/JSON adresi (`https://`, ≤200 bayt). **Bir kez** yazılır; güncelleme yetkisi config PDA'sıdır ve programda güncelleme talimatı yoktur (upgrade anahtarı kaldırılınca kalıcı). Meta veri olmadan `genesis` çalışmaz. Adres, sitedeki bir JSON dosyasını göstermelidir (ör. `{"name":…,"symbol":…,"description":…,"image":"https://…/logo.png"}`); alan adı süresi dolarsa logo kaybolur, kalıcı barındırma (ör. Arweave) düşünülebilir.
+6. `create_token_metadata(name, symbol, uri)` — ad **`Charta`**, sembol **`CHTA`** (sahibin kararı, 5 Ekim 2026); cüzdanlarda görünecek ad (≤32 bayt), sembol (≤10 bayt) ve logo/JSON adresi (`https://`, ≤200 bayt). **Bir kez** yazılır; güncelleme yetkisi config PDA'sıdır ve programda güncelleme talimatı yoktur (upgrade anahtarı kaldırılınca kalıcı). Meta veri olmadan `genesis` çalışmaz. Adres, sitedeki bir JSON dosyasını göstermelidir (ör. `{"name":…,"symbol":…,"description":…,"image":"https://…/logo.png"}`); alan adı süresi dolarsa logo kaybolur, kalıcı barındırma (ör. Arweave) düşünülebilir.
 7. `genesis` — 100M basılır, 10M yakılır, basma yetkisi kalıcı olarak kaldırılır.
 8. `prepare_auction_quote`, `prepare_auction_proceeds`
 9. `open_auction(floor, tick_size)` — `start - 600` saniyeden **önce** olmalı. İhale açılmazsa proje satış emri hiç konamaz.
@@ -87,7 +87,7 @@ Sonradan yönetici değiştirildiğinde keeper bilinçli olarak durur ("Administ
 
 ## Ekip işlem taahhüdü (sahibin kararı, 4 Ekim 2026)
 
-Kurucu ve ekip HELI pazarında yalnız **ilan edilmiş** cüzdanlardan işlem yapar; beyan edilmemiş hesap kullanılmaz. Ekip ve varsa piyasa yapıcı cüzdan adresleri lansmandan önce sitede yayınlanır. Program kişisel cüzdanları ayırt edemediği için bu bir kod kuralı değil, kamuya açık taahhüttür. Lansman kontrol listesine: cüzdan adreslerini yayınla.
+Kurucu ve ekip CHTA pazarında yalnız **ilan edilmiş** cüzdanlardan işlem yapar; beyan edilmemiş hesap kullanılmaz. Ekip ve varsa piyasa yapıcı cüzdan adresleri lansmandan önce sitede yayınlanır. Program kişisel cüzdanları ayırt edemediği için bu bir kod kuralı değil, kamuya açık taahhüttür. Lansman kontrol listesine: cüzdan adreslerini yayınla.
 
 ## Yönetim release sınırı (V22, sahibin kararı, bulgu 4-B)
 
@@ -96,7 +96,7 @@ O ayki yönetim release'leri ve doğrudan release satışlarının **toplamı** 
 ## Ücretsiz pay yok (sahibin kararı, 4 Ekim 2026)
 
 - Başlangıç tabanı 5M'nin tamamı açılış ihalesi ve piyasa envanterine gider (`genesis`), ihalede 5M satışa çıkar (`OFFER_HELI`).
-- **Cüzdan başına ihale sınırı (sahibin kararı, tekele karşı):** bir cüzdan en fazla `WALLET_CAP_HELI` = 250.000 HELI (teklifin %5'i) isteyebilir; daha büyük teklif `Quota` ile reddedilir, iptal edip yeniden teklif vermek sınırı artırmaz. Çok cüzdan açmayı kod engelleyemez (kimlik yok); sınır tek cüzdanla tekeli önler ve aşmayı görünür kılar. Satılmayan HELI `market_remaining` içinde kalır ve yalnız satış tabanıyla satılır.
+- **Cüzdan başına ihale sınırı (sahibin kararı, tekele karşı):** bir cüzdan en fazla `WALLET_CAP_HELI` = 250.000 CHTA (teklifin %5'i) isteyebilir; daha büyük teklif `Quota` ile reddedilir, iptal edip yeniden teklif vermek sınırı artırmaz. Çok cüzdan açmayı kod engelleyemez (kimlik yok); sınır tek cüzdanla tekeli önler ve aşmayı görünür kılar. Satılmayan CHTA `market_remaining` içinde kalır ve yalnız satış tabanıyla satılır.
 - Ücretsiz pay kasası 0'dır ve başlangıçta kapanmış sayılır (`launch_finalized=true`); keeper 6. ay işini planlamaz.
 - `issue_credential`, `enroll_launch`, `claim_launch`, `dispute_launch`, `restore_launch`, `set_credential_active`, `finalize_launch` IDL uyumluluğu için duruyor ama her zaman `FreeAllocationDisabled` döner.
 - Kimlik ve doğrulayıcı (`initialize_identity`, `set_verifier`) programdan tamamen kaldırıldı (bölüm 14).

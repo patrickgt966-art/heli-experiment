@@ -1,17 +1,19 @@
-# HELI — Solana monetary experiment
+# Charta (CHTA) — Solana monetary experiment
 
-HELI is an experimental token design exploring a rule-based alternative monetary system on Solana. This repository holds the program source, tests, operating tools and review records. **Nothing is deployed to Devnet or mainnet, and the code has not had an independent security audit.**
+Token name **Charta**, symbol **CHTA**. The working name was HELI; program, folder and variable names (`heli_core_v20`, `heli-v20-package`, `OFFER_HELI` …) keep it, so the code and earlier reviews stay comparable.
 
-Website: https://heli-experiment.pages.dev · Full rules: [`heli-v20-package/heli/website/heli-rules.txt`](heli-v20-package/heli/website/heli-rules.txt)
+Charta is an experimental token design exploring a rule-based alternative monetary system on Solana. This repository holds the program source, tests, operating tools and review records. **Nothing is deployed to Devnet or mainnet, and the code has not had an independent security audit.**
+
+Website: https://heli-experiment.pages.dev · Full rules: [`heli-v20-package/heli/website/charta-rules.txt`](heli-v20-package/heli/website/charta-rules.txt)
 
 ## Rules (V22 design)
 
 **Supply**
-- Initial mint: 100 million HELI. Initial burn: 10 million. Maximum remaining supply: 90 million.
+- Initial mint: 100 million CHTA. Initial burn: 10 million. Maximum remaining supply: 90 million.
 - Initial release base: 5 million, all sold through the opening auction and the market. There is no free allocation, presale or private round.
-- Opening auction: one bid per wallet, at most 250,000 HELI (5% of the 5 million offer). HELI the auction does not sell stays in the project inventory and is sold only under the market sale floor.
-- Locked: Monthly Market Release Reserve 70 million; HELI Management Treasury 15 million (former founder, market-support and staking allocations combined).
-- Shared monthly release cap: about 0.402247% of the supply already released and not burned (first month: 20,112.368685 HELI), over 720 months. About 4.9% a year is an upper bound, not a forecast. Unsold released inventory still counts as released supply in that base.
+- Opening auction: one bid per wallet, at most 250,000 CHTA (5% of the 5 million offer). CHTA the auction does not sell stays in the project inventory and is sold only under the market sale floor.
+- Locked: Monthly Market Release Reserve 70 million; Charta Management Treasury 15 million (former founder, market-support and staking allocations combined).
+- Shared monthly release cap: about 0.402247% of the supply already released and not burned (first month: 20,112.368685 CHTA), over 720 months. About 4.9% a year is an upper bound, not a forecast. Unsold released inventory still counts as released supply in that base.
 - Staking is cancelled. There is no monthly free dividend.
 - At the 60-year close, only still-locked stock is burned; unsold released inventory is protected.
 
@@ -28,9 +30,9 @@ Website: https://heli-experiment.pages.dev · Full rules: [`heli-v20-package/hel
 - An administrative pause halts sales, treasury operations and expenses, but never the monthly release rule.
 - An offline recovery key can replace a lost administrator key after seven days.
 - Until the audit the program is upgradeable. The administrator and the manager may be the same key; the pause has no time limit; the administrator or the offline recovery key can cancel a pending expense.
-- Team trading commitment: the founder and team trade HELI only from publicly declared wallets, never from undisclosed accounts. Team and any market-maker wallet addresses will be published before launch. (The program cannot tell personal wallets apart, so this is a public commitment, not a code rule.)
+- Team trading commitment: the founder and team trade CHTA only from publicly declared wallets, never from undisclosed accounts. Team and any market-maker wallet addresses will be published before launch. (The program cannot tell personal wallets apart, so this is a public commitment, not a code rule.)
 
-A project reserve is not a guaranteed redemption backing. HELI makes no claim of guaranteed price, returns or liquidity.
+A project reserve is not a guaranteed redemption backing. Charta makes no claim of guaranteed price, returns or liquidity.
 
 ## Status — 4 October 2026
 
@@ -54,4 +56,4 @@ No wallet secrets or personal data are included in this repository.
 
 ## Türkçe
 
-HELI, Solana üzerinde kurallı para arzını araştıran bir deneydir. Ücretsiz dağıtım yoktur; 5 milyon HELI açılış ihalesi ve piyasa yoluyla satılır. İhalede bir cüzdan en fazla 250.000 HELI (teklifin %5'i) isteyebilir. Güncel tasarım V22'dir: yerel Solana simülatör testlerinden geçti (eski kimlik pilotu arşivdedir). Devnet veya ana ağda yayınlanmış değildir ve bağımsız güvenlik denetiminden geçmemiştir. Ayrıntılı durum: `heli-v20-package/V22_DURUM.md`.
+Charta (CHTA), Solana üzerinde kurallı para arzını araştıran bir deneydir (çalışma adı HELI idi; kod içindeki adlar değişmedi). Ücretsiz dağıtım yoktur; 5 milyon CHTA açılış ihalesi ve piyasa yoluyla satılır. İhalede bir cüzdan en fazla 250.000 CHTA (teklifin %5'i) isteyebilir. Güncel tasarım V22'dir: yerel Solana simülatör testlerinden geçti (eski kimlik pilotu arşivdedir). Devnet veya ana ağda yayınlanmış değildir ve bağımsız güvenlik denetiminden geçmemiştir. Ayrıntılı durum: `heli-v20-package/V22_DURUM.md`.

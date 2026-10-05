@@ -1,11 +1,11 @@
-# HELI programı (V22) — `heli_core_v20`
+# Charta programı (V22) — `heli_core_v20`
 
 Program ve klasör adı uyumluluk için "v20" olarak kaldı; içerik V22'dir. **Dağıtılmadı, bağımsız denetimden geçmedi.**
 Ayrıntılı karar ve test kaydı: `../../../reviews/v22/V22_DUZELTME_2026-10-04.md`. Kurulum: `DEPLOYMENT.md`.
 
 ## Arz
 
-| Kalem | HELI |
+| Kalem | CHTA |
 |---|---:|
 | İlk basım | 100.000.000 |
 | İlk yakım | −10.000.000 |
@@ -14,12 +14,12 @@ Ayrıntılı karar ve test kaydı: `../../../reviews/v22/V22_DUZELTME_2026-10-04
 | Yönetim Hazinesi (vault 3, kilitli) | 15.000.000 |
 
 Aylık tavan: `floor((mint_supply − kilitli_stoklar) × RATE / SCALE)`, `RATE = 4_022_473_737_086_389`, `SCALE = 10^18`
-(≈ %0,402247; ilk ay 20.112,368685 HELI), 720 ay. Yönetim: ilk 12 ay kilitli; sonra tavanın en fazla %20'si,
+(≈ %0,402247; ilk ay 20.112,368685 CHTA), 720 ay. Yönetim: ilk 12 ay kilitli; sonra tavanın en fazla %20'si,
 yönetim dışı arzın ¼'ü ve dış alış derinliğinin %2'si. 60. yılda kalan kilitli stok yakılır.
 
 ## Hazine ve pazar (özet)
 
-- Açılış ihalesi: cüzdan başına tek teklif, en fazla 250.000 HELI (`WALLET_CAP_HELI`, teklifin %5'i); satılmayan kısım proje envanterinde kalır.
+- Açılış ihalesi: cüzdan başına tek teklif, en fazla 250.000 CHTA (`WALLET_CAP_HELI`, teklifin %5'i); satılmayan kısım proje envanterinde kalır.
 
 - Fiyat referansı yalnız dış alışlardan (Manifest v3.0.24), saatlik gözlemle; satış ≥ %95, rezervle alış ≤ %105.
 - Rezervle tüm alışlar 30 günde rezerv bakiyesinin en fazla %10'u; çöküş istisnası 24 saat kesintisiz kayıtlı sığlık ister.
