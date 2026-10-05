@@ -70,7 +70,10 @@ export function relax(nodes, width, height, iterations = 1, pad = 1.5, gravity =
   return nodes;
 }
 // Animation-free layout: settle with gravity, then remove the remaining overlaps with gravity switched off.
-export function settle(nodes, width, height, links = []) { relax(nodes, width, height, 160, 1.5, 0.02, links); relax(nodes, width, height, 60, 1.5, 0.004, links); return relax(nodes, width, height, 200, 1.5, 0); }
+export function settle(nodes, width, height, links = []) { relax(nodes, width, height, 160, 1.5, 0.02, links); relax(nodes, width, height, 60, 1.5, 0.004, links); relax(nodes, width, height, 200, 1.5, 0);
+  // Large maps can keep a few overlaps after the fixed passes; keep separating until none are left (bounded).
+  for (let k = 0; k < 40 && overlaps(nodes) > 0; k++) relax(nodes, width, height, 25, 1.5, 0);
+  return nodes; }
 export function overlaps(nodes, tolerance = 0.5) {
   let n = 0;
   for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {

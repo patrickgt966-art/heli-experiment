@@ -162,3 +162,4 @@ nav a[href$="auction.html"]{color:var(--accent);border-color:#ff9a3c88;backgroun
 @media(prefers-reduced-motion:reduce){.button.accent{animation:none}}
 .market-segment.full-segment{background:linear-gradient(120deg,#ffae5c,#d9701f);color:#2b1400}.distribution-section .market-dot{background:var(--accent)}
 .claim-page-heading h1 span{font-style:italic;font-weight:360}
+.holder-list.all{max-height:420px;overflow:auto;padding-right:4px}.holder-all{margin-top:10px}

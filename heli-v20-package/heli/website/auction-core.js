@@ -127,6 +127,27 @@ export function createAtaIdempotentIx(web3, payer, ata, owner, mint) {
     keys: [meta(payer, true, true), meta(ata, true), meta(owner, false), meta(mint, false), meta(new web3.PublicKey(SYSTEM_PROGRAM), false), meta(new web3.PublicKey(TOKEN_PROGRAM), false)] });
 }
 
+// Status of one bid as the program settles it (auction.rs finalize/allocation). Below 5M of bids everyone is filled
+// at the clearing level (0); above it, bids at the clearing level share the remainder pro rata.
+export function bidStatus(a, est, b) {
+  if (b.claimed) return 'claimed';
+  if (!b.active) return 'cancelled';
+  const full = a.finalized ? a.sold >= OFFER : est.full;
+  if (!full) return a.finalized ? 'filled' : 'filled at minimum';
+  const tick = a.finalized ? a.clearingTick : est.tick;
+  if (b.tick > tick) return 'filled';
+  if (b.tick < tick) return 'outbid';
+  const whole = a.finalized ? a.marginalAtoms >= a.marginalDemand * 1_000_000n : est.marginalAtoms >= est.marginalDemand;
+  return whole ? 'filled' : 'partly filled';
+}
+
+// A transaction that reached the chain but failed comes back from confirmTransaction as value.err, without throwing.
+export async function confirmOrThrow(conn, sig) {
+  const r = await conn.confirmTransaction(sig, 'confirmed');
+  if (r?.value?.err) { const e = Error(`The transaction failed on chain and changed nothing (${JSON.stringify(r.value.err)}).`); e.onChain = r.value.err; throw e; }
+  return sig;
+}
+
 export function errorText(e) {
   const logs = (e?.logs ?? e?.transactionLogs ?? []).join('\n') + '\n' + String(e?.message ?? e);
   const m = logs.match(/Error Message: ([^.\n]+)/);

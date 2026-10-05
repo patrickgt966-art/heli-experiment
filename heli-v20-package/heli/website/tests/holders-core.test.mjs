@@ -47,3 +47,8 @@ test('example links form clusters and linked layouts stay overlap-free',()=>{
  assert.ok(l.length>=6);const ids=new Set(b.map(x=>x.id));for(const x of l){assert.ok(ids.has(x.a)&&ids.has(x.b));assert.notEqual(x.a,x.b);}
  assert.equal(H.overlaps(H.settle(H.initialNodes(b,900,600),900,600,l)),0);
 });
+test('400 holders pack without overlaps (review: 4 overlaps were left before)',()=>{
+ let s=1;const r=()=>((s=(s*1664525+1013904223)>>>0)/2**32);
+ const many=Array.from({length:400},(_,i)=>({id:String(i),owner:String(i),kind:'wallet',amount:BigInt(1+Math.floor(r()*250000))}));
+ assert.equal(H.overlaps(H.settle(H.initialNodes(many,900,600),900,600)),0);
+});

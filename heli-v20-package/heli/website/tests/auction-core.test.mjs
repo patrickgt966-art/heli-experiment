@@ -64,3 +64,20 @@ test('phases: open, final five minutes, ended, finalized',()=>{
  assert.equal(core.phase(a,{},9_699),'open');assert.equal(core.phase(a,{},9_700),'frozen');assert.equal(core.phase(a,{},10_000),'ended');
  assert.equal(core.phase(core.decodeAuction(auctionBytes({finalized:true})),{},0),'finalized');
 });
+test('bid status follows the program: an undersubscribed final auction fills every active bid (Codex finding)',()=>{
+ const a=core.decodeAuction(auctionBytes({demand:{0:1_000_000,7:500_000}}));const est=core.estimate(a);
+ const fin={...a,finalized:true,sold:1_500_000n,clearingTick:0,marginalAtoms:1_000_000n*1_000_000n,marginalDemand:1_000_000n};
+ assert.equal(core.bidStatus(fin,est,{active:true,tick:0,quantity:250_000n}),'filled');
+ assert.equal(core.bidStatus(fin,est,{active:true,tick:7,quantity:250_000n}),'filled');
+ assert.equal(core.bidStatus(a,est,{active:true,tick:0,quantity:250_000n}),'filled at minimum');
+ const b=core.decodeAuction(auctionBytes({demand:{20:2_500_000,10:3_000_000}}));const e2=core.estimate(b);
+ const fin2={...b,finalized:true,sold:5_000_000n,clearingTick:10,marginalAtoms:2_500_000n*1_000_000n,marginalDemand:3_000_000n};
+ assert.equal(core.bidStatus(fin2,e2,{active:true,tick:10,quantity:1n}),'partly filled');assert.equal(core.bidStatus(fin2,e2,{active:true,tick:20,quantity:1n}),'filled');
+ assert.equal(core.bidStatus(fin2,e2,{active:true,tick:9,quantity:1n}),'outbid');
+ assert.equal(core.bidStatus(fin2,e2,{active:false,claimed:true}),'claimed');assert.equal(core.bidStatus(fin2,e2,{active:false}),'cancelled');
+ const exact={...fin2,marginalAtoms:3_000_000n*1_000_000n};assert.equal(core.bidStatus(exact,e2,{active:true,tick:10,quantity:1n}),'filled');
+});
+test('a transaction that landed but failed is reported as failed, not done (Codex finding, seen on a local validator)',async()=>{
+ await assert.rejects(core.confirmOrThrow({confirmTransaction:async()=>({value:{err:{InstructionError:[0,{Custom:1}]}}})},'sig'),/failed on chain/);
+ assert.equal(await core.confirmOrThrow({confirmTransaction:async()=>({value:{err:null}})},'sig'),'sig');
+});

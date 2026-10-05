@@ -35,7 +35,8 @@ function render() {
   const shown = auction.finalized ? { ...est, price: auction.clearingPrice, tick: auction.clearingTick } : est;
   $('phase-label').textContent = { open: 'BIDDING OPEN', frozen: 'FINAL 5 MINUTES · NO CHANGES', ended: 'ENDED · AWAITING FINALIZATION', finalized: 'FINALIZED', paused: 'PAUSED' }[phase];
   $('est-price').innerHTML = `${usd(shown.price).toFixed(6).replace(/0+$/, '').replace(/\.$/, '')}<small> USDC</small>`;
-  $('est-note').textContent = auction.finalized ? 'Final clearing price. Everyone pays this price.' : est.full ? 'Estimated clearing price if the auction ended now (bids reach 5,000,000 CHTA).' : 'Bids are below 5,000,000 CHTA: everyone would pay the minimum price.';
+  if (auction.finalized && auction.sold === 0n) $('est-price').textContent = '–';
+  $('est-note').textContent = auction.finalized && auction.sold === 0n ? 'No bids were placed, so nothing was sold in the auction.' : auction.finalized ? 'Final clearing price. Everyone pays this price.' : est.full ? 'Estimated clearing price if the auction ended now (bids reach 5,000,000 CHTA).' : 'Bids are below 5,000,000 CHTA: everyone would pay the minimum price.';
   const left = Math.max(0, auction.end - FREEZE() - now);
   $('countdown').textContent = phase === 'open' ? `${Math.floor(left / 86400)}d ${Math.floor(left % 86400 / 3600)}h ${Math.floor(left % 3600 / 60)}m` : 'closed';
   const active = bids.filter(b => b.active);
@@ -53,7 +54,7 @@ function render() {
   const sorted = [...bids].sort((x, y) => y.tick - x.tick || (y.quantity > x.quantity ? 1 : -1));
   $('bids-table').tBodies[0].innerHTML = sorted.map(b => {
     const owner = new web3.PublicKey(b.owner), mine = wallet && owner.equals(wallet);
-    const status = b.claimed ? 'claimed' : !b.active ? 'cancelled' : auction.finalized || est.full ? (b.tick > shown.tick ? 'filled' : b.tick === shown.tick ? 'partly filled' : 'outbid') : 'filled at minimum';
+    const status = core.bidStatus(auction, est, b);
     return `<tr${mine ? ' class="mine"' : ''}><td>${short(owner)}${mine ? ' (you)' : ''}</td><td>${b.active || b.claimed ? fmt(b.quantity) : '–'}</td><td>${usd(core.priceAt(auction, b.tick))}</td><td>${status}</td></tr>`;
   }).join('') || '<tr><td colspan="4">No bids yet.</td></tr>';
   $('updated').textContent = `Updated ${new Date().toLocaleTimeString()}`;
@@ -99,10 +100,10 @@ async function send(label, instructions) {
     const signed = await provider.signTransaction(tx);
     const sig = await conn.sendRawTransaction(signed.serialize());
     s.textContent = `${label}: sent, waiting for confirmation…`;
-    await conn.confirmTransaction(sig, 'confirmed');
+    await core.confirmOrThrow(conn, sig);
     s.textContent = `${label}: done. Transaction ${sig.slice(0, 8)}…`;
     await refresh();
-  } catch (e) { s.textContent = `${label} failed: ${core.errorText(e)}`; }
+  } catch (e) { s.textContent = `${label} failed: ${e?.onChain ? e.message : core.errorText(e)}`; refresh().catch(() => {}); }
   finally { busy = false; }
 }
 const mineNow = () => bids.find(b => new web3.PublicKey(b.owner).equals(wallet));
