@@ -1,0 +1,299 @@
+{
+  "source_sha256": "332d701e5efaabd3b7bd843b884b7a04e1a30c6c8297cdcbd3e175382569e7da",
+  "binary_sha256": "29186c9f99076d240d0a7c5fa7959191447e9b02538fac94b7d8e4a5c754c0b0",
+  "attacks_blocked": 32,
+  "findings": [],
+  "blocked": [
+    [
+      "Mallory opens bob's bid account without bob's signature",
+      "The given account did not sign"
+    ],
+    [
+      "Mallory bids at a price level beyond the 256 levels",
+      "Quota exceeded"
+    ],
+    [
+      "Mallory bids for zero tokens",
+      "Invalid state"
+    ],
+    [
+      "Mallory bids with a quantity that overflows the collateral",
+      "Quota exceeded"
+    ],
+    [
+      "Mallory bids beyond the 5% wallet cap",
+      "Quota exceeded"
+    ],
+    [
+      "Mallory places a second bid on top without cancelling",
+      "Invalid state"
+    ],
+    [
+      "Mallory cancels alice's bid",
+      "A seeds constraint was violated"
+    ],
+    [
+      "Mallory cancels alice's bid and takes the refund",
+      "A seeds constraint was violated"
+    ],
+    [
+      "Mallory claims before the auction is finalized",
+      "Invalid state"
+    ],
+    [
+      "Mallory cancels inside the last five minutes (bid sniping)",
+      "Invalid calendar window"
+    ],
+    [
+      "anyone finalizes before the auction end",
+      "Invalid calendar window"
+    ],
+    [
+      "Mallory claims her bid a second time",
+      "Invalid state"
+    ],
+    [
+      "Mallory mints new tokens",
+      "Custom(5)"
+    ],
+    [
+      "Mallory transfers tokens out of the human vault",
+      "Custom(4)"
+    ],
+    [
+      "Mallory closes the human vault",
+      "Custom(11)"
+    ],
+    [
+      "Mallory transfers tokens out of the founder vault",
+      "Custom(4)"
+    ],
+    [
+      "Mallory closes the founder vault",
+      "Custom(11)"
+    ],
+    [
+      "Mallory transfers tokens out of the market_inventory vault",
+      "Custom(4)"
+    ],
+    [
+      "Mallory closes the market_inventory vault",
+      "Custom(11)"
+    ],
+    [
+      "Mallory transfers quote out of the project reserve",
+      "Custom(4)"
+    ],
+    [
+      "Mallory sets herself as authority of the project reserve",
+      "Custom(4)"
+    ],
+    [
+      "Mallory settles the month into her own account as release reserve",
+      "A seeds constraint was violated"
+    ],
+    [
+      "Mallory settles the month into her own account as market inventory",
+      "A seeds constraint was violated"
+    ],
+    [
+      "Mallory settles with her own account as management stock",
+      "A seeds constraint was violated"
+    ],
+    [
+      "Mallory settles with a fake epoch account",
+      "The program expected this account to be already initialized"
+    ],
+    [
+      "the month is settled a second time",
+      "Invalid calendar window"
+    ],
+    [
+      "Mallory opens an epoch out of order",
+      "Invalid calendar window"
+    ],
+    [
+      "Mallory closes the 60-year constitution early",
+      "Invalid calendar window"
+    ],
+    [
+      "Mallory closes the constitution with her own accounts as vaults",
+      "A seeds constraint was violated"
+    ],
+    [
+      "observation with a fake Manifest program",
+      "Market guard rejected"
+    ],
+    [
+      "observation with the instructions sysvar replaced",
+      "An address constraint was violated"
+    ],
+    [
+      "observation of a copied fake market",
+      "An address constraint was violated"
+    ]
+  ],
+  "checks_and_transactions": 158,
+  "checks": [
+    "allocate 82",
+    "TEST quote mint",
+    "initialize",
+    "create_market_inventory",
+    "create_vault",
+    "create_vault",
+    "genesis refused without the release policy (it could never be created afterwards)",
+    "initialize_release_policy",
+    "genesis refused before the token has a name (mint authority would be revoked)",
+    "token name, symbol and logo URI written before genesis",
+    "genesis",
+    "prepare_auction_quote",
+    "prepare_auction_proceeds",
+    "open_auction",
+    "project floor cannot be chosen before the opening auction has finished (review F5)",
+    "create SPL account",
+    "create SPL account",
+    "TEST quote to alice",
+    "create_auction_bid",
+    "place_auction_bid",
+    "create SPL account",
+    "create SPL account",
+    "TEST quote to bidder",
+    "create_auction_bid",
+    "place_auction_bid",
+    "create SPL account",
+    "create SPL account",
+    "TEST quote to bidder",
+    "create_auction_bid",
+    "place_auction_bid",
+    "create SPL account",
+    "create SPL account",
+    "TEST quote to bidder",
+    "create_auction_bid",
+    "place_auction_bid",
+    "create SPL account",
+    "TEST quote to Mallory",
+    "Mallory opens her own bid account",
+    "Mallory places a normal bid",
+    "create SPL account",
+    "Mallory gifts 1 quote unit to the auction escrow",
+    "finalize_auction",
+    "claim_auction_bid",
+    "claim_auction_bid",
+    "SPL transfer",
+    "claim_auction_bid",
+    "SPL transfer",
+    "claim_auction_bid",
+    "SPL transfer",
+    "free allocation removed: the credential instruction no longer exists",
+    "allocate 256",
+    "initialize bound Manifest market",
+    "create_manifest_base",
+    "create_manifest_quote",
+    "bind_manifest_market",
+    "create_management_base",
+    "create_management_quote",
+    "TEST quote to project reserve",
+    "create_fee_base",
+    "create_fee_quote",
+    "project floor chosen after the auction finished (review F5)",
+    "initialize_management",
+    "open_epoch",
+    "management_fund_quote",
+    "create SPL account",
+    "gift to the auction escrow did not stop finalization or the claims",
+    "Mallory claims her own finalized bid (legitimate)",
+    "Mallory paid the uniform auction price for exactly 1,000 tokens",
+    "mint authority and freeze authority are both revoked (nobody can mint or freeze balances)",
+    "SPL transfer",
+    "a 1-token gift into the market release reserve does not change its accounted stock",
+    "honest settle by anyone after the month ends",
+    "Mallory opens the next epoch (permissionless, she pays the rent)",
+    "user seat",
+    "create SPL account",
+    "synthetic quote",
+    "user deposit",
+    "user funded limit order",
+    "allocate 256",
+    "arm observation",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "observe_release_market",
+    "honest reference is the outside 1.0",
+    "user seat",
+    "user deposit",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "user funded limit order",
+    "observe_release_market",
+    "observe_release_market",
+    "40 cheap bids below the real one do not move the reference",
+    "user deposit",
+    "user funded limit order",
+    "observe_release_market",
+    "observe_release_market",
+    "a dump that empties outside demand stops the reference instead of lowering it, and is recorded as shallow",
+    "after the dump the project still cannot sell below 95% of the last outside reference",
+    "token supply unchanged by every outside attack",
+    "locked stocks only moved by the honest monthly settle"
+  ],
+  "all_passed": true,
+  "scope": "Compiled ELF and Manifest v3.0.24 ELF in local LiteSVM, synthetic quote/keys; outside attackers only. Not a deployment or audit."
+}

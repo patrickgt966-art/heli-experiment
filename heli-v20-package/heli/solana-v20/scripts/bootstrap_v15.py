@@ -1,7 +1,7 @@
 """Small genuine V15 fixture; no public chain or keys."""
 import hashlib,struct
 NAME='Charta Test Token';URI='https://heli-experiment.pages.dev/token.json'  # name chosen (Charta/CHTA); the logo URI is a placeholder until the site address is decided
-def bootstrap(t, auction_quantity=1000, with_policy=False, min_depth=5000, reject_depth=None, metadata_checks=False, order_checks=False):
+def bootstrap(t, auction_quantity=1000, with_policy=False, min_depth=5000, reject_depth=None, metadata_checks=False, order_checks=False, before_finalize=None):
  t.clock(t.start-14*t.DAY);q=t.allocate(82,t.TOKEN);t.defaults['quote_mint']=q
  t.send('TEST quote mint',[t.Instruction(t.TOKEN,b'\x14\x06'+bytes(t.admin.pubkey())+b'\x00',[t.meta(q,True)])])
  t.defaults.update(market_inventory=t.pda(b'market-inventory'),auction=t.pda(b'opening-auction'),quote_escrow=t.pda(b'auction-quote'),sale_proceeds=t.pda(b'auction-proceeds'),instructions=t.INSTRUCTIONS_SYSVAR)
@@ -43,6 +43,7 @@ def bootstrap(t, auction_quantity=1000, with_policy=False, min_depth=5000, rejec
   t.send('TEST quote to bidder',[t.Instruction(t.TOKEN,b'\x07'+struct.pack('<Q',1_000_000*t.U),[t.meta(q,True),t.meta(kq,True),t.meta(t.admin.pubkey(),False,True)])])
   kb={'bidder':k.pubkey(),'bid':t.pda(b'auction-bid',bytes(k.pubkey())),'bidder_quote':kq,'bidder_heli':kh}
   t.call('create_auction_bid',acc=kb);t.call('place_auction_bid',{'quantity_heli':n,'tick':0},kb);extra.append((k,kb,kh,n))
+ if before_finalize:before_finalize(ba)  # hook for attacks on a live auction
  t.clock(t.start);t.call('finalize_auction');t.call('claim_auction_bid',acc=ba)
  for k,kb,kh,n in extra:t.call('claim_auction_bid',acc=kb);t.transfer(kh,hw,n*t.U,k)
  nul=hashlib.sha256(b'long-run-local-person').digest()
