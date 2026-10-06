@@ -33,7 +33,10 @@ DEVNET='EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG'
 p=argparse.ArgumentParser();p.add_argument('--upgrade-authority',required=True);p.add_argument('--port',type=int,default=8899)
 p.add_argument('--start',type=int,default=int(time.time()))
 # The keeper pilot only runs against Devnet's genesis hash; a rehearsal can present it to run the keeper unchanged.
-p.add_argument('--pretend-devnet',action='store_true');args=p.parse_args()
+p.add_argument('--pretend-devnet',action='store_true')
+# By default any blockhash stays valid (clients cache them across warps). With a validity in slots, an older
+# blockhash is refused like on a real cluster, so expired-transaction handling can be tested.
+p.add_argument('--blockhash-validity',type=int,default=0);args=p.parse_args()
 if args.pretend_devnet:GENESIS=DEVNET
 
 elf=(ROOT/'heli_core_v20.so').read_bytes()
@@ -50,12 +53,14 @@ a=svm.get_account(PROGRAM_DATA);d=bytearray(a.data);d[12]=1;d[13:45]=bytes(Pubke
 svm.set_account(PROGRAM_DATA,Account(a.lamports,bytes(d),a.owner,a.executable,a.rent_epoch))
 c=svm.get_clock();c.unix_timestamp=args.start;svm.set_clock(c)
 
+issued={}       # blockhash -> slot it was issued at (for --blockhash-validity)
 history={}      # signature -> record (slot, time, err, logs, tx, token balances)
 by_address={}   # address -> [signatures], newest last
 pending={}      # signature -> [(websocket, subscription id)]
 loop=None
 
 def now_slot():return svm.get_clock().slot
+def rotate():svm.expire_blockhash();issued[str(svm.latest_blockhash())]=now_slot()
 def advance(slots=1,seconds=0):
  c=svm.get_clock();svm.warp_to_slot(c.slot+slots);c=svm.get_clock();c.unix_timestamp+=seconds;svm.set_clock(c)
 def ctx(v):return {'context':{'slot':now_slot()},'value':v}
@@ -98,6 +103,9 @@ def notify(ws,sub,sig):
 
 def send(raw,opts):
  tx=VersionedTransaction.from_bytes(raw);sig=str(tx.signatures[0]);keys=list(tx.message.account_keys)
+ bh=str(tx.message.recent_blockhash)
+ if args.blockhash_validity and (bh not in issued or now_slot()-issued[bh]>args.blockhash_validity):
+  raise RpcError(-32002,'Transaction simulation failed: Blockhash not found',{'err':'BlockhashNotFound','logs':[]})
  if sig in history:raise RpcError(-32002,'Transaction simulation failed: This transaction has already been processed',{'err':'AlreadyProcessed','logs':[]})
  if not opts.get('skipPreflight'):
   sim=svm.simulate_transaction(tx)
@@ -106,7 +114,7 @@ def send(raw,opts):
    raise RpcError(-32002,f'Transaction simulation failed: {json.dumps(e)}',{'err':e,'logs':logs,'accounts':None,'unitsConsumed':0})
  pre=token_balances(keys);r=svm.send_transaction(tx);failed=isinstance(r,FailedTransactionMetadata)
  err=err_json(r.err()) if failed else None;logs=list(r.meta().logs() if failed else r.logs())
- record(sig,tx,err,logs,pre,token_balances(keys),keys);advance(1);svm.expire_blockhash()
+ record(sig,tx,err,logs,pre,token_balances(keys),keys);advance(1);rotate()
  return sig
 
 class RpcError(Exception):
@@ -142,7 +150,7 @@ def call(method,params):
  if method=='getVersion':return {'solana-core':'2.1.0-charta-rehearsal','feature-set':0}
  if method in('getSlot','getBlockHeight'):return now_slot()
  if method=='getEpochInfo':s=now_slot();return {'absoluteSlot':s,'blockHeight':s,'epoch':0,'slotIndex':s,'slotsInEpoch':432000,'transactionCount':len(history)}
- if method=='getLatestBlockhash':return ctx({'blockhash':str(svm.latest_blockhash()),'lastValidBlockHeight':now_slot()+10**9})
+ if method=='getLatestBlockhash':return ctx({'blockhash':str(svm.latest_blockhash()),'lastValidBlockHeight':issued.get(str(svm.latest_blockhash()),now_slot())+args.blockhash_validity if args.blockhash_validity else now_slot()+10**9})
  if method=='isBlockhashValid':return ctx(P[0]==str(svm.latest_blockhash()))
  if method=='getFeeForMessage':return ctx(5000)
  if method=='getMinimumBalanceForRentExemption':return svm.minimum_balance_for_rent_exemption(int(P[0]))
@@ -190,7 +198,7 @@ def call(method,params):
  if method=='charta_warp':
   t=int(P[0]);c=svm.get_clock()
   if t<c.unix_timestamp:raise RpcError(-32602,'the clock only moves forward')
-  advance(max(1,(t-c.unix_timestamp)*5//2),t-c.unix_timestamp);svm.expire_blockhash();return {'unixTimestamp':svm.get_clock().unix_timestamp,'slot':now_slot()}
+  advance(max(1,(t-c.unix_timestamp)*5//2),t-c.unix_timestamp);rotate();return {'unixTimestamp':svm.get_clock().unix_timestamp,'slot':now_slot()}
  if method=='charta_clock':c=svm.get_clock();return {'unixTimestamp':c.unix_timestamp,'slot':c.slot}
  raise RpcError(-32601,f'Method not found: {method}')
 
@@ -231,6 +239,7 @@ async def ws_loop(ws):
 
 async def main():
  global loop;loop=asyncio.get_running_loop()
+ issued[str(svm.latest_blockhash())]=now_slot()
  threading.Thread(target=ThreadingHTTPServer(('127.0.0.1',args.port),Http).serve_forever,daemon=True).start()
  async with websockets.serve(ws_handler,'127.0.0.1',args.port+1):
   print(f'Charta rehearsal chain on http://127.0.0.1:{args.port} (ws {args.port+1}); clock {args.start}',flush=True)
