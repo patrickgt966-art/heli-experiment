@@ -1,0 +1,15 @@
+{
+ "date": "2026-10-06T20:31:36.883Z",
+ "chain": "local LiteSVM rehearsal chain, synthetic keys",
+ "drills": [
+  "1. Read-only status",
+  "2. Pause and resume",
+  "3. A malicious or mistaken expense",
+  "4. Admin key suspected: move the administrator at once",
+  "5. Admin key lost: the recovery key appoints a new administrator after 7 days",
+  "6. Known limit: a thief holding the admin key can veto the recovery key",
+  "7. Recovery key rotation"
+ ],
+ "checks": 25,
+ "failures": []
+}
