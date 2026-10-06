@@ -4,6 +4,8 @@ Bu belge, inceleme sonrası düzeltmelerle (H1, M9, C2b, C3) değişen kurulum s
 
 ## Anahtarlar
 
+Acil durumlar (anahtar kaybı ya da hırsızlığı, hata, duraklatma, bakım servisi): [ACIL_DURUM.md](ACIL_DURUM.md). Komut aracı: `scripts/emergency.mjs`; tatbikat: `scripts/emergency_drill.mjs`.
+
 | Anahtar | Nerede durur | Ne yapar |
 |---|---|---|
 | **Yönetici** | Günlük kullanılan cüzdan | Satış/yönetim emirleri (fiyat bandı içinde), gider teklifi ve iptali, duraklatma, doğrulayıcı değiştirme, olağan yönetici devri |

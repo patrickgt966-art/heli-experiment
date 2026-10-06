@@ -150,7 +150,9 @@ def call(method,params):
  if method=='getVersion':return {'solana-core':'2.1.0-charta-rehearsal','feature-set':0}
  if method in('getSlot','getBlockHeight'):return now_slot()
  if method=='getEpochInfo':s=now_slot();return {'absoluteSlot':s,'blockHeight':s,'epoch':0,'slotIndex':s,'slotsInEpoch':432000,'transactionCount':len(history)}
- if method=='getLatestBlockhash':return ctx({'blockhash':str(svm.latest_blockhash()),'lastValidBlockHeight':issued.get(str(svm.latest_blockhash()),now_slot())+args.blockhash_validity if args.blockhash_validity else now_slot()+10**9})
+ if method=='getLatestBlockhash':
+  rotate()  # a real cluster has a new blockhash every slot; clients that want a fresh one must get one
+  return ctx({'blockhash':str(svm.latest_blockhash()),'lastValidBlockHeight':issued.get(str(svm.latest_blockhash()),now_slot())+args.blockhash_validity if args.blockhash_validity else now_slot()+10**9})
  if method=='isBlockhashValid':return ctx(P[0]==str(svm.latest_blockhash()))
  if method=='getFeeForMessage':return ctx(5000)
  if method=='getMinimumBalanceForRentExemption':return svm.minimum_balance_for_rent_exemption(int(P[0]))
