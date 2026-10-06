@@ -1,5 +1,7 @@
 # Charta aylık çalıştırıcı
 
+**6 Ekim 2026: 5 yıllık (60 ay) uzun süreli test, arızalar dahil, 606 kontrolde hatasız geçti: RPC kesintisi, çökme, süresi dolan işlem, 4 ay kapalı kalma, iki servis, boş cüzdan, duraklatma, yönetici değişimi. Ayrıntılar: [BAKIM_UZUN_TEST_2026-10-06.md](../../../reviews/v23/BAKIM_UZUN_TEST_2026-10-06.md).**
+
 **3 Ekim 2026: çalıştırıcı V20'ye güncellendi. Güncel işleyiş ve testler: [V20 belgesi](V20.md). Aşağıdaki V15 açıklaması tarihsel kayıttır; mevcut sürüm için uygulanmaz.**
 
 **4. başlığın yeni işletim sonucu:** [İzleme ekranı, zorunlu bakım rezervi ve gider planı](../operations/ISLETIM_PLANI_2026-09-30.md). Fiyat gözlemleri bir sonraki ayın hesap/işlem SOL payını tüketemez. Boş bekleyiş dört dakikaya indirildi; bilinen işlem zamanında daha erken uyanır. Atomik günlük/durum yazımı ve ölçülen bakiye/zincir tarihi telemetrisi eklendi. Yerel ekran 8771'de çalışır; bu canlı Devnet çalıştırıcısının açıldığı anlamına gelmez. Windows başlangıç kurulum betiği ve Linux systemd şablonu hazır, kurulu değildir.
