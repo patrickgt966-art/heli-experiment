@@ -1,0 +1,984 @@
+{
+ "date": "2026-10-06",
+ "assumptions": "Monthly steps after the opening auction. Supply follows the program exactly (economics.rs capacity, market_release.rs\nsettle, integer atoms). Everything about the market is an ASSUMPTION per scenario, not a forecast:\n  * price: an outside reference price path; the project sells released inventory at 95% of it (the lowest its\n    asks may go, release.rs), so revenue is on the cautious side;\n  * demand: USDC that outside buyers spend per month on the project's inventory (sold = min(inventory, demand/price));\n  * the fixed technical cost of 12 USDC per 30 days is paid first and may use the project floor (owner rule, 5 Oct);\n  * other expenses: \"lean\" spends nothing else; \"max\" spends everything the rules allow each month: all unspent sale\n    revenue plus 25%/12 of the reserve excluding unspent revenue, never below the project floor (lib.rs);\n  * if the auction raised less than 120 USDC the founder tops the reserve up to 120 (owner decision, 4 Oct);\n  * management treasury sales and reserve-funded support bids are not modelled (both are optional for the manager).\nCross-check: with no management sales, 60 months release exactly 1,116,708 CHTA, as the keeper long-run test\nmeasured on the compiled program.",
+ "supply": {
+  "releasedForSaleChta": {
+   "1y": 242556,
+   "5y": 1116709,
+   "20y": 5906189
+  },
+  "releasedIfManagementSellsItsBudgetChta": {
+   "1y": 246760,
+   "5y": 1361741,
+   "20y": 8103707
+  },
+  "firstMonthRelease": 20112.37,
+  "month60Release": 19620.3,
+  "breakEvenPriceUsdcForFixedCost": {
+   "month1": 0.000628,
+   "month60": 0.000644
+  }
+ },
+ "scenarios": {
+  "120 USDC raised | no buyers | lean": {
+   "runwayEndsMonth": 11,
+   "at": {
+    "12": {
+     "reserveUsdc": 0.0,
+     "soldChta": 0,
+     "unsoldInventoryChta": 242556,
+     "revenueUsdc": 0.0,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 120.0,
+     "circulatingChta": 5000000
+    },
+    "60": {
+     "reserveUsdc": 0.0,
+     "soldChta": 0,
+     "unsoldInventoryChta": 1116709,
+     "revenueUsdc": 0.0,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 120.0,
+     "circulatingChta": 5000000
+    },
+    "240": {
+     "reserveUsdc": 0.0,
+     "soldChta": 0,
+     "unsoldInventoryChta": 5906189,
+     "revenueUsdc": 0.0,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 120.0,
+     "circulatingChta": 5000000
+    }
+   }
+  },
+  "120 USDC raised | no buyers | max": {
+   "runwayEndsMonth": 11,
+   "at": {
+    "12": {
+     "reserveUsdc": 0.0,
+     "soldChta": 0,
+     "unsoldInventoryChta": 242556,
+     "revenueUsdc": 0.0,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 120.0,
+     "circulatingChta": 5000000
+    },
+    "60": {
+     "reserveUsdc": 0.0,
+     "soldChta": 0,
+     "unsoldInventoryChta": 1116709,
+     "revenueUsdc": 0.0,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 120.0,
+     "circulatingChta": 5000000
+    },
+    "240": {
+     "reserveUsdc": 0.0,
+     "soldChta": 0,
+     "unsoldInventoryChta": 5906189,
+     "revenueUsdc": 0.0,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 120.0,
+     "circulatingChta": 5000000
+    }
+   }
+  },
+  "120 USDC raised | few buyers (5 USDC/month at 0.0002) | lean": {
+   "runwayEndsMonth": 15,
+   "at": {
+    "12": {
+     "reserveUsdc": 22.09,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 46.09,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 0.0,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 212.17,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 332.17,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 0.0,
+     "soldChta": 5536006,
+     "unsoldInventoryChta": 370182,
+     "revenueUsdc": 1051.84,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 1171.84,
+     "circulatingChta": 10536006
+    }
+   }
+  },
+  "120 USDC raised | few buyers (5 USDC/month at 0.0002) | max": {
+   "runwayEndsMonth": 15,
+   "at": {
+    "12": {
+     "reserveUsdc": 22.09,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 46.09,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 0.0,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 212.17,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 332.17,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 0.0,
+     "soldChta": 5536006,
+     "unsoldInventoryChta": 370182,
+     "revenueUsdc": 1051.84,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 1171.84,
+     "circulatingChta": 10536006
+    }
+   }
+  },
+  "120 USDC raised | steady (50 USDC/month, price +20%/year from 0.0003) | lean": {
+   "runwayEndsMonth": 22,
+   "at": {
+    "12": {
+     "reserveUsdc": 52.35,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 76.35,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 8.47,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 523.93,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 635.46,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 5352.3,
+     "soldChta": 3950060,
+     "unsoldInventoryChta": 1956129,
+     "revenueUsdc": 8027.76,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 2795.46,
+     "circulatingChta": 8950060
+    }
+   }
+  },
+  "120 USDC raised | steady (50 USDC/month, price +20%/year from 0.0003) | max": {
+   "runwayEndsMonth": 22,
+   "at": {
+    "12": {
+     "reserveUsdc": 52.35,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 76.35,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 8.47,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 523.93,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 635.46,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 120.0,
+     "soldChta": 3950060,
+     "unsoldInventoryChta": 1956129,
+     "revenueUsdc": 8027.76,
+     "otherSpentUsdc": 5232.3,
+     "fixedPaidUsdc": 2795.46,
+     "circulatingChta": 8950060
+    }
+   }
+  },
+  "120 USDC raised | strong (500 USDC/month, price +50%/year from 0.0003) | lean": {
+   "runwayEndsMonth": null,
+   "at": {
+    "12": {
+     "reserveUsdc": 62.54,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 86.54,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 457.59,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 1057.59,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 720.0,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 67568.31,
+     "soldChta": 3268981,
+     "unsoldInventoryChta": 2637208,
+     "revenueUsdc": 70328.31,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 2880.0,
+     "circulatingChta": 8268981
+    }
+   }
+  },
+  "120 USDC raised | strong (500 USDC/month, price +50%/year from 0.0003) | max": {
+   "runwayEndsMonth": null,
+   "at": {
+    "12": {
+     "reserveUsdc": 62.54,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 86.54,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 120.0,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 1057.59,
+     "otherSpentUsdc": 337.59,
+     "fixedPaidUsdc": 720.0,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 120.0,
+     "soldChta": 3268981,
+     "unsoldInventoryChta": 2637208,
+     "revenueUsdc": 70328.31,
+     "otherSpentUsdc": 67448.31,
+     "fixedPaidUsdc": 2880.0,
+     "circulatingChta": 8268981
+    }
+   }
+  },
+  "120 USDC raised | crash (price -80% in month 6, 20 USDC/month) | lean": {
+   "runwayEndsMonth": 13,
+   "at": {
+    "12": {
+     "reserveUsdc": 4.32,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 28.32,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 0.0,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 66.52,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 186.52,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 0.0,
+     "soldChta": 5906189,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 275.82,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 395.82,
+     "circulatingChta": 10906189
+    }
+   }
+  },
+  "120 USDC raised | crash (price -80% in month 6, 20 USDC/month) | max": {
+   "runwayEndsMonth": 13,
+   "at": {
+    "12": {
+     "reserveUsdc": 4.32,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 28.32,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 0.0,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 66.52,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 186.52,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 0.0,
+     "soldChta": 5906189,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 275.82,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 395.82,
+     "circulatingChta": 10906189
+    }
+   }
+  },
+  "1150 USDC raised | no buyers | lean": {
+   "runwayEndsMonth": 96,
+   "at": {
+    "12": {
+     "reserveUsdc": 1006.0,
+     "soldChta": 0,
+     "unsoldInventoryChta": 242556,
+     "revenueUsdc": 0.0,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5000000
+    },
+    "60": {
+     "reserveUsdc": 430.0,
+     "soldChta": 0,
+     "unsoldInventoryChta": 1116709,
+     "revenueUsdc": 0.0,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 720.0,
+     "circulatingChta": 5000000
+    },
+    "240": {
+     "reserveUsdc": 0.0,
+     "soldChta": 0,
+     "unsoldInventoryChta": 5906189,
+     "revenueUsdc": 0.0,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 1150.0,
+     "circulatingChta": 5000000
+    }
+   }
+  },
+  "1150 USDC raised | no buyers | max": {
+   "runwayEndsMonth": 54,
+   "at": {
+    "12": {
+     "reserveUsdc": 767.34,
+     "soldChta": 0,
+     "unsoldInventoryChta": 242556,
+     "revenueUsdc": 0.0,
+     "otherSpentUsdc": 238.66,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5000000
+    },
+    "60": {
+     "reserveUsdc": 0.0,
+     "soldChta": 0,
+     "unsoldInventoryChta": 1116709,
+     "revenueUsdc": 0.0,
+     "otherSpentUsdc": 504.82,
+     "fixedPaidUsdc": 645.18,
+     "circulatingChta": 5000000
+    },
+    "240": {
+     "reserveUsdc": 0.0,
+     "soldChta": 0,
+     "unsoldInventoryChta": 5906189,
+     "revenueUsdc": 0.0,
+     "otherSpentUsdc": 504.82,
+     "fixedPaidUsdc": 645.18,
+     "circulatingChta": 5000000
+    }
+   }
+  },
+  "1150 USDC raised | few buyers (5 USDC/month at 0.0002) | lean": {
+   "runwayEndsMonth": 144,
+   "at": {
+    "12": {
+     "reserveUsdc": 1052.09,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 46.09,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 642.17,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 212.17,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 720.0,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 0.0,
+     "soldChta": 5536006,
+     "unsoldInventoryChta": 370182,
+     "revenueUsdc": 1051.84,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 2201.84,
+     "circulatingChta": 10536006
+    }
+   }
+  },
+  "1150 USDC raised | few buyers (5 USDC/month at 0.0002) | max": {
+   "runwayEndsMonth": 67,
+   "at": {
+    "12": {
+     "reserveUsdc": 807.6,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 46.09,
+     "otherSpentUsdc": 244.49,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 53.49,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 212.17,
+     "otherSpentUsdc": 588.68,
+     "fixedPaidUsdc": 720.0,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 0.0,
+     "soldChta": 5536006,
+     "unsoldInventoryChta": 370182,
+     "revenueUsdc": 1051.84,
+     "otherSpentUsdc": 588.68,
+     "fixedPaidUsdc": 1613.16,
+     "circulatingChta": 10536006
+    }
+   }
+  },
+  "1150 USDC raised | steady (50 USDC/month, price +20%/year from 0.0003) | lean": {
+   "runwayEndsMonth": null,
+   "at": {
+    "12": {
+     "reserveUsdc": 1082.35,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 76.35,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 953.93,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 523.93,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 720.0,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 6297.76,
+     "soldChta": 3950060,
+     "unsoldInventoryChta": 1956129,
+     "revenueUsdc": 8027.76,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 2880.0,
+     "circulatingChta": 8950060
+    }
+   }
+  },
+  "1150 USDC raised | steady (50 USDC/month, price +20%/year from 0.0003) | max": {
+   "runwayEndsMonth": null,
+   "at": {
+    "12": {
+     "reserveUsdc": 834.28,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 76.35,
+     "otherSpentUsdc": 248.07,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 236.24,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 523.93,
+     "otherSpentUsdc": 717.7,
+     "fixedPaidUsdc": 720.0,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 120.0,
+     "soldChta": 3950060,
+     "unsoldInventoryChta": 1956129,
+     "revenueUsdc": 8027.76,
+     "otherSpentUsdc": 6177.76,
+     "fixedPaidUsdc": 2880.0,
+     "circulatingChta": 8950060
+    }
+   }
+  },
+  "1150 USDC raised | strong (500 USDC/month, price +50%/year from 0.0003) | lean": {
+   "runwayEndsMonth": null,
+   "at": {
+    "12": {
+     "reserveUsdc": 1092.54,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 86.54,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 1487.59,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 1057.59,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 720.0,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 68598.31,
+     "soldChta": 3268981,
+     "unsoldInventoryChta": 2637208,
+     "revenueUsdc": 70328.31,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 2880.0,
+     "circulatingChta": 8268981
+    }
+   }
+  },
+  "1150 USDC raised | strong (500 USDC/month, price +50%/year from 0.0003) | max": {
+   "runwayEndsMonth": null,
+   "at": {
+    "12": {
+     "reserveUsdc": 843.56,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 86.54,
+     "otherSpentUsdc": 248.98,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 293.64,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 1057.59,
+     "otherSpentUsdc": 1193.95,
+     "fixedPaidUsdc": 720.0,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 120.0,
+     "soldChta": 3268981,
+     "unsoldInventoryChta": 2637208,
+     "revenueUsdc": 70328.31,
+     "otherSpentUsdc": 68478.31,
+     "fixedPaidUsdc": 2880.0,
+     "circulatingChta": 8268981
+    }
+   }
+  },
+  "1150 USDC raised | crash (price -80% in month 6, 20 USDC/month) | lean": {
+   "runwayEndsMonth": 105,
+   "at": {
+    "12": {
+     "reserveUsdc": 1034.32,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 28.32,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 496.52,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 66.52,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 720.0,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 0.0,
+     "soldChta": 5906189,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 275.82,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 1425.82,
+     "circulatingChta": 10906189
+    }
+   }
+  },
+  "1150 USDC raised | crash (price -80% in month 6, 20 USDC/month) | max": {
+   "runwayEndsMonth": 57,
+   "at": {
+    "12": {
+     "reserveUsdc": 790.97,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 28.32,
+     "otherSpentUsdc": 243.35,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 0.0,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 66.52,
+     "otherSpentUsdc": 533.17,
+     "fixedPaidUsdc": 683.35,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 0.0,
+     "soldChta": 5906189,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 275.82,
+     "otherSpentUsdc": 533.17,
+     "fixedPaidUsdc": 892.66,
+     "circulatingChta": 10906189
+    }
+   }
+  },
+  "5000 USDC raised | no buyers | lean": {
+   "runwayEndsMonth": null,
+   "at": {
+    "12": {
+     "reserveUsdc": 4856.0,
+     "soldChta": 0,
+     "unsoldInventoryChta": 242556,
+     "revenueUsdc": 0.0,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5000000
+    },
+    "60": {
+     "reserveUsdc": 4280.0,
+     "soldChta": 0,
+     "unsoldInventoryChta": 1116709,
+     "revenueUsdc": 0.0,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 720.0,
+     "circulatingChta": 5000000
+    },
+    "240": {
+     "reserveUsdc": 2120.0,
+     "soldChta": 0,
+     "unsoldInventoryChta": 5906189,
+     "revenueUsdc": 0.0,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 2880.0,
+     "circulatingChta": 5000000
+    }
+   }
+  },
+  "5000 USDC raised | no buyers | max": {
+   "runwayEndsMonth": 110,
+   "at": {
+    "12": {
+     "reserveUsdc": 3757.82,
+     "soldChta": 0,
+     "unsoldInventoryChta": 242556,
+     "revenueUsdc": 0.0,
+     "otherSpentUsdc": 1098.18,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5000000
+    },
+    "60": {
+     "reserveUsdc": 1009.2,
+     "soldChta": 0,
+     "unsoldInventoryChta": 1116709,
+     "revenueUsdc": 0.0,
+     "otherSpentUsdc": 3270.8,
+     "fixedPaidUsdc": 720.0,
+     "circulatingChta": 5000000
+    },
+    "240": {
+     "reserveUsdc": 0.0,
+     "soldChta": 0,
+     "unsoldInventoryChta": 5906189,
+     "revenueUsdc": 0.0,
+     "otherSpentUsdc": 3683.86,
+     "fixedPaidUsdc": 1316.14,
+     "circulatingChta": 5000000
+    }
+   }
+  },
+  "5000 USDC raised | few buyers (5 USDC/month at 0.0002) | lean": {
+   "runwayEndsMonth": null,
+   "at": {
+    "12": {
+     "reserveUsdc": 4902.09,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 46.09,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 4492.17,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 212.17,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 720.0,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 3171.84,
+     "soldChta": 5536006,
+     "unsoldInventoryChta": 370182,
+     "revenueUsdc": 1051.84,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 2880.0,
+     "circulatingChta": 10536006
+    }
+   }
+  },
+  "5000 USDC raised | few buyers (5 USDC/month at 0.0002) | max": {
+   "runwayEndsMonth": 130,
+   "at": {
+    "12": {
+     "reserveUsdc": 3798.07,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 46.09,
+     "otherSpentUsdc": 1104.01,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 1128.61,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 212.17,
+     "otherSpentUsdc": 3363.57,
+     "fixedPaidUsdc": 720.0,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 0.0,
+     "soldChta": 5536006,
+     "unsoldInventoryChta": 370182,
+     "revenueUsdc": 1051.84,
+     "otherSpentUsdc": 3950.71,
+     "fixedPaidUsdc": 2101.13,
+     "circulatingChta": 10536006
+    }
+   }
+  },
+  "5000 USDC raised | steady (50 USDC/month, price +20%/year from 0.0003) | lean": {
+   "runwayEndsMonth": null,
+   "at": {
+    "12": {
+     "reserveUsdc": 4932.35,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 76.35,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 4803.93,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 523.93,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 720.0,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 10147.76,
+     "soldChta": 3950060,
+     "unsoldInventoryChta": 1956129,
+     "revenueUsdc": 8027.76,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 2880.0,
+     "circulatingChta": 8950060
+    }
+   }
+  },
+  "5000 USDC raised | steady (50 USDC/month, price +20%/year from 0.0003) | max": {
+   "runwayEndsMonth": null,
+   "at": {
+    "12": {
+     "reserveUsdc": 3824.76,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 76.35,
+     "otherSpentUsdc": 1107.59,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 1324.81,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 523.93,
+     "otherSpentUsdc": 3479.13,
+     "fixedPaidUsdc": 720.0,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 120.0,
+     "soldChta": 3950060,
+     "unsoldInventoryChta": 1956129,
+     "revenueUsdc": 8027.76,
+     "otherSpentUsdc": 10027.76,
+     "fixedPaidUsdc": 2880.0,
+     "circulatingChta": 8950060
+    }
+   }
+  },
+  "5000 USDC raised | strong (500 USDC/month, price +50%/year from 0.0003) | lean": {
+   "runwayEndsMonth": null,
+   "at": {
+    "12": {
+     "reserveUsdc": 4942.54,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 86.54,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 5337.59,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 1057.59,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 720.0,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 72448.31,
+     "soldChta": 3268981,
+     "unsoldInventoryChta": 2637208,
+     "revenueUsdc": 70328.31,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 2880.0,
+     "circulatingChta": 8268981
+    }
+   }
+  },
+  "5000 USDC raised | strong (500 USDC/month, price +50%/year from 0.0003) | max": {
+   "runwayEndsMonth": null,
+   "at": {
+    "12": {
+     "reserveUsdc": 3834.03,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 86.54,
+     "otherSpentUsdc": 1108.51,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 1382.21,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 1057.59,
+     "otherSpentUsdc": 3955.38,
+     "fixedPaidUsdc": 720.0,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 120.0,
+     "soldChta": 3268981,
+     "unsoldInventoryChta": 2637208,
+     "revenueUsdc": 70328.31,
+     "otherSpentUsdc": 72328.31,
+     "fixedPaidUsdc": 2880.0,
+     "circulatingChta": 8268981
+    }
+   }
+  },
+  "5000 USDC raised | crash (price -80% in month 6, 20 USDC/month) | lean": {
+   "runwayEndsMonth": null,
+   "at": {
+    "12": {
+     "reserveUsdc": 4884.32,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 28.32,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 4346.52,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 66.52,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 720.0,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 2395.82,
+     "soldChta": 5906189,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 275.82,
+     "otherSpentUsdc": 0.0,
+     "fixedPaidUsdc": 2880.0,
+     "circulatingChta": 10906189
+    }
+   }
+  },
+  "5000 USDC raised | crash (price -80% in month 6, 20 USDC/month) | max": {
+   "runwayEndsMonth": 114,
+   "at": {
+    "12": {
+     "reserveUsdc": 3781.44,
+     "soldChta": 242556,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 28.32,
+     "otherSpentUsdc": 1102.88,
+     "fixedPaidUsdc": 144.0,
+     "circulatingChta": 5242556
+    },
+    "60": {
+     "reserveUsdc": 1041.89,
+     "soldChta": 1116709,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 66.52,
+     "otherSpentUsdc": 3304.63,
+     "fixedPaidUsdc": 720.0,
+     "circulatingChta": 6116709
+    },
+    "240": {
+     "reserveUsdc": 0.0,
+     "soldChta": 5906189,
+     "unsoldInventoryChta": 0,
+     "revenueUsdc": 275.82,
+     "otherSpentUsdc": 3756.25,
+     "fixedPaidUsdc": 1519.58,
+     "circulatingChta": 10906189
+    }
+   }
+  }
+ }
+}
