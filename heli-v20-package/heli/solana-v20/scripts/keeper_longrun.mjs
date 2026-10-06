@@ -48,7 +48,7 @@ const check=(name,ok,detail='')=>{checks.push(name);if(!ok){failures.push(`${nam
 const note=s=>{events.push(s);console.log('  '+s);};
 
 // --- launch (compact version of rehearsal.mjs), starting on the 31st when that is 7-30 days ahead
-const admin=load(`${work}/admin.json`),recovery=key('recovery'),newAdmin=key('new-admin'),keeperA=key('keeper-a'),keeperB=key('keeper-b'),bidders=[0,1,2].map(i=>key(`bidder-${i}`));
+const admin=load(`${work}/admin.json`),recovery=key('recovery'),upgradeKey=key('upgrade'),newAdmin=key('new-admin'),keeperA=key('keeper-a'),keeperB=key('keeper-b'),bidders=[0,1,2].map(i=>key(`bidder-${i}`));
 for(const k of [admin,recovery,newAdmin,...bidders])await conn.confirmTransaction(await conn.requestAirdrop(k.publicKey,k===admin?100e9:5e9),'confirmed');
 for(const k of [keeperA,keeperB])await conn.confirmTransaction(await conn.requestAirdrop(k.publicKey,2e9),'confirmed');
 const quote=await spl.createMint(conn,admin,admin.publicKey,null,6);
@@ -56,7 +56,7 @@ for(const b of bidders)await spl.mintTo(conn,admin,quote,(await spl.getOrCreateA
 const now0=Math.max(await chainNow(),Math.floor(Date.now()/1000));let start=0;
 for(let k=0;k<3&&!start;k++){const d=new Date(now0*1000);const t=Math.floor(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+k,31,12,34,56)/1000);if(new Date(t*1000).getUTCDate()===31&&t>=now0+7*86400+600&&t<=now0+30*86400-600)start=t;}
 if(!start)start=now0+8*86400;note(`start ${new Date(start*1000).toISOString()} (day ${new Date(start*1000).getUTCDate()})`);
-const setup={rpcUrl:RPC,localValidator:true,program:PROGRAM.toBase58(),adminKeyFile:`${work}/admin.json`,recovery:recovery.publicKey.toBase58(),quoteMint:quote.toBase58(),start,minimumQuoteDepth:25_000_000,
+const setup={rpcUrl:RPC,localValidator:true,program:PROGRAM.toBase58(),adminKeyFile:`${work}/admin.json`,recovery:recovery.publicKey.toBase58(),upgradeAuthority:upgradeKey.publicKey.toBase58(),quoteMint:quote.toBase58(),start,minimumQuoteDepth:25_000_000,
  metadata:{name:'Charta',symbol:'CHTA',uri:'https://heli-experiment.pages.dev/token.json'},auction:{floor:200,tick:10},marketKeyFile:`${work}/market.json`,marketRentLamports:10_000_000,
  feeVaults:{monthlyCap:1_000_000_000,reserve:0,projectFloor:120_000_000},releaseSeatRentLamports:10_000_000,managementRentLamports:10_000_000};
 key('market');writeFileSync(`${work}/setup.json`,JSON.stringify(setup,null,1));
@@ -97,10 +97,11 @@ await warp(start+60);await run(keeper);
 check('the keeper finalized the auction',(await read(pda('opening-auction'),'OpeningAuction')).finalized);
 runner('post');
 for(const b of bidders)await sendTx([core.createAtaIdempotentIx(web3,b.publicKey,A(b).bidderToken,b.publicKey,A(b).mint),core.claimIx(web3,A(b))],[b]);
-// Deployment step 15: the upgrade key moves to the offline recovery key; the keeper pins it.
+// Deployment step 15: the upgrade authority moves to the separate offline upgrade key (SetAuthorityChecked, both sign);
+// the keeper pins it.
 const LOADER=new web3.PublicKey('BPFLoaderUpgradeab1e11111111111111111111111'),programData=web3.PublicKey.findProgramAddressSync([PROGRAM.toBuffer()],LOADER)[0];
-await sendTx([new web3.TransactionInstruction({programId:LOADER,data:Buffer.from([4,0,0,0]),keys:[{pubkey:programData,isSigner:false,isWritable:true},{pubkey:admin.publicKey,isSigner:true,isWritable:false},{pubkey:recovery.publicKey,isSigner:false,isWritable:false}]})],[admin]);
-trust.heliUpgradeAuthority=recovery.publicKey.toBase58();keeper=makeKeeper('a',keeperA);
+await sendTx([new web3.TransactionInstruction({programId:LOADER,data:Buffer.from([7,0,0,0]),keys:[{pubkey:programData,isSigner:false,isWritable:true},{pubkey:admin.publicKey,isSigner:true,isWritable:false},{pubkey:upgradeKey.publicKey,isSigner:true,isWritable:false}]})],[admin,upgradeKey]);
+trust.heliUpgradeAuthority=upgradeKey.publicKey.toBase58();keeper=makeKeeper('a',keeperA);
 
 // --- independent model of the monthly releases (market_release.rs settle, economics.rs capacity)
 const c0=await read(pda('config'),'Config');let modelReserve=BigInt(c0.stocks[0]),modelTreasury=BigInt(c0.stocks[3]);

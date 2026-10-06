@@ -2,7 +2,7 @@
 // can be moved forward. One run covers the whole launch with the unchanged setup runner, the keeper engine and the
 // website's own encoders and decoders:
 //   setup (pre) → 40 funded bids, replacements and refused bids → freeze window → keeper finalizes → setup (post)
-//   → every winner claims → transfers between holders → upgrade key moved to the recovery key → three months of
+//   → every winner claims → transfers between holders → upgrade authority moved to the separate offline upgrade key → three months of
 //   keeper maintenance → a fixed technical expense after its seven-day wait.
 // Every amount is recomputed independently from the program rules (auction.rs) and compared; supply and vault
 // invariants are checked after each phase. Synthetic keys and a synthetic quote mint only; refuses any RPC that is
@@ -49,7 +49,7 @@ const read=async(k,type)=>{const a=await conn.getAccountInfo(k,'confirmed');retu
 const tokenAmount=async k=>{const a=await conn.getAccountInfo(k,'confirmed');return a?a.data.readBigUInt64LE(64):0n;};
 
 // --- keys and funding
-const admin=load(`${work}/admin.json`),recovery=key('recovery'),keeperKey=key('keeper'),mallory=key('mallory');
+const admin=load(`${work}/admin.json`),recovery=key('recovery'),upgradeKey=key('upgrade'),keeperKey=key('keeper'),mallory=key('mallory');
 const bidders=Array.from({length:40},(_,i)=>key(`bidder-${i}`));
 phase('Funding synthetic accounts');
 for(const k of [admin,keeperKey,mallory,...bidders])await conn.confirmTransaction(await conn.requestAirdrop(k.publicKey,k===admin?100e9:5e9),'confirmed');
@@ -61,7 +61,7 @@ console.log(`  quote mint ${quote.toBase58()}, ${bidders.length} bidders with 2,
 
 // --- setup runner, phase pre (unchanged script)
 const start=(await chainNow())+8*86400+1800,marketFile=`${work}/market.json`;key('market');
-const setup={rpcUrl:RPC,localValidator:true,program:PROGRAM.toBase58(),adminKeyFile:`${work}/admin.json`,recovery:recovery.publicKey.toBase58(),quoteMint:quote.toBase58(),start,
+const setup={rpcUrl:RPC,localValidator:true,program:PROGRAM.toBase58(),adminKeyFile:`${work}/admin.json`,recovery:recovery.publicKey.toBase58(),upgradeAuthority:upgradeKey.publicKey.toBase58(),quoteMint:quote.toBase58(),start,
  minimumQuoteDepth:25_000_000,metadata:{name:'Charta',symbol:'CHTA',uri:'https://heli-experiment.pages.dev/token.json'},auction:{floor:200,tick:10},marketKeyFile:marketFile,
  marketRentLamports:10_000_000,feeVaults:{monthlyCap:1_000_000_000,reserve:0,projectFloor:120_000_000},releaseSeatRentLamports:10_000_000,managementRentLamports:10_000_000,keeperConfigOut:`${work}/keeper.json`};
 writeFileSync(`${work}/setup.json`,JSON.stringify(setup,null,1));
@@ -188,16 +188,20 @@ const txs=[];for(const w of winners.slice(0,8))for(const s of await conn.getSign
 const links=H.linksFromTransactions(txs,mint.toBase58(),holderWallets);
 check('holder map: each wallet-to-wallet transfer becomes a line (claims do not)',links.length===transfers.length,`${links.length} vs ${transfers.length}`);
 
-// --- step 15 of the deployment: the upgrade key moves to the offline recovery key
-phase('Upgrade key to the recovery key');
+// --- step 15 of the deployment: the upgrade authority moves to the separate offline upgrade key (owner, 6 Oct).
+// SetAuthorityChecked, as `solana program set-upgrade-authority` does by default: the new key must sign too.
+phase('Upgrade authority to the offline upgrade key');
 const LOADER=new web3.PublicKey('BPFLoaderUpgradeab1e11111111111111111111111'),programData=web3.PublicKey.findProgramAddressSync([PROGRAM.toBuffer()],LOADER)[0];
-await sendTx([new web3.TransactionInstruction({programId:LOADER,data:Buffer.from([4,0,0,0]),keys:[{pubkey:programData,isSigner:false,isWritable:true},{pubkey:admin.publicKey,isSigner:true,isWritable:false},{pubkey:recovery.publicKey,isSigner:false,isWritable:false}]})],[admin]);
+await sendTx([new web3.TransactionInstruction({programId:LOADER,data:Buffer.from([7,0,0,0]),keys:[{pubkey:programData,isSigner:false,isWritable:true},{pubkey:admin.publicKey,isSigner:true,isWritable:false},{pubkey:upgradeKey.publicKey,isSigner:true,isWritable:false}]})],[admin,upgradeKey]);
 const pdInfo=await conn.getAccountInfo(programData),progInfo=await conn.getAccountInfo(PROGRAM);
 const P=V.readProgram({...progInfo,ownerBase58:progInfo.owner.toBase58()}),PD=V.readProgramData({...pdInfo,ownerBase58:pdInfo.owner.toBase58()});
 const code=await V.checkCode(PD.code,{sha256:compiled.binary_sha256,length:elfLength},async b=>createHash('sha256').update(b).digest('hex'));
 check('verify page logic: program account accepted',P.ok);check('verify page logic: code matches the published build',code.state==='ok');
-check('verify page logic: upgrade key is now the recovery key',PD.ok&&new web3.PublicKey(PD.authority).equals(recovery.publicKey));
-engine=new KeeperEngine({adapter:new SolanaAdapter({connection:conn,program:PROGRAM.toBase58(),payer:keeperKey,trust:trust(recovery.publicKey.toBase58())}),state:journal,dryRun:false});
+check('verify page logic: upgrade key is now the offline upgrade key',PD.ok&&new web3.PublicKey(PD.authority).equals(upgradeKey.publicKey));
+check('the upgrade key is neither the administrator nor the recovery key',!upgradeKey.publicKey.equals(admin.publicKey)&&!upgradeKey.publicKey.equals(recovery.publicKey));
+{const kc=JSON.parse(readFileSync(`${work}/keeper.json`,'utf8'));check('setup runner pinned the offline upgrade key in the keeper config',kc.trust.heliUpgradeAuthority===upgradeKey.publicKey.toBase58(),kc.trust.heliUpgradeAuthority);}
+
+engine=new KeeperEngine({adapter:new SolanaAdapter({connection:conn,program:PROGRAM.toBase58(),payer:keeperKey,trust:trust(upgradeKey.publicKey.toBase58())}),state:journal,dryRun:false});
 
 // --- monthly maintenance by the keeper
 phase('Three months of keeper maintenance');

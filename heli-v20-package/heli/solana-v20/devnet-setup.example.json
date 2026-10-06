@@ -3,6 +3,7 @@
  "program": "HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv",
  "adminKeyFile": "/path/outside/the/repo/devnet-admin.json",
  "recovery": "DEVNET_RECOVERY_PUBLIC_KEY",
+ "upgradeAuthority": "DEVNET_OFFLINE_UPGRADE_PUBLIC_KEY (not the admin, not the recovery key)",
  "quoteMint": "DEVNET_TEST_USDC_MINT (6 decimals)",
  "start": 0,
  "minimumQuoteDepth": 25000000,

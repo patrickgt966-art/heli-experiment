@@ -11,7 +11,7 @@ Acil durumlar (anahtar kaybı ya da hırsızlığı, hata, duraklatma, bakım se
 | **Yönetici** | Günlük kullanılan cüzdan | Satış/yönetim emirleri (fiyat bandı içinde), gider teklifi ve iptali, duraklatma, doğrulayıcı değiştirme, olağan yönetici devri |
 | **Kurtarma** | Çevrimdışı (donanım cüzdanı veya kağıt); yine aynı tek yöneticiye aittir | Kayıp yönetici yerine 7 gün sonra yeni yönetici önermek; bekleyen gideri iptal etmek; kendini değiştirmek |
 | **Doğrulayıcı** | Kullanılmaz (ücretsiz pay yok) | Kurulumda atılmış rastgele bir anahtar verilir |
-| **Upgrade yetkisi** | Kurulumda yönetici, sonra çevrimdışı kurtarma anahtarı | Program kodunu değiştirebilir; çalınırsa tüm kasalar risk altındadır |
+| **Upgrade yetkisi** | Kurulumda yönetici; kurulum bitince **ayrı bir çevrimdışı güncelleme anahtarı** (ne yönetici ne kurtarma anahtarı; sahibin kararı, 6 Ekim 2026). Donanım cüzdanı ya da kağıt, iki ayrı yerde yedek | Program kodunu değiştirebilir; çalınırsa tüm kasalar risk altındadır. Kaybolursa program bir daha güncellenemez (çalışmaya devam eder) |
 | **Keeper** | Ayrı ücret cüzdanı | Yalnız izinli bakım işleri; hiçbir yetkisi yoktur |
 
 Kurallar (programda zorlanır):
@@ -44,9 +44,10 @@ Devnet denemesi için adım adım rehber ve betikler: `DEVNET.md` (`scripts/devn
 12. `create_fee_base`, `create_fee_quote`, `initialize_fee_vaults(monthly_cap, reserve, project_floor)` — ihaleden sonra (program, ihale sonuçlanmadan reddeder; Codex F5); `project_floor` ≥ 120 quote birimi, toplanan tutara göre. `monthly_cap` (tek teklif üst sınırı) ve `project_floor` sonradan değiştirilemez.
 13. `create_release_base(3)`, `create_release_quote(3)`, `initialize_release_seat(3)`
 14. `create_management_base`, `create_management_quote`, `initialize_management(rent_lamports)` — proje tabanı ayarlandıktan sonra.
-15. Upgrade yetkisini kurtarma anahtarına devredin:
-    `solana program set-upgrade-authority <PROGRAM_ID> --new-upgrade-authority <KURTARMA_ANAHTARI.json>`
-16. Keeper yapılandırmasındaki pinleri güncelleyin: `admin`, `heliUpgradeAuthority` (kurtarma anahtarının açık anahtarı) ve Manifest ikili hash'i.
+15. Upgrade yetkisini ayrı çevrimdışı güncelleme anahtarına devredin (yönetici ve kurtarma anahtarından farklı olmalı). CLI varsayılan olarak yeni anahtarın da imzasını ister; yanlış adrese devri böyle önler:
+    `solana program set-upgrade-authority <PROGRAM_ID> --new-upgrade-authority <GÜNCELLEME_ANAHTARI.json>`
+    Donanım cüzdanı için anahtar dosyası yerine `usb://ledger?key=…` yazılabilir. Çevrimdışı anahtarın SOL'ü olmak zorunda değil; ücreti `--fee-payer` öder.
+16. Keeper yapılandırmasındaki pinleri güncelleyin: `admin`, `heliUpgradeAuthority` (güncelleme anahtarının açık anahtarı; `devnet_setup.mjs` bunu `upgradeAuthority` alanından yazar) ve Manifest ikili hash'i.
 
 Sonradan yönetici değiştirildiğinde keeper bilinçli olarak durur ("Administrator pin changed"). Yeni değerleri yapılandırmaya elle girin.
 
@@ -58,7 +59,8 @@ Sonradan yönetici değiştirildiğinde keeper bilinçli olarak durur ("Administ
 
 ## Upgrade yetkisi planı
 
-- **Devnet ve denetim öncesi:** Yetki çevrimdışı kurtarma anahtarında kalır, böylece hatalar düzeltilebilir.
+- **Devnet ve denetim öncesi:** Yetki ayrı çevrimdışı güncelleme anahtarında kalır, böylece hatalar düzeltilebilir. Kurtarma anahtarı kod değiştiremez; çalınırsa en fazla yönetici önerir (7 gün, yönetici iptal edebilir) ve giderleri iptal eder.
+- **Güncelleme anahtarından şüphe:** Anahtar kendini hemen yeni bir çevrimdışı anahtara devreder (aynı `set-upgrade-authority` komutu); keeper pini de güncellenir. Ayrıntı: [ACIL_DURUM.md](ACIL_DURUM.md).
 - **Mainnet, bağımsız denetimden sonra:** Yetki kalıcı olarak kaldırılır (`solana program set-upgrade-authority <PROGRAM_ID> --final`). Kod bundan sonra değiştirilemez. Keeper'da `heliUpgradeAuthority: null` olur.
 - Upgrade yetkisi hiçbir zaman sıcak bir sunucuda tutulmamalıdır.
 

@@ -35,11 +35,13 @@ Böylece kurulum betiği, bakım servisi ve web sitesi hiç değiştirilmeden on
 5. Kurulum betiği, `post` aşaması.
 6. Her alıcı claim ediyor; aynı claim ikinci kez reddediliyor.
 7. Sahipler arasında 3 transfer yapılıyor.
-8. Güncelleme anahtarı kurtarma anahtarına devrediliyor (dağıtım adımı 15).
+8. Güncelleme yetkisi ayrı çevrimdışı güncelleme anahtarına devrediliyor (dağıtım adımı 15; iki anahtar da imzalıyor). Kurulum betiği bu anahtarı bakım servisinin ayarına yazıyor.
 9. Bakım servisi 3 ay boyunca çalışıyor: ay açma, aylık kapanış ve piyasa gözlemi.
 10. 12 USDC'lik sabit teknik gider öneriliyor. 7 gün dolmadan ödeme reddediliyor; 7 gün sonra ödeniyor.
 
-### Sonuç: 171 kontrol, 0 hata
+### Sonuç: 173 kontrol, 0 hata
+
+İlk çalıştırma 171 kontrolle güncelleme yetkisini kurtarma anahtarına devrediyordu. Sahibin 6 Ekim kararından (ayrı çevrimdışı güncelleme anahtarı) sonra prova yeniden çalıştırıldı; iki yeni kontrol eklendi.
 
 Ayrıntılar `rehearsal-report.json` dosyasında.
 

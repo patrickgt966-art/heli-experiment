@@ -30,6 +30,9 @@ const genesis=await conn.getGenesisHash();
 if(genesis!==DEVNET&&!cfg.localValidator)throw Error('Refusing: not Devnet (genesis '+genesis+'). Set "localValidator": true only for a local test validator.');
 if(cfg.localValidator&&!/^http:\/\/(127\.0\.0\.1|localhost)/.test(cfg.rpcUrl))throw Error('"localValidator" is only allowed with a localhost RPC URL');
 const admin=keypair(cfg.adminKeyFile);
+// Upgrade authority after setup: a separate offline key, neither the administrator nor the recovery key (owner, 6 Oct).
+const upgradeKey=(()=>{try{return new web3.PublicKey(cfg.upgradeAuthority).toBase58();}catch{throw Error('"upgradeAuthority" must be the public key of the separate offline upgrade key');}})();
+if(upgradeKey===admin.publicKey.toBase58()||upgradeKey===cfg.recovery)throw Error('"upgradeAuthority" must differ from the administrator and the recovery key');
 const program=new web3.PublicKey(cfg.program);const quoteMint=new web3.PublicKey(cfg.quoteMint);
 const pda=(...s)=>web3.PublicKey.findProgramAddressSync(s.map(x=>typeof x==='string'?Buffer.from(x):x),program)[0];
 const exists=async k=>Boolean(await conn.getAccountInfo(k,'confirmed'));
@@ -108,10 +111,10 @@ if(phase==='pre'){
  if(cfg.keeperConfigOut){
   const readiness=existsSync(new URL('../devnet-readiness.json',import.meta.url))?JSON.parse(readFileSync(new URL('../devnet-readiness.json',import.meta.url))):{};
   const keeper={program:program.toBase58(),rpcUrl:cfg.rpcUrl,keeperKeyFile:'LOCAL_DEDICATED_KEEPER_KEY_FILE',dailyCapLamports:50_000_000,reserveLamports:5_000_000,
-   trust:{admin:admin.publicKey.toBase58(),heliUpgradeAuthority:cfg.recovery,manifestUpgradeAuthority:readiness.manifest?.upgradeAuthority??'SET_FROM_devnet_readiness',
+   trust:{admin:admin.publicKey.toBase58(),heliUpgradeAuthority:upgradeKey,manifestUpgradeAuthority:readiness.manifest?.upgradeAuthority??'SET_FROM_devnet_readiness',
     manifestHash:readiness.manifest?.vendoredSha256??'SET_FROM_devnet_readiness',manifestLength:readiness.manifest?.vendoredBytes??335040}};
-  if(send)writeFileSync(cfg.keeperConfigOut,JSON.stringify(keeper,null,1)+'\n');console.log(`  ${send?'✔ wrote':'→ would write'} keeper config ${cfg.keeperConfigOut} (heliUpgradeAuthority = recovery key, after step 15)`);
+  if(send)writeFileSync(cfg.keeperConfigOut,JSON.stringify(keeper,null,1)+'\n');console.log(`  ${send?'✔ wrote':'→ would write'} keeper config ${cfg.keeperConfigOut} (heliUpgradeAuthority = offline upgrade key, after step 15)`);
  }
- console.log(`\nManual steps left (DEPLOYMENT 15-16):\n  solana program set-upgrade-authority ${program.toBase58()} --new-upgrade-authority <RECOVERY_KEY.json> --url ${cfg.rpcUrl}\n  then start the keeper with the config above and its own funded keeper key.`);
+ console.log(`\nManual steps left (DEPLOYMENT 15-16):\n  solana program set-upgrade-authority ${program.toBase58()} --new-upgrade-authority <UPGRADE_KEY.json (${upgradeKey})> --url ${cfg.rpcUrl}\n  then start the keeper with the config above and its own funded keeper key.`);
 }
 console.log(`\n${steps} steps checked.`);
