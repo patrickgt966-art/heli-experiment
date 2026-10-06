@@ -13,6 +13,27 @@ Program ve klasör adları uyumluluk için değişmedi (`heli_core_v20`). **Güv
 | ELF SHA-256 | `ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43` (1.010.656 bayt, yükleme kirası ~7,04 SOL) |
 | Derleme | `heli/solana-v20/scripts/build_local.sh` (Agave 2.1.21 / platform-tools v1.43); temiz yeniden derleme aynı hash |
 
+## V24 eki (6 Ekim 2026)
+
+Sahibin iki kararı:
+1. **Güncelleme yetkisi ayrı bir çevrimdışı anahtarda.** Kurulumdan sonra ne yönetici ne kurtarma anahtarı kodu değiştirebilir. Program değişikliği değildir; dağıtım adımları, kurulum betiği ve el kitabı güncellendi.
+2. **Kurtarma anahtarı duraklatmayı kaldırabilir.** Yeni talimat `recovery_unpause`: yalnız kurtarma anahtarı, yalnız program duraklatılmışken. Ardından yönetici 7 gün duraklatamaz (açabilir). Çalınan bir yönetici anahtarı programı artık süresiz durduramaz. Bu bir **program değişikliğidir**: `Governance` hesabına `pause_locked_until` alanı eklendi (114 → 122 bayt). `pause` artık bu hesabı da okur.
+
+| | V24 |
+|---|---|
+| Kaynak SHA-256 | `0d8488ab433d682584aeaa77e939a43571f2ecfe8d730ceb8f5cd855f9881199` |
+| ELF SHA-256 | `c0e818148ea2aea8595a3024aac2a358c78f2052a45141ca0c299592dd7d6f87` (1.018.560 bayt, yükleme kirası ~7,09 SOL) |
+
+Yeni ELF ile yeniden çalıştırılan testler:
+- 14 LiteSVM test betiği, `policy depth` ve `closure` dahil: hepsi geçti. Yönetim testi 76 kontrol.
+- Bakım servisi SVM testi (720 ay): geçti.
+- Fuzz testi: 30 tohum, 12.029 adım, 125.623 kontrol, 0 bulgu. Kurtarma ile kaldırma ve 7 günlük kilit modele eklendi.
+- Uçtan uca prova 173 kontrol; 60 aylık bakım testi 606 kontrol; acil durum tatbikatı 9 tatbikat, 39 kontrol. Hepsinde 0 hata.
+- Node testleri: 145/145.
+- **Negatif kontrol (mutant ELF'ler):** üç yeni kontrolün her biri ayrı ayrı kaldırıldı: 7 günlük kilit, "yalnız kurtarma anahtarı" ve "yalnız duraklatılmışken". Her mutantı hem yönetim testi hem fuzz yakaladı.
+
+Aşağıdaki tablo ve test bölümü V23'ün (5 Ekim) kayıtlarıdır.
+
 ## Kurallar (değişmeyenler)
 
 - Arz oranı ~%0,402247 / ay, 720 ay.

@@ -15,8 +15,9 @@ Bu rehber Devnet'te **değeri olmayan** bir deneme içindir. Bu bir mainnet lans
 - **Devnet'e özel anahtarlar** (`solana-keygen new -o <dosya>`):
   - yönetici;
   - kurtarma;
+  - güncelleme (programın upgrade yetkisi; yönetici ve kurtarmadan ayrı, çevrimdışı);
   - keeper.
-- **Test SOL'u:** yükleme anında geçici olarak **~14,1 SOL** gerekir. Program ~7,04 SOL tutar; geçici tampon ~7,04 SOL tutar ve yükleme bitince iade edilir. Kurulum işlemleri için birkaç SOL daha gerekir. Faucet günde sınırlı verdiği için SOL'u birkaç güne yayarak topla.
+- **Test SOL'u:** yükleme anında geçici olarak **~14,2 SOL** gerekir. Program ~7,09 SOL tutar; geçici tampon ~7,09 SOL tutar ve yükleme bitince iade edilir. Kurulum işlemleri için birkaç SOL daha gerekir. Faucet günde sınırlı verdiği için SOL'u birkaç güne yayarak topla.
 - **Test USDC'si:** 6 ondalıklı bir mint. Circle'ın Devnet USDC'sini kullanabilir ya da `spl-token create-token --decimals 6` ile kendin oluşturabilirsin.
 
 ## 1. Hazırlık kontrolü (sadece okur, işlem göndermez)
@@ -41,12 +42,13 @@ solana program deploy heli-v20-package/heli/solana-v20/heli_core_v20.so \
   --program-id <PROGRAM_ANAHTARI.json> --upgrade-authority <YÖNETİCİ.json> --url devnet
 ```
 
-Upgrade yetkisi şimdilik yöneticide kalmalı. `initialize`, yalnız upgrade yetkilisi imzalarsa çalışır.
+Upgrade yetkisi kurulum bitene kadar yöneticide kalmalı. `initialize`, yalnız upgrade yetkilisi imzalarsa çalışır. Kurulumdan sonra yetki ayrı bir çevrimdışı güncelleme anahtarına geçer (6. adım).
 
 ## 3. Kurulum: ihale öncesi
 
 `scripts/../devnet-setup.example.json` dosyasını deponun dışına kopyala ve doldur.
 
+- **`upgradeAuthority`:** güncelleme anahtarının açık anahtarı. Betik, yönetici ya da kurtarma anahtarıyla aynıysa durur.
 - **`start`:** 7–30 gün sonrası (unix saniye). İhale bu ana kadar açık kalır.
 - **Lansman değerleri** (DEPLOYMENT'taki gibi): taban fiyat `200`/`10`, rezerv tabanı `120_000_000`, fiyat ölçümü eşiği `25_000_000`.
 
@@ -93,7 +95,7 @@ Bu aşama şunları yapar:
 
 ```
 solana program set-upgrade-authority HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv \
-  --new-upgrade-authority <KURTARMA.json> --url devnet
+  --new-upgrade-authority <GÜNCELLEME.json> --url devnet
 ```
 
 Ardından keeper'ı, yazılan ayar dosyası ve kendi ayrı keeper anahtarıyla başlat (`heli/keeper/README.md`). Keeper yalnız Devnet'te çalışır.

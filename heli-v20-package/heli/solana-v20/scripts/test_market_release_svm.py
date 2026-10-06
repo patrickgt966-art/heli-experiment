@@ -128,7 +128,7 @@ t.call('management_release',{'amount':t.U},act,reject='calendar',label='previous
 # Pause halts sales and treasury outflows but not the monthly rule (owner decision H2-B);
 # delayed settlement remains sequential.
 ea13=epoch_accounts(t,13);t.call('open_epoch',{'number':13},ea13)
-t.clock(t.boundary(13));t.call('pause',{'paused':True})
+t.ensure_governance();t.clock(t.boundary(13));t.call('pause',{'paused':True})
 stock=t.cfg()['stocks'][0];inventory=t.amount(t.defaults['market_inventory'])
 t.call('place_project_ask',{'amount':t.U,'price_mantissa':10,'price_exponent':0},reject='Market guard rejected',label='pause halts project sales')
 ea14=epoch_accounts(t,14);t.clock(t.boundary(14));t.call('open_epoch',{'number':14},ea14,label='next monthly period opens while paused')

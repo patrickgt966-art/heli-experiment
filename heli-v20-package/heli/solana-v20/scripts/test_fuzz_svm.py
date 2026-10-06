@@ -5,10 +5,10 @@ Each seed drives two random campaigns and, after every step, compares the progra
 of the published rules:
   A. the live opening auction: six wallets create, place, replace and cancel bids with random (often invalid)
      quantities, price levels and funds, try other wallets' bids, claims and finalization too early, the admin
-     pauses and unpauses, and time jumps into the final five minutes; then finalization and claims in random order;
+     pauses and unpauses, the recovery key lifts pauses (which locks pausing for 7 days), and time jumps into the final five minutes; then finalization and claims in random order;
   B. after launch: random time jumps over many months, permissionless open_epoch/settle with right and wrong
      numbers, donations, expense proposals (fixed and other, valid and invalid) with cancellations and payments
-     at random times, pauses, and outsiders trying admin instructions.
+     at random times, pauses and recovery unpauses with the 7-day pause lock, and outsiders trying admin instructions.
 A step is a finding when the program accepts what the model forbids or refuses what it allows, or when an invariant
 breaks: supply 90,000,000 CHTA, all CHTA accounts add up to the supply, vaults equal their stocks, escrow equals
 the active collateral, wallet balances follow the model, monthly releases follow the cap formula, expenses wait
@@ -70,7 +70,18 @@ def bal(k):a=t.svm.get_account(k);return struct.unpack_from('<Q',bytes(a.data),6
 def mint_quote(dst,n):t.send('TEST quote',[t.Instruction(t.TOKEN,b'\x07'+struct.pack('<Q',n),[t.meta(q,True),t.meta(dst,True),t.meta(t.admin.pubkey(),False,True)])])
 
 cranker=Keypair();t.KEYS[str(cranker.pubkey())]=cranker;t.svm.airdrop(cranker.pubkey(),10**11)
-actors=[];a_phase={}
+actors=[];a_phase={};LOCK=[0]
+def pause_step(kind_who,want,signer_admin):
+ # Administrator pause/unpause; pausing is refused until the lock set by a recovery unpause has passed.
+ who,signer=kind_who;ok,l=attempt(f'pause by {who}','pause',{'paused':want},{'admin':signer.pubkey()},payer=signer)
+ expect(f'pause={want} by {who}',who=='admin' and (not want or now()>=LOCK[0]),ok,l);return ok
+def recovery_unpause_step(outsider):
+ # Only the recovery key, and only while paused.
+ who=rng.choice(['recovery','outsider']);signer=t.recovery_key if who=='recovery' else outsider;was=t.cfg()['paused']
+ ok,l=attempt(f'recovery unpause by {who}','recovery_unpause',acc={'recovery':signer.pubkey()},payer=signer);expect(f'recovery unpause by {who} (paused={was})',who=='recovery' and was,ok,l)
+ if ok:LOCK[0]=now()+7*DAY
+ check(t.read(t.defaults['governance'],'Governance')['pauseLockedUntil']==LOCK[0],'pause lock differs from the model')
+ return ok
 def make_actors():
  global q;q=t.defaults['quote_mint']
  for i in range(6):
@@ -81,7 +92,7 @@ def make_actors():
 
 # ---------------- campaign A: the live auction (runs inside bootstrap, before its own finalization)
 def campaign_a(alice_bid):
- make_actors();A=t.read(t.defaults['auction'],'OpeningAuction');end=A['end'];floor,ts=A['floor'],A['tickSize']
+ t.ensure_governance();make_actors();A=t.read(t.defaults['auction'],'OpeningAuction');end=A['end'];floor,ts=A['floor'],A['tickSize']
  base=list(A['demand']);paused=[False]
  price=lambda tick:floor+ts*tick
  def acc(x,bidder=None,quote=None,bid=None):return {'bidder':(bidder or x['key']).pubkey(),'bid':bid or x['bid'],'bidder_quote':quote or x['quote'],'bidder_heli':x['heli'],'account_payer':(bidder or x['key']).pubkey()}
@@ -107,11 +118,11 @@ def campaign_a(alice_bid):
    expect('attack on another wallet',False,ok,l)
   elif r<0.71:ok,l=attempt('claim before finalization','claim_auction_bid',acc=acc(x));expect('claim before finalization',False,ok,l)
   elif r<0.74:ok,l=attempt('finalize before the end','finalize_auction');expect('finalize before the end',False,ok,l)
-  elif r<0.79:
+  elif r<0.77:
    who=rng.choice(['admin','outsider']);want=not paused[0]
-   ok,l=attempt(f'pause by {who}','pause',{'paused':want},{'admin':(t.admin if who=='admin' else x['key']).pubkey()},payer=t.admin if who=='admin' else x['key'])
-   expect(f'pause by {who}',who=='admin',ok,l)
-   if ok:paused[0]=want
+   if pause_step((who,t.admin if who=='admin' else x['key']),want,None):paused[0]=want
+  elif r<0.79:
+   if recovery_unpause_step(x['key']):paused[0]=False
   else:warp_to(min(end-1,now()+rng.choice([60,3600,rng.randint(60,3*DAY),max(0,end-FREEZE-now()-rng.randint(0,600))])))
   # Invariants after every step.
   a=t.read(t.defaults['auction'],'OpeningAuction');d=list(base)
@@ -220,8 +231,9 @@ for _ in range(B_STEPS):
    x['paid']=True;paid+=1;check(bal(payee)-before==amount,'an expense paid a different amount')
    if rest>0:paid_log.append((day,rest if x['fixed'] else rest-from_rev,x['fixed']))
  elif r<0.97:
-  want=not c['paused'];who=rng.choice(['admin','outsider']);signer=t.admin if who=='admin' else actors[1]['key']
-  ok,l=attempt(f'pause by {who}','pause',{'paused':want},{'admin':signer.pubkey()},payer=signer);expect(f'pause by {who}',who=='admin',ok,l)
+  if rng.random()<0.7:
+   want=not c['paused'];who=rng.choice(['admin','outsider']);pause_step((who,t.admin if who=='admin' else actors[1]['key']),want,None)
+  else:recovery_unpause_step(actors[1]['key'])
  else:
   y=actors[2]['key'];ok,l=attempt('outsider proposes to pay themselves','propose_expense',{'nonce':t.read(fee['operations'],'Operations')['nextNonce'],'amount':U,'purpose':[1]*32,'fixed':True},fee|{'expense':t.pda(b'expense',struct.pack('<Q',t.read(fee['operations'],'Operations')['nextNonce'])),'destination':actors[2]['quote'],'proposer':y.pubkey()},payer=y)
   expect('outsider proposes an expense',False,ok,l)

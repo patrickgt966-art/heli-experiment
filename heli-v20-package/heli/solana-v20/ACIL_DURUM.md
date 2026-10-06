@@ -2,7 +2,7 @@
 
 Son güncelleme: 6 Ekim 2026.
 
-Bu el kitabı programın bugünkü kurallarına (V23, ELF `ce1949d9…`) dayanır. Buradaki her prosedür, prova zincirinde `scripts/emergency_drill.mjs` ile uygulandı: 7 tatbikat, 25 kontrol, 0 hata.
+Bu el kitabı programın bugünkü kurallarına (V24, ELF `c0e81814…`) dayanır. Buradaki her prosedür, prova zincirinde `scripts/emergency_drill.mjs` ile uygulandı: 9 tatbikat, 39 kontrol, 0 hata.
 
 Komutların hepsi `scripts/emergency.mjs` aracıyla verilir:
 - Araç her komutu **önce simüle eder** ve sonucu yazar. `--send` verilmeden hiçbir şey gönderilmez.
@@ -18,7 +18,7 @@ node heli/solana-v20/scripts/emergency.mjs <komut> [değer] --rpc <RPC> --key <A
 
 1. **Önce durumu oku:** `status` komutu hiçbir şey imzalamaz. Yöneticiyi, kurtarma anahtarını, güncelleme anahtarını, duraklatma durumunu, bekleyen anahtar değişikliklerini ve bekleyen giderleri gösterir.
 2. **Önce simüle et, sonra `--send`.** Simülasyon "REJECTED" diyorsa göndermeyi zorlamayın; nedenini okuyun.
-3. **Özel anahtarlar hiçbir sohbete, siteye, e-postaya ya da bulut klasörüne yazılmaz.** Kurtarma anahtarı yalnızca kendi çevrimdışı cihazında kullanılır.
+3. **Özel anahtarlar hiçbir sohbete, siteye, e-postaya ya da bulut klasörüne yazılmaz.** Kurtarma ve güncelleme anahtarları yalnızca kendi çevrimdışı cihazlarında kullanılır.
 4. **Paniğe kapılmayın: aylık kural kendi kendine çalışır.** Duraklatma onu durdurmaz. Ayları kapatma işlemlerini (`open_epoch`, `settle`) herkes tetikleyebilir. Hiçbir acil durum aylık arzı hızlandıramaz.
 5. **Her adımı duyurun.** Siteye Güncellemeler sayfasında tarihli bir kayıt girin, GitHub'a da yazın. Resmî adresler yalnızca bu iki yerde yayımlanır.
 
@@ -27,7 +27,8 @@ node heli/solana-v20/scripts/emergency.mjs <komut> [değer] --rpc <RPC> --key <A
 | Anahtar | Nerede durmalı | Yapabildiği | Çalınırsa |
 |---|---|---|---|
 | Yönetici | Donanım cüzdanı; günlük kullanım | Duraklatma; gider önerme ve iptal; fiyat bandı içinde hazine emirleri; olağan yönetici devri | Bkz. senaryo 3 |
-| Kurtarma | Çevrimdışı donanım cüzdanı ve metal ya da kâğıt yedek; yönetici cihazından ayrı | 7 gün sonra yeni yönetici önermek; herhangi bir bekleyen gideri iptal etmek; kendini anında değiştirmek; **dağıtım adımı 15'ten sonra program güncelleme yetkisi** | Bkz. senaryo 5 (en ağır durum) |
+| Kurtarma | Çevrimdışı donanım cüzdanı ve metal ya da kâğıt yedek; yönetici cihazından ayrı | 7 gün sonra yeni yönetici önermek; herhangi bir bekleyen gideri iptal etmek; **duraklatmayı kaldırmak** (sonra yönetici 7 gün duraklatamaz); kendini anında değiştirmek. **Program kodunu değiştiremez.** | Bkz. senaryo 5 |
+| Güncelleme (upgrade) | **Ayrı** çevrimdışı donanım cüzdanı; iki ayrı yerde metal ya da kâğıt yedek; yönetici ve kurtarma cihazlarından ayrı (sahibin kararı, 6 Ekim 2026) | Dağıtım adımı 15'ten sonra program kodunu değiştirmek; kendini başka bir anahtara devretmek. Başka hiçbir işlemde kullanılmaz | Bkz. senaryo 15 (en ağır durum) |
 | Bakım servisi | Ayrı, az SOL'lu cüzdan | Yalnızca izinli bakım işleri (ihale kapatma, ay açma/kapatma, gözlem) | Yalnızca içindeki SOL risk altında |
 | Cloudflare API anahtarı | Ortam değişkeni; sohbette ya da dosyada asla durmamalı | Siteyi yayımlamak | Bkz. senaryo 10 |
 
@@ -96,11 +97,18 @@ Bu 7 gün içinde aylık kural çalışmaya devam eder. Durdurulmuş olan yalnı
 - **Hazine emirleriyle sınırsız kayıp yaratamaz:** Emirler fiyat bandına bağlıdır. Satış referansın %95'inden aşağı, alım %105'inden yukarı olamaz. Rezervden yapılan alımlar 30 günde rezervin %10'uyla sınırlıdır. Çekilen paralar yalnızca programın kendi hesaplarına döner.
 - **Aylık arzı değiştiremez ya da durduramaz.**
 
-**Hırsız ne yapabilir**
-- Programı süresiz duraklatabilir; satışlar ve gider ödemeleri durur.
-- Fiyat bandı içinde, rezervin %10'una kadar zararlı alım-satım yapabilir.
+- **Programı süresiz duraklatamaz** (V24, sahibin 6 Ekim kararı). Hırsız duraklatırsa kurtarma anahtarı hemen kaldırır; ardından yönetici anahtarı **7 gün** boyunca yeniden duraklatamaz (tatbikat 9):
+  ```
+  emergency.mjs recovery-unpause --key <KURTARMA.json> --send
+  ```
+  7 gün sonra hırsız yeniden duraklatırsa aynı komutu tekrarlayın. Böylece program en fazla birkaç saat ya da gün durur, süresiz durmaz.
 
-**Çözüm (yalnızca güncelleme anahtarı varken):** kurtarma anahtarının güncelleme yetkisiyle, yöneticiyi sıfırlayan düzeltilmiş bir program yüklemek. Bu bir kod değişikliğidir: önce yazılmalı, test edilmeli ve mümkünse denetlenmelidir (senaryo 6'daki adımlar). Güncelleme anahtarı kaldırıldıktan sonra bu çözüm de ortadan kalkar; bkz. "Karar gerektiren konular".
+**Hırsız ne yapabilir**
+- Kısa süreli duraklatma (kurtarma anahtarı kaldırana kadar).
+- Fiyat bandı içinde, rezervin %10'una kadar zararlı alım-satım yapabilir.
+- Yeni gider önerebilir (kurtarma anahtarı iptal eder).
+
+**Kalıcı çözüm (yalnızca güncelleme anahtarı varken):** güncelleme anahtarıyla, yöneticiyi sıfırlayan düzeltilmiş bir program yüklemek. Bu bir kod değişikliğidir: önce yazılmalı, test edilmeli ve mümkünse denetlenmelidir (senaryo 6'daki adımlar). Güncelleme anahtarı kaldırıldıktan sonra yönetim hırsızda kalır, ama yukarıdaki sınırlar geçerlidir.
 
 ### 4. Kurtarma anahtarı kayboldu
 
@@ -114,7 +122,7 @@ Bu 7 gün içinde aylık kural çalışmaya devam eder. Durdurulmuş olan yalnı
    emergency.mjs accept-recovery --key <YENİ_KURTARMA.json> --send
    ```
 
-**Önemli:** Güncelleme yetkisi kaybolan kurtarma anahtarındaysa, program artık **hiç güncellenemez**. Bu fiilen erken "kalıcı kod" demektir. Hata bulunursa düzeltilemez. Bu yüzden kurtarma anahtarının en az iki ayrı yedeği olmalı.
+Güncelleme yetkisi ayrı anahtarda olduğu için kurtarma anahtarının kaybı program kodunu etkilemez.
 
 Kurtarma anahtarı elinizdeyse ve yalnızca değiştirmek istiyorsanız, değişiklik anında olur (tatbikat 7):
 ```
@@ -122,26 +130,30 @@ emergency.mjs propose-recovery <YENİ> --key <ESKİ_KURTARMA.json> --send
 emergency.mjs accept-recovery --key <YENİ_KURTARMA.json> --send
 ```
 
-### 5. Kurtarma anahtarı çalındı (en ağır durum)
+### 5. Kurtarma anahtarı çalındı
 
-Dağıtım adımı 15'ten sonra kurtarma anahtarı, **program güncelleme yetkisini** de taşır. Onu çalan kişi şunları yapabilir:
-- programı istediği koda değiştirip kasaları boşaltabilir;
-- kurtarma yetkisini anında kendine alabilir.
+Güncelleme yetkisi ayrı anahtarda olduğu için hırsız **program kodunu değiştiremez** ve para çekemez. Yapabilecekleri:
+- kurtarma yetkisini anında kendine almak;
+- yeni bir yönetici önermek (7 gün bekler; yönetici iptal edebilir);
+- bekleyen giderleri iptal etmek (sabit teknik gider dahil);
+- yöneticinin verdiği bir duraklatmayı kaldırmak; bundan sonra yönetici 7 gün duraklatamaz. Bu süre içinde acil durum freni çalışmaz; bir program hatası çıkarsa düzeltme güncelleme anahtarıyla yapılır (senaryo 6).
 
-Yönetici bunu engelleyemez. Yapılabilecekler sınırlıdır:
-1. Hemen herkese duyurun. İnsanlar ihaleye ya da piyasaya para yatırmayı durdursun.
-2. Yöneticiyle `pause` verin:
+Yapılacaklar:
+1. Kurtarma anahtarı hâlâ sizdeyse, hırsızdan önce kendini yeni bir anahtara devretsin (tatbikat 7):
    ```
-   emergency.mjs pause --key <YÖNETİCİ.json> --send
+   emergency.mjs propose-recovery <YENİ> --key <ESKİ_KURTARMA.json> --send
+   emergency.mjs accept-recovery --key <YENİ_KURTARMA.json> --send
    ```
-   Bu, program değiştirilmediği sürece satışları ve gider ödemelerini durdurur. Ama güncelleme yetkisini durduramaz.
-3. Doğrula sayfasını ve `solana program show <PROGRAM_ID>` çıktısını izleyin. Kod değişirse herkes bunu kod kontrolündeki ✕ işaretinden görür.
-
-Bu senaryonun riskini azaltmanın tek yolu önlemdir; bkz. "Karar gerektiren konular".
+2. Hırsız daha hızlıysa: en az 7 günde bir `status` okuyun ve kurtarma anahtarından gelen her yönetici önerisini yöneticiyle iptal edin:
+   ```
+   emergency.mjs cancel-admin-proposal --key <YÖNETİCİ.json> --send
+   ```
+3. Yöneticiyle yeni bir kurtarma anahtarı önerin (7 gün bekler). Hırsız bu öneriyi iptal edebilir; o durumda yönetim yöneticide kalır, ama hırsız giderleri iptal etmeye devam edebilir. Kalıcı çözüm bir program güncellemesidir (senaryo 6, güncelleme anahtarıyla).
+4. Duyurun.
 
 ### 6. Programda hata bulundu
 
-1. Hata para kaybına yol açabiliyorsa **önce duraklatın:**
+1. Hata para kaybına yol açabiliyorsa **önce duraklatın** (kurtarma anahtarı son 7 günde duraklatmayı kaldırdıysa yönetici duraklatamaz; `status` bunu "pause lock" satırında gösterir):
    ```
    emergency.mjs pause --key <YÖNETİCİ.json> --send
    ```
@@ -154,9 +166,9 @@ Bu senaryonun riskini azaltmanın tek yolu önlemdir; bkz. "Karar gerektiren kon
    - uçtan uca prova;
    - bakım servisinin uzun süreli testi.
 3. Agave 2.1.21 ile derleyin (`scripts/build_local.sh`). Yeni ELF özetini (hash) kaydedin.
-4. Kurtarma anahtarının çevrimdışı cihazında programı güncelleyin:
+4. Güncelleme anahtarının çevrimdışı cihazında programı güncelleyin:
    ```
-   solana program deploy heli_core_v20.so --program-id <PROGRAM_ID> --upgrade-authority <KURTARMA.json>
+   solana program deploy heli_core_v20.so --program-id <PROGRAM_ID> --upgrade-authority <GÜNCELLEME.json>
    ```
 5. Yeni özeti şu yerlere yazın:
    - `site-config.js` → `expectedProgram`;
@@ -217,18 +229,39 @@ Bu anahtarın hiçbir yetkisi yoktur; yalnızca içindeki SOL risk altındadır.
 2. Eski cüzdanda kalan SOL'u yeni cüzdana aktarın.
 3. Ayardaki `keeperKeyFile` değerini değiştirip servisi yeniden başlatın.
 
+### 14. Güncelleme anahtarı kayboldu
+
+- Program çalışmaya devam eder; hiçbir kasa risk altında değildir.
+- Ama program artık **hiç güncellenemez**. Bu, fiilen erken "kalıcı kod" demektir: hata bulunursa düzeltilemez. Bu yüzden güncelleme anahtarının en az iki ayrı yerde yedeği olmalı.
+- Yedek de yoksa: durumu duyurun, Doğrula sayfasında güncelleme anahtarının değişmediğini izleyin ve denetimi buna göre planlayın.
+
+### 15. Güncelleme anahtarı çalındı (en ağır durum)
+
+Onu çalan kişi programı istediği koda değiştirip kasaları boşaltabilir. Yönetici ya da kurtarma anahtarı bunu engelleyemez.
+
+**Anahtar hâlâ sizdeyse (şüphe):** hemen yeni bir çevrimdışı anahtara devredin (tatbikat 8). CLI yeni anahtarın da imzasını ister; ücreti başka bir cüzdan öder:
+```
+solana program set-upgrade-authority <PROGRAM_ID> --upgrade-authority <ESKİ_GÜNCELLEME.json> \
+  --new-upgrade-authority <YENİ_GÜNCELLEME.json> --fee-payer <ÜCRET_CÜZDANI.json>
+```
+Ardından bakım servisinin `heliUpgradeAuthority` pinini yeni açık anahtarla güncelleyin; servis pin uyuşmazlığında kendini durdurur.
+
+**Hırsız sizden önce davrandıysa:**
+1. Hemen herkese duyurun. İnsanlar ihaleye ya da piyasaya para yatırmayı durdursun.
+2. Yöneticiyle `pause` verin:
+   ```
+   emergency.mjs pause --key <YÖNETİCİ.json> --send
+   ```
+   Bu, program değiştirilmediği sürece satışları ve gider ödemelerini durdurur. Ama güncelleme yetkisini durduramaz.
+3. Doğrula sayfasını ve `solana program show <PROGRAM_ID>` çıktısını izleyin. Kod değişirse herkes bunu kod kontrolündeki ✕ işaretinden görür.
+
+Bu senaryonun riskini azaltmanın yolu önlemdir: anahtarı yalnız güncelleme için kullanmak, hiçbir sıcak cihaza koymamak ve denetimden sonra yetkiyi kalıcı olarak kaldırmak (`--final`).
+
 ## Karar gerektiren konular (sahibin kararı; kurallar değiştirilmedi)
 
-1. **Kurtarma anahtarı ile güncelleme yetkisi aynı anahtarda** (dağıtım adımı 15).
-   - Bu anahtar çalınırsa her şey risk altındadır (senaryo 5); kaybolursa program bir daha güncellenemez (senaryo 4).
-   - Seçenekler:
-     - **(a)** Güncelleme yetkisini çok imzalı bir hesaba (ör. Squads, 2/3) taşımak.
-     - **(b)** Güncelleme yetkisini ayrı bir çevrimdışı anahtarda tutmak.
-     - **(c)** En azından donanım cüzdanı ve iki ayrı yerde metal yedek kullanmak.
-   - Devnet'ten önce karar verilmesi iyi olur.
-2. **Güncelleme anahtarı kaldırıldıktan sonra çalınan bir yönetici anahtarı** programı süresiz duraklatabilir (senaryo 3). Para çekemez, ama satışlar ve giderler durur.
-   - Kaldırmadan önce bu riski kabul etmek ya da kuralı değiştirmek gerekir. Örneğin kurtarma anahtarının duraklatmayı kaldırabilmesi veya duraklatmaya bir süre sınırı konması.
-   - Bu bir program değişikliği olur; ancak senin onayınla yapılır.
+1. ~~Kurtarma anahtarı ile güncelleme yetkisi aynı anahtarda.~~ **Karar verildi (6 Ekim 2026):** güncelleme yetkisi ayrı bir çevrimdışı anahtarda tutulur (seçenek b). Dağıtım adımı 15, kurulum betiği, prova, bakım servisi testi ve tatbikat buna göre güncellendi. Kurtarma anahtarının çalınması artık kodu riske atmaz (senaryo 5); en ağır durum güncelleme anahtarının çalınmasıdır (senaryo 15).
+2. ~~Güncelleme anahtarı kaldırıldıktan sonra çalınan bir yönetici anahtarı programı süresiz duraklatabilir.~~ **Karar verildi (6 Ekim 2026), program değişikliği V24:** kurtarma anahtarı duraklatmayı kaldırabilir (`recovery_unpause`); ardından yönetici 7 gün duraklatamaz. Yalnızca duraklatılmış bir programda çalışır.
+   - Bedeli: kurtarma anahtarı çalınırsa hırsız duraklatmayı da kaldırabilir (senaryo 5). Ama para çekemez ve kodu değiştiremez.
 
 ## Duyuru şablonu
 
@@ -241,4 +274,4 @@ Tatbikatlar prova zincirinde, sentetik anahtarlarla çalışır:
 python heli/solana-v20/scripts/svm_rpc.py --upgrade-authority <ADMIN_PUBKEY> --pretend-devnet &
 node heli/solana-v20/scripts/emergency_drill.mjs <iş klasörü>
 ```
-Devnet'e geçildiğinde aynı prosedürler **gerçek donanım cüzdanlarıyla** bir kez daha denenmelidir. Özellikle kurtarma anahtarıyla yönetici değiştirme ve gider iptali.
+Devnet'e geçildiğinde aynı prosedürler **gerçek donanım cüzdanlarıyla** bir kez daha denenmelidir. Özellikle kurtarma anahtarıyla yönetici değiştirme ve gider iptali, ve güncelleme anahtarının kendini yeni bir anahtara devretmesi.

@@ -32,12 +32,12 @@ const em=(args,k)=>{try{return {ok:true,out:execFileSync(process.execPath,[`${he
 const cfg=()=>read(pda('config'),'Config'),gov=()=>read(pda('governance'),'Governance');
 
 // --- a small launch
-const admin=load(`${work}/admin.json`),recovery=key('recovery'),bidder=key('bidder');
+const admin=load(`${work}/admin.json`),recovery=key('recovery'),upgradeKey=key('upgrade'),bidder=key('bidder');
 for(const k of [admin,recovery,bidder])await conn.confirmTransaction(await conn.requestAirdrop(k.publicKey,k===admin?100e9:5e9),'confirmed');
 const quote=await spl.createMint(conn,admin,admin.publicKey,null,6);
 await spl.mintTo(conn,admin,quote,(await spl.getOrCreateAssociatedTokenAccount(conn,admin,quote,bidder.publicKey)).address,admin,1_000_000_000n);
 const start=(await now())+8*86400+1800;key('market');
-writeFileSync(`${work}/setup.json`,JSON.stringify({rpcUrl:RPC,localValidator:true,program:PROGRAM.toBase58(),adminKeyFile:`${work}/admin.json`,recovery:recovery.publicKey.toBase58(),quoteMint:quote.toBase58(),start,minimumQuoteDepth:25_000_000,
+writeFileSync(`${work}/setup.json`,JSON.stringify({rpcUrl:RPC,localValidator:true,program:PROGRAM.toBase58(),adminKeyFile:`${work}/admin.json`,recovery:recovery.publicKey.toBase58(),upgradeAuthority:upgradeKey.publicKey.toBase58(),quoteMint:quote.toBase58(),start,minimumQuoteDepth:25_000_000,
  metadata:{name:'Charta',symbol:'CHTA',uri:'https://heli-experiment.pages.dev/token.json'},auction:{floor:200,tick:10},marketKeyFile:`${work}/market.json`,marketRentLamports:10_000_000,
  feeVaults:{monthlyCap:1_000_000_000,reserve:0,projectFloor:120_000_000},releaseSeatRentLamports:10_000_000,managementRentLamports:10_000_000}));
 const runner=ph=>execFileSync(process.execPath,[`${here}devnet_setup.mjs`,`${work}/setup.json`,ph,'--send'],{encoding:'utf8'});
@@ -100,6 +100,33 @@ r=em(['propose-recovery',rec2.publicKey.toBase58(),'--send'],'recovery');r=em(['
 check('the recovery key moves itself to a new key at once',r.ok&&(await gov()).recovery===rec2.publicKey.toBase58(),r.out);
 const rec3=key('recovery-3');r=em(['propose-recovery',rec3.publicKey.toBase58(),'--send'],'admin-3');check('the administrator can only propose a recovery change with a 7-day wait',r.ok);
 r=em(['cancel-recovery-proposal','--send'],'recovery-2');check('…which the recovery key can cancel',r.ok&&(await gov()).pending_recovery==='11111111111111111111111111111111');
+
+drill('8. Upgrade authority on its own offline key (owner decision, 6 Oct)');
+const LOADER=new web3.PublicKey('BPFLoaderUpgradeab1e11111111111111111111111'),programData=web3.PublicKey.findProgramAddressSync([PROGRAM.toBuffer()],LOADER)[0];
+// SetAuthorityChecked: the current and the new authority both sign, as `solana program set-upgrade-authority` does.
+// The offline keys hold no SOL; an ordinary wallet pays the fee (--fee-payer in the CLI).
+const setAuthority=(from,to)=>{const tx=new web3.Transaction().add(new web3.TransactionInstruction({programId:LOADER,data:Buffer.from([7,0,0,0]),keys:[{pubkey:programData,isSigner:false,isWritable:true},{pubkey:from.publicKey,isSigner:true,isWritable:false},{pubkey:to.publicKey,isSigner:true,isWritable:false}]}));
+ tx.feePayer=bidder.publicKey;return web3.sendAndConfirmTransaction(conn,tx,[bidder,from,to],{commitment:'confirmed'}).then(()=>true,()=>false);};
+const upgradeAuthority=async()=>{const d=(await conn.getAccountInfo(programData)).data;return d[12]===1?new web3.PublicKey(d.subarray(13,45)).toBase58():null;};
+check('setup: the administrator hands the upgrade authority to the offline upgrade key',await setAuthority(admin,upgradeKey)&&(await upgradeAuthority())===upgradeKey.publicKey.toBase58());
+check('status shows the offline upgrade key',em(['status']).out.includes(upgradeKey.publicKey.toBase58()));
+const thief=key('thief');await conn.confirmTransaction(await conn.requestAirdrop(thief.publicKey,1e9),'confirmed');
+check('the recovery key cannot change the program or its upgrade key',!(await setAuthority(rec2,thief))&&(await upgradeAuthority())===upgradeKey.publicKey.toBase58());
+check('the administrator cannot either',!(await setAuthority(admin3,thief))&&(await upgradeAuthority())===upgradeKey.publicKey.toBase58());
+const upgrade2=key('upgrade-2');
+check('upgrade key suspected: it moves itself to a fresh offline key at once',await setAuthority(upgradeKey,upgrade2)&&(await upgradeAuthority())===upgrade2.publicKey.toBase58());
+check('the old upgrade key has no power any more',!(await setAuthority(upgradeKey,thief)));
+
+drill('9. Stolen admin key keeps the program paused: the recovery key lifts it (owner decision, 6 Oct)');
+r=em(['pause','--send'],'admin-3');check('the (thief-held) administrator pauses',r.ok&&(await cfg()).paused,r.out);
+r=em(['recovery-unpause','--send'],'bidder');check('someone else cannot lift the pause',!r.ok&&/REJECTED/.test(r.out),r.out);
+r=em(['recovery-unpause','--send'],'recovery-2');check('the recovery key lifts the pause at once',r.ok&&!(await cfg()).paused,r.out);
+check('status shows the 7-day pause lock',/pause lock\s+the administrator cannot pause until/.test(em(['status']).out));
+r=em(['pause','--send'],'admin-3');check('the administrator cannot pause again during the 7 days',!r.ok&&/REJECTED/.test(r.out),r.out);
+r=em(['recovery-unpause','--send'],'recovery-2');check('recovery unpause is refused when nothing is paused',!r.ok);
+await warp((await now())+7*86400+60);
+r=em(['pause','--send'],'admin-3');check('after 7 days the administrator can pause again',r.ok&&(await cfg()).paused,r.out);
+r=em(['unpause','--send'],'admin-3');check('…and resume',r.ok&&!(await cfg()).paused);
 
 const report={date:new Date().toISOString(),chain:'local LiteSVM rehearsal chain, synthetic keys',drills,checks:checks.length,failures};
 writeFileSync(`${work}/emergency-drill-report.json`,JSON.stringify(report,null,1));

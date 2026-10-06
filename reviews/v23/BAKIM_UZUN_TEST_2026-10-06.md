@@ -46,6 +46,8 @@ Betik: `heli/solana-v20/scripts/keeper_longrun.mjs`. Ayrıntılı sonuç: `keepe
 
 ## Sonuç: 606 kontrol, 0 hata
 
+Test, V24 ELF'i (`c0e81814…`) ve ayrı çevrimdışı güncelleme anahtarıyla yeniden çalıştırıldı: yine 606 kontrol, 0 hata.
+
 - 60 ayın tamamı kapandı.
 - 5 yılda rezervden 1.116.708 CHTA satışa açıldı; rezervde 68.883.291 CHTA kaldı.
 - Bu rakam basit bileşik büyümeden biraz düşük, çünkü 12. aydan sonra tavanın 1/5'i yönetim payına ayrılıyor ve bu pay satışa açılan miktara dahil değil.

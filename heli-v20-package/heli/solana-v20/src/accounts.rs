@@ -252,13 +252,6 @@ pub struct Close<'info> {
 }
 
 #[derive(Accounts)]
-pub struct Admin<'info> {
- #[account(mut,seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
- pub config:Box<Account<'info,Config>>,
- pub admin:Signer<'info>,
-}
-
-#[derive(Accounts)]
 #[instruction(monthly_cap:u64,reserve:u64)]
 pub struct InitializeFeeVaults<'info> {
  #[account(mut,seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
@@ -337,7 +330,7 @@ pub struct ExecuteExpense<'info> {
 pub struct InitializeGovernance<'info> {
  #[account(seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
  pub config:Box<Account<'info,Config>>,
- #[account(init,payer=admin,space=8+114,seeds=[b"governance".as_ref()],bump)]
+ #[account(init,payer=admin,space=8+122,seeds=[b"governance".as_ref()],bump)]
  pub governance:Box<Account<'info,Governance>>,
  #[account(mut)]
  pub admin:Signer<'info>,
@@ -352,6 +345,24 @@ pub struct GovernanceAction<'info> {
  #[account(mut,seeds=[b"governance".as_ref()],bump=governance.bump)]
  pub governance:Box<Account<'info,Governance>>,
  pub signer:Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct Pause<'info> {
+ #[account(mut,seeds=[b"config".as_ref()],bump=config.bump,has_one=admin)]
+ pub config:Box<Account<'info,Config>>,
+ #[account(seeds=[b"governance".as_ref()],bump=governance.bump)]
+ pub governance:Box<Account<'info,Governance>>,
+ pub admin:Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct RecoveryUnpause<'info> {
+ #[account(mut,seeds=[b"config".as_ref()],bump=config.bump)]
+ pub config:Box<Account<'info,Config>>,
+ #[account(mut,seeds=[b"governance".as_ref()],bump=governance.bump)]
+ pub governance:Box<Account<'info,Governance>>,
+ pub recovery:Signer<'info>,
 }
 
 #[derive(Accounts)]

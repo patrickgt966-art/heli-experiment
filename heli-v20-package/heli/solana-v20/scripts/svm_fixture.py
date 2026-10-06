@@ -92,7 +92,7 @@ def set_upgrade_authority(key):
  a=svm.get_account(PROGRAM_DATA);d=bytearray(a.data);d[12]=0 if key is None else 1;d[13:45]=bytes(32) if key is None else bytes(key)
  svm.set_account(PROGRAM_DATA,_Account(a.lamports,bytes(d),a.owner,a.executable,a.rent_epoch))
 set_upgrade_authority(admin.pubkey())
-defaults={'config':pda(b'config'),'program':PROGRAM,'program_data':PROGRAM_DATA,'mint':pda(b'mint'),'admin':admin.pubkey(),'payer':admin.pubkey(),'account_payer':admin.pubkey(),'owner':admin.pubkey(),'token_program':TOKEN,'system_program':SYSTEM,'rent':RENT,'market':pda(b'market')}
+defaults={'config':pda(b'config'),'program':PROGRAM,'program_data':PROGRAM_DATA,'mint':pda(b'mint'),'admin':admin.pubkey(),'payer':admin.pubkey(),'account_payer':admin.pubkey(),'owner':admin.pubkey(),'token_program':TOKEN,'system_program':SYSTEM,'rent':RENT,'market':pda(b'market'),'governance':pda(b'governance')}
 for i,n in [(0,'human'),(3,'founder')]:defaults[n]=pda(b'vault',bytes([i]))
 for n in ['base_pool','quote_pool','quote_treasury','founder_quote']:defaults[n]=pda(n.replace('_','-').encode())
 def instruction(name,arguments=None,accounts=None):
@@ -113,6 +113,12 @@ def removed(name,label=None):
  assert name not in INSTRUCTIONS,name+' still in the IDL'
  ix=Instruction(PROGRAM,hashlib.sha256(('global:'+name).encode()).digest()[:8],[meta(admin.pubkey(),True,True)])
  return send(label or name+' no longer exists in the program',[ix],None,'Fallback functions are not supported')
+def ensure_governance():
+ # pause reads the governance account (pause lock after a recovery unpause, 6 Oct 2026); create it with a synthetic
+ # recovery key when a test has not done so yet.
+ if svm.get_account(defaults['governance']) is None:
+  global recovery_key;recovery_key=Keypair();KEYS[str(recovery_key.pubkey())]=recovery_key;svm.airdrop(recovery_key.pubkey(),10**10)
+  call('initialize_governance',{'recovery':recovery_key.pubkey()})
 def call(name,args=None,acc=None,label=None,reject=None):
  ix=instruction(name,args,acc);s=[KEYS[str(m.pubkey)] for m in ix.accounts if m.is_signer]
  return send(label or name,[ix],s,reject)

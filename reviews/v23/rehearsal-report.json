@@ -1,7 +1,7 @@
 {
- "date": "2026-10-06T19:43:52.406Z",
+ "date": "2026-10-06T20:58:02.497Z",
  "chain": "local LiteSVM rehearsal chain (scripts/svm_rpc.py), synthetic keys and quote mint",
- "elf": "ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43",
+ "elf": "c0e818148ea2aea8595a3024aac2a358c78f2052a45141ca0c299592dd7d6f87",
  "phases": [
   "Funding synthetic accounts",
   "Setup runner, phase pre",
@@ -11,7 +11,7 @@
   "Setup runner, phase post",
   "Every bidder claims",
   "Transfers between holders",
-  "Upgrade key to the recovery key",
+  "Upgrade authority to the offline upgrade key",
   "Three months of keeper maintenance",
   "Fixed technical expense (12 USDC)"
  ],
@@ -54,6 +54,6 @@
   "submitted observe_release_market",
   "confirmed observe_release_market"
  ],
- "checks": 171,
+ "checks": 173,
  "failures": []
 }

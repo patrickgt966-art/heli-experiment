@@ -16,7 +16,7 @@ def expense(nonce):return {'expense':t.pda(b'expense',struct.pack('<Q',nonce)),'
 
 e0=expense(0);t.call('propose_expense',{'nonce':0,'amount':10_000,'purpose':[1]*32,'fixed':True},e0)
 t.clock(t.read(e0['expense'],'Expense')['readyAt'])
-t.call('pause',{'paused':True})
+t.ensure_governance();t.call('pause',{'paused':True})
 t.call('execute_expense',acc=e0,reject='Invalid state',label='paused program halts treasury outflow')
 t.check('nothing paid while paused',t.amount(private)==0)
 t.call('pause',{'paused':False})
