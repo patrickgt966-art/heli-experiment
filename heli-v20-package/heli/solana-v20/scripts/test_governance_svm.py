@@ -79,6 +79,23 @@ t.clock(t.read(e['expense'],'Expense')['readyAt'])
 t.call('execute_expense',acc=e,reject='Invalid calendar window',label='cancelled hostile expense never pays')
 t.check('nothing reached the thief',t.amount(loot)==0)
 
+# Recovery unpause (owner decision, 6 Oct 2026): a stolen admin key cannot keep the program paused. The recovery key
+# lifts a pause; the administrator then cannot pause again for seven days, so pause/unpause ping-pong cannot block.
+pause=lambda on,signer,**k:t.call('pause',{'paused':on},{'admin':signer.pubkey()},**k)
+runpause=lambda signer,**k:t.call('recovery_unpause',{},{'recovery':signer.pubkey()},**k)
+runpause(r3,reject='Invalid state',label='recovery unpause only acts on a paused program')
+pause(True,a3,label='administrator (or a thief holding its key) pauses')
+runpause(t.outsider,reject=UNAUTH,label='outsider cannot lift the pause')
+runpause(a3,reject=UNAUTH,label='administrator cannot use the recovery unpause')
+now=t.svm.get_clock().unix_timestamp;runpause(r3,label='recovery key lifts the pause')
+t.check('pause lifted by the recovery key',not t.cfg()['paused'])
+t.check('pause locked for seven days',G()['pauseLockedUntil']==now+7*t.DAY)
+pause(True,a3,reject='Invalid calendar window',label='administrator cannot pause again during the lock')
+pause(False,a3,label='unpausing stays allowed during the lock')
+t.clock(now+7*t.DAY-1);pause(True,a3,reject='Invalid calendar window',label='lock holds until its last second')
+t.clock(now+7*t.DAY);pause(True,a3,label='administrator can pause again after seven days')
+runpause(r3,label='recovery key lifts the repeated pause');t.check('lock renewed from the new unpause',G()['pauseLockedUntil']==now+14*t.DAY)
+
 result={'source_sha256':t.actual_source,'binary_sha256':t.actual_binary,'checks_and_transactions':len(t.checks),'checks':t.checks,'all_passed':True,
  'scope':'Compiled V20 ELF in local LiteSVM, synthetic keys; admin/recovery/verifier governance only. Not a deployment or audit.'}
 (t.ROOT/'governance-svm-verification.json').write_text(json.dumps(result,indent=2),encoding='utf-8')

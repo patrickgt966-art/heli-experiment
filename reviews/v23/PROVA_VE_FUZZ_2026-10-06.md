@@ -41,7 +41,7 @@ Böylece kurulum betiği, bakım servisi ve web sitesi hiç değiştirilmeden on
 
 ### Sonuç: 173 kontrol, 0 hata
 
-İlk çalıştırma 171 kontrolle güncelleme yetkisini kurtarma anahtarına devrediyordu. Sahibin 6 Ekim kararından (ayrı çevrimdışı güncelleme anahtarı) sonra prova yeniden çalıştırıldı; iki yeni kontrol eklendi.
+İlk çalıştırma 171 kontrolle güncelleme yetkisini kurtarma anahtarına devrediyordu. Sahibin 6 Ekim kararından (ayrı çevrimdışı güncelleme anahtarı) sonra prova yeniden çalıştırıldı; iki yeni kontrol eklendi. Son çalıştırma V24 ELF'i (`c0e81814…`, kurtarma anahtarıyla duraklatma kaldırma) ile yapıldı. Fuzz testi de V24 ile yeniden çalıştırıldı: 30 tohum, 12.029 adım, 125.623 kontrol, 0 bulgu (`fuzz-verification.json`).
 
 Ayrıntılar `rehearsal-report.json` dosyasında.
 

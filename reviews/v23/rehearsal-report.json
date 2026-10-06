@@ -1,7 +1,7 @@
 {
- "date": "2026-10-06T20:41:49.884Z",
+ "date": "2026-10-06T20:58:02.497Z",
  "chain": "local LiteSVM rehearsal chain (scripts/svm_rpc.py), synthetic keys and quote mint",
- "elf": "ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43",
+ "elf": "c0e818148ea2aea8595a3024aac2a358c78f2052a45141ca0c299592dd7d6f87",
  "phases": [
   "Funding synthetic accounts",
   "Setup runner, phase pre",

@@ -232,7 +232,19 @@ pub mod heli_core_v20 {
   emit!(ExpenseCancelled{nonce:e.nonce,destination:e.destination,amount:e.amount});Ok(())
  }
  pub fn open_epoch(ctx:Context<OpenMarketEpoch>,number:u16)->Result<()> {market_release::open(ctx,number)}
- pub fn pause(ctx:Context<Admin>,paused:bool)->Result<()> {ctx.accounts.config.paused=paused;Ok(())}
+ pub fn pause(ctx:Context<Pause>,paused:bool)->Result<()> {
+  // After the recovery key lifts a pause, the administrator cannot pause again for 7 days (owner decision, 6 Oct 2026).
+  if paused {require!(Clock::get()?.unix_timestamp>=ctx.accounts.governance.pause_locked_until,ErrorCode::Time);}
+  ctx.accounts.config.paused=paused;Ok(())
+ }
+ // Defensive power of the cold key: a stolen administrator key cannot keep the program paused.
+ pub fn recovery_unpause(ctx:Context<RecoveryUnpause>)->Result<()> {
+  require_keys_eq!(ctx.accounts.recovery.key(),ctx.accounts.governance.recovery,ErrorCode::Unauthorized);
+  require!(ctx.accounts.config.paused,ErrorCode::State);
+  let until=Clock::get()?.unix_timestamp.checked_add(GOVERNANCE_DELAY).ok_or(ErrorCode::Math)?;
+  ctx.accounts.config.paused=false;ctx.accounts.governance.pause_locked_until=until;
+  emit!(RecoveryUnpaused{pause_locked_until:until});Ok(())
+ }
  pub fn settle(ctx:Context<SettleMarket>)->Result<()> {market_release::settle(ctx)}
  pub fn close_constitution(ctx:Context<Close>)->Result<()> {
   if ctx.accounts.config.closed{return Ok(());}require!(ctx.accounts.config.live&&Clock::get()?.unix_timestamp>=boundary(ctx.accounts.config.start,720),ErrorCode::Time);
@@ -260,10 +272,11 @@ fn outgoing<'a>(program:AccountInfo<'a>,from:AccountInfo<'a>,to:AccountInfo<'a>,
 #[event] pub struct ExpenseExecuted {pub nonce:u64,pub destination:Pubkey,pub amount:u64,pub purpose:[u8;32]}
 #[event] pub struct ExpenseCancelled {pub nonce:u64,pub destination:Pubkey,pub amount:u64}
 pub const GOVERNANCE_DELAY:i64=7*DAY;
-#[account] pub struct Governance {pub recovery:Pubkey,pub pending_admin:Pubkey,pub ready_at:i64,pub by_recovery:bool,pub pending_recovery:Pubkey,pub recovery_ready_at:i64,pub bump:u8}
+#[account] pub struct Governance {pub recovery:Pubkey,pub pending_admin:Pubkey,pub ready_at:i64,pub by_recovery:bool,pub pending_recovery:Pubkey,pub recovery_ready_at:i64,pub bump:u8,pub pause_locked_until:i64}
 #[event] pub struct AdminProposed {pub new_admin:Pubkey,pub by_recovery:bool,pub ready_at:i64}
 #[event] pub struct AdminChanged {pub old:Pubkey,pub new:Pubkey}
 #[event] pub struct RecoveryChanged {pub old:Pubkey,pub new:Pubkey}
+#[event] pub struct RecoveryUnpaused {pub pause_locked_until:i64}
 #[event] pub struct QuoteContribution {pub contributor:Pubkey,pub amount:u64}
 #[account] pub struct Epoch {pub number:u16,pub capacity:u64,pub human_budget:u64,pub founder:u64,pub quote_founder:u64,pub settled:bool,pub bump:u8,pub founder_budget:u64}
 #[error_code] pub enum ErrorCode {#[msg("Invalid state")]State,#[msg("Invalid calendar window")]Time,#[msg("Quota exceeded")]Quota,#[msg("Arithmetic error")]Math,#[msg("Collateral deficit")]Collateral,#[msg("Market guard rejected")]Market,#[msg("Liquidity inventory is disabled")]LiquidityDisabled,#[msg("Only the program upgrade authority can initialize")]InitializerNotAuthorized,#[msg("Order price outside the permitted band")]PriceOutsideBand,#[msg("Signer is not authorized for this governance action")]Unauthorized,#[msg("Expense destination must be outside the program treasury")]ExpenseDestination,#[msg("Invalid or missing token metadata")]TokenMetadata,#[msg("Project orders may not trade with each other")]SelfTrade}

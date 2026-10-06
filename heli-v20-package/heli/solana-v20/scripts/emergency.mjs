@@ -3,7 +3,8 @@
 //   node scripts/emergency.mjs status                      --rpc <URL> [--program <ID>]
 //   node scripts/emergency.mjs <command> [argument]        --rpc <URL> --key <KEYPAIR.json> [--program <ID>] [--send]
 // Commands (who signs):
-//   pause | unpause                       administrator
+//   pause | unpause                       administrator (pausing is refused for 7 days after a recovery unpause)
+//   recovery-unpause                      recovery key: lifts a pause; the administrator cannot pause again for 7 days
 //   cancel-expense <nonce>                administrator
 //   recovery-cancel-expense <nonce>       recovery key
 //   propose-admin <pubkey>                administrator (takes effect at once) or recovery key (after 7 days)
@@ -36,12 +37,13 @@ if(command==='status'){
  if(!c)throw Error(`Charta is not set up at ${program.toBase58()} on ${cluster}`);
  const pd=await conn.getAccountInfo(web3.PublicKey.findProgramAddressSync([program.toBuffer()],LOADER)[0]);
  const expenses=(await conn.getProgramAccounts(program,{filters:[{dataSize:131}]})).map(e=>{try{return decodeAccount(idl,'Expense',e.account.data);}catch{return null;}}).filter(e=>e&&!e.paid&&!e.cancelled);
- const now=Math.floor(Date.now()/1000);
+ const clock=await conn.getAccountInfo(web3.SYSVAR_CLOCK_PUBKEY);const now=clock?Number(clock.data.readBigInt64LE(32)):Math.floor(Date.now()/1000);  // chain time
  console.log(`Charta ${program.toBase58()} on ${cluster}
  administrator        ${c.admin}
  recovery key         ${g?.recovery??'not set'}
  upgrade key          ${pd?.data[12]===1?new web3.PublicKey(pd.data.subarray(13,45)).toBase58():'REMOVED (code can no longer change)'}
  paused               ${c.paused?'YES: sales, treasury orders and expense payments are stopped':'no'}
+ pause lock           ${g&&Number(g.pause_locked_until)>now?`the administrator cannot pause until ${time(g.pause_locked_until)} (lifted by the recovery key)`:'none'}
  months settled       ${c.last_settled_epoch} of 720
  pending admin change ${g&&g.pending_admin!==none?`${g.pending_admin} (${g.by_recovery?'proposed by the RECOVERY key':'by the administrator'}, can be accepted from ${time(g.ready_at)})`:'none'}
  pending recovery     ${g&&g.pending_recovery!==none?`${g.pending_recovery} (from ${time(g.recovery_ready_at)})`:'none'}
@@ -56,8 +58,9 @@ const gov={config:pda('config'),governance:pda('governance'),signer:signer.publi
 const expense=n=>pda('expense',Buffer.from(new BigUint64Array([BigInt(n)]).buffer));
 const need=(x,what)=>{if(x===undefined)throw Error(`${command} needs ${what}`);return x;};
 const plans={
- pause:()=>['pause',{paused:true},{config:pda('config'),admin:signer.publicKey}],
- unpause:()=>['pause',{paused:false},{config:pda('config'),admin:signer.publicKey}],
+ pause:()=>['pause',{paused:true},{config:pda('config'),governance:pda('governance'),admin:signer.publicKey}],
+ unpause:()=>['pause',{paused:false},{config:pda('config'),governance:pda('governance'),admin:signer.publicKey}],
+ 'recovery-unpause':()=>['recovery_unpause',{},{config:pda('config'),governance:pda('governance'),recovery:signer.publicKey}],
  'cancel-expense':()=>['cancel_expense',{},{config:pda('config'),expense:expense(need(arg,'an expense number')),admin:signer.publicKey}],
  'recovery-cancel-expense':()=>['recovery_cancel_expense',{},{governance:pda('governance'),expense:expense(need(arg,'an expense number')),recovery:signer.publicKey}],
  'propose-admin':()=>['propose_admin',{new_admin:new web3.PublicKey(need(arg,'the new administrator public key'))},gov],

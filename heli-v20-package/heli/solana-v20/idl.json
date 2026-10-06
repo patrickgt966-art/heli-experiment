@@ -2583,6 +2583,11 @@
           "isSigner": false
         },
         {
+          "name": "governance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "admin",
           "isMut": false,
           "isSigner": true
@@ -2594,6 +2599,27 @@
           "type": "bool"
         }
       ]
+    },
+    {
+      "name": "recoveryUnpause",
+      "accounts": [
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "governance",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "recovery",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
     },
     {
       "name": "settle",
@@ -3205,6 +3231,10 @@
           {
             "name": "bump",
             "type": "u8"
+          },
+          {
+            "name": "pauseLockedUntil",
+            "type": "i64"
           }
         ]
       }
@@ -3298,6 +3328,16 @@
         {
           "name": "amount",
           "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "RecoveryUnpaused",
+      "fields": [
+        {
+          "name": "pauseLockedUntil",
+          "type": "i64",
           "index": false
         }
       ]

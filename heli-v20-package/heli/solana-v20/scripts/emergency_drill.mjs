@@ -117,6 +117,17 @@ const upgrade2=key('upgrade-2');
 check('upgrade key suspected: it moves itself to a fresh offline key at once',await setAuthority(upgradeKey,upgrade2)&&(await upgradeAuthority())===upgrade2.publicKey.toBase58());
 check('the old upgrade key has no power any more',!(await setAuthority(upgradeKey,thief)));
 
+drill('9. Stolen admin key keeps the program paused: the recovery key lifts it (owner decision, 6 Oct)');
+r=em(['pause','--send'],'admin-3');check('the (thief-held) administrator pauses',r.ok&&(await cfg()).paused,r.out);
+r=em(['recovery-unpause','--send'],'bidder');check('someone else cannot lift the pause',!r.ok&&/REJECTED/.test(r.out),r.out);
+r=em(['recovery-unpause','--send'],'recovery-2');check('the recovery key lifts the pause at once',r.ok&&!(await cfg()).paused,r.out);
+check('status shows the 7-day pause lock',/pause lock\s+the administrator cannot pause until/.test(em(['status']).out));
+r=em(['pause','--send'],'admin-3');check('the administrator cannot pause again during the 7 days',!r.ok&&/REJECTED/.test(r.out),r.out);
+r=em(['recovery-unpause','--send'],'recovery-2');check('recovery unpause is refused when nothing is paused',!r.ok);
+await warp((await now())+7*86400+60);
+r=em(['pause','--send'],'admin-3');check('after 7 days the administrator can pause again',r.ok&&(await cfg()).paused,r.out);
+r=em(['unpause','--send'],'admin-3');check('…and resume',r.ok&&!(await cfg()).paused);
+
 const report={date:new Date().toISOString(),chain:'local LiteSVM rehearsal chain, synthetic keys',drills,checks:checks.length,failures};
 writeFileSync(`${work}/emergency-drill-report.json`,JSON.stringify(report,null,1));
 console.log(`\n${drills.length} drills, ${checks.length} checks, ${failures.length} failures`);if(failures.length){console.log(failures.join('\n'));process.exit(1);}

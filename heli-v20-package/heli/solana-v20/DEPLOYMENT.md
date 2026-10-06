@@ -9,7 +9,7 @@ Acil durumlar (anahtar kaybı ya da hırsızlığı, hata, duraklatma, bakım se
 | Anahtar | Nerede durur | Ne yapar |
 |---|---|---|
 | **Yönetici** | Günlük kullanılan cüzdan | Satış/yönetim emirleri (fiyat bandı içinde), gider teklifi ve iptali, duraklatma, doğrulayıcı değiştirme, olağan yönetici devri |
-| **Kurtarma** | Çevrimdışı (donanım cüzdanı veya kağıt); yine aynı tek yöneticiye aittir | Kayıp yönetici yerine 7 gün sonra yeni yönetici önermek; bekleyen gideri iptal etmek; kendini değiştirmek |
+| **Kurtarma** | Çevrimdışı (donanım cüzdanı veya kağıt); yine aynı tek yöneticiye aittir | Kayıp yönetici yerine 7 gün sonra yeni yönetici önermek; bekleyen gideri iptal etmek; duraklatmayı kaldırmak; kendini değiştirmek |
 | **Doğrulayıcı** | Kullanılmaz (ücretsiz pay yok) | Kurulumda atılmış rastgele bir anahtar verilir |
 | **Upgrade yetkisi** | Kurulumda yönetici; kurulum bitince **ayrı bir çevrimdışı güncelleme anahtarı** (ne yönetici ne kurtarma anahtarı; sahibin kararı, 6 Ekim 2026). Donanım cüzdanı ya da kağıt, iki ayrı yerde yedek | Program kodunu değiştirebilir; çalınırsa tüm kasalar risk altındadır. Kaybolursa program bir daha güncellenemez (çalışmaya devam eder) |
 | **Keeper** | Ayrı ücret cüzdanı | Yalnız izinli bakım işleri; hiçbir yetkisi yoktur |
@@ -21,8 +21,9 @@ Kurallar (programda zorlanır):
 - **Kurtarma anahtarı değişimi:** Kurtarma anahtarı kendini anında değiştirir. Yönetici ise ancak 7 gün bekleyen ve eski kurtarma anahtarının iptal edebildiği bir öneriyle değiştirir. Yeni anahtarın kabul için imza atması gerekir.
 - **Kurtarma anahtarı yönetici olamaz, yönetici de kurtarma anahtarı olamaz.**
 - **Savunma:** Kurtarma anahtarı `recovery_cancel_expense` ile bekleyen bir gideri durdurabilir.
+- **Duraklatma (V24, sahibin 6 Ekim kararı):** `pause` yalnız yöneticidedir ve süresizdir. Kurtarma anahtarı `recovery_unpause` ile duraklatılmış programı hemen açar; bundan sonra yönetici **7 gün** duraklatamaz (açabilir). Böylece çalınan bir yönetici anahtarı programı süresiz durduramaz. `pause` artık yönetim (governance) hesabını da okur; bu yüzden ancak `initialize_governance`'tan sonra çalışır (kurulum adımı 10).
 
-Bilinen sınır: Yönetici anahtarını çalan kişi sizden önce davranıp yöneticiyi kendine devrederse, kurtarma anahtarının önerisini her seferinde iptal edebilir. Bu yüzden yönetici anahtarını iyi koruyun ve şüphe anında hemen olağan devri yapın. Satışlar fiyat bandıyla sınırlıdır; giderleri kurtarma anahtarı durdurabilir; aylık arz kuralı duraklatmadan etkilenmez.
+Bilinen sınır: Yönetici anahtarını çalan kişi sizden önce davranıp yöneticiyi kendine devrederse, kurtarma anahtarının önerisini her seferinde iptal edebilir. Bu yüzden yönetici anahtarını iyi koruyun ve şüphe anında hemen olağan devri yapın. Satışlar fiyat bandıyla sınırlıdır; giderleri ve duraklatmayı kurtarma anahtarı durdurabilir; aylık arz kuralı duraklatmadan etkilenmez.
 
 ## Kurulum sırası
 
@@ -53,7 +54,7 @@ Sonradan yönetici değiştirildiğinde keeper bilinçli olarak durur ("Administ
 
 ## Yükleme maliyeti (4 Ekim 2026)
 
-- ELF 1.010.656 bayt (5 Ekim 2026): program verisi kirası ≈ **7,04 SOL** (yaklaşık 6.960 lamport/bayt). Yükleme sırasında aynı boyutta geçici bir tampon hesabı için bir o kadar daha gerekir; yükleme bitince iade edilir.
+- ELF 1.018.560 bayt (V24, 6 Ekim 2026): program verisi kirası ≈ **7,09 SOL** (yaklaşık 6.960 lamport/bayt). Yükleme sırasında aynı boyutta geçici bir tampon hesabı için bir o kadar daha gerekir; yükleme bitince iade edilir.
 - Upgrade anahtarı kalıcı olarak kaldırıldığında bu kira geri alınamaz. Önceki sürümler büyürse `solana program extend` ile alan eklenir; yüklemede gereksiz boş alan ayırmayın (kullandığınız CLI sürümünün `--max-len` varsayılanını kontrol edin).
 - Program `no-idl` ile derlenir: zincir üstü IDL hesabı yoktur (`anchor idl init` kullanılamaz). IDL depoda (`idl.json`) yayımlanır.
 

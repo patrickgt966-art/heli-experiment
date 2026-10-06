@@ -30,8 +30,8 @@ test('reference: time-weighted mean of 24 hourly samples, none when stale',()=>{
  assert.equal(D.reference(p,now),(22n*1_000_000n+10_000_000n)/23n);assert.equal(D.reference(p,now+3600),null);assert.equal(D.reference({...p,count:23},now),null);
 });
 test('IDL decoding: Governance and Epoch read field by field and reject foreign accounts',async()=>{
- const g=Buffer.alloc(8+32+32+8+1+32+8+1);(await D.accountDiscriminator('Governance')).forEach((x,i)=>g[i]=x);g.fill(7,8,40);g.writeBigInt64LE(123n,72);g[g.length-1]=254;
- const gov=await D.decode(idl,'Governance',g);assert.equal(gov.recovery[0],7);assert.equal(gov.readyAt,123n);assert.equal(gov.bump,254);
+ const g=Buffer.alloc(8+32+32+8+1+32+8+1+8);(await D.accountDiscriminator('Governance')).forEach((x,i)=>g[i]=x);g.fill(7,8,40);g.writeBigInt64LE(123n,72);g[8+113]=254;g.writeBigInt64LE(456n,8+114);
+ const gov=await D.decode(idl,'Governance',g);assert.equal(gov.recovery[0],7);assert.equal(gov.readyAt,123n);assert.equal(gov.bump,254);assert.equal(gov.pauseLockedUntil,456n);
  const e=Buffer.alloc(8+44);(await D.accountDiscriminator('Epoch')).forEach((x,i)=>e[i]=x);e.writeUInt16LE(3,8);e.writeBigUInt64LE(20_112_368_685n,10);
  const ep=await D.decode(idl,'Epoch',e);assert.equal(ep.number,3);assert.equal(ep.capacity,20_112_368_685n);
  await assert.rejects(D.decode(idl,'Epoch',g));

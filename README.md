@@ -29,7 +29,7 @@ Website: https://heli-experiment.pages.dev · Full rules: [`heli-v20-package/hel
 - Sale revenue returns to the project reserve. Expenses are paid straight from the project reserve when an approved expense is paid, never moved ahead of time. Sale revenue is 100% spendable; beyond it, reserve spending over any rolling 30 days is limited to 25% a year of the reserve (25%/12 per 30 days) and keeps the project floor. The fixed technical cost (server, RPC) has its own allowance of 12 quote units per rolling 30 days (10 plus a 20% margin) that neither the project floor nor other spending can block, so the system keeps running. Expenses wait seven days, can be cancelled by the administrator or the offline recovery key and can never be paid back into project accounts. After the 60-year close, revenue can still pay expenses under the same limits, and price observations continue.
 - An administrative pause halts sales, treasury operations and expenses, but never the monthly release rule.
 - An offline recovery key can replace a lost administrator key after seven days.
-- Until the audit the program is upgradeable; the upgrade authority sits on its own offline key, separate from the administrator and the recovery key. The administrator and the manager may be the same key; the pause has no time limit; the administrator or the offline recovery key can cancel a pending expense.
+- Until the audit the program is upgradeable; the upgrade authority sits on its own offline key, separate from the administrator and the recovery key. The administrator and the manager may be the same key; the administrator's pause has no time limit, but the offline recovery key can lift it, after which the administrator cannot pause again for seven days; the administrator or the offline recovery key can cancel a pending expense.
 - Team trading commitment: the founder and team trade CHTA only from publicly declared wallets, never from undisclosed accounts. Team and any market-maker wallet addresses will be published before launch. (The program cannot tell personal wallets apart, so this is a public commitment, not a code rule.)
 
 A project reserve is not a guaranteed redemption backing. Charta makes no claim of guaranteed price, returns or liquidity.
@@ -38,7 +38,7 @@ A project reserve is not a guaranteed redemption backing. Charta makes no claim 
 
 | Area | Status |
 |---|---|
-| Program (V23) | Built reproducibly (Agave 2.1.21); 1.01 MB (upload rent ~7.04 SOL). ELF SHA-256 `ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43`. |
+| Program (V24) | Built reproducibly (Agave 2.1.21); 1.02 MB (upload rent ~7.09 SOL). ELF SHA-256 `c0e818148ea2aea8595a3024aac2a358c78f2052a45141ca0c299592dd7d6f87`. |
 | Local tests | All 720 monthly periods and treasury, price, governance, expense and entitlement controls pass in a local Solana simulator (LiteSVM) with the real program and Manifest binaries; two red-team runs (61 attacks incl. a malicious administrator, 32 outside-only attacks) were all blocked; Node suite 114/114. Counts are overlapping local checks, not an audit. |
 | Devnet | Not deployed. Setup runner, read-only readiness check and guide are ready (`heli-v20-package/heli/solana-v20/DEVNET.md`); the pre-auction setup was rehearsed on a local Agave 4.0 validator with the real Manifest and Metaplex binaries. |
 | Free allocation | Removed by owner decision (4 October 2026). The earlier identity-verified free allocation and its live pilot tests are archived in `reviews/`; the program rejects those instructions. |

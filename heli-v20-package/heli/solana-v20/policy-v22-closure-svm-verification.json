@@ -1,8 +1,8 @@
 {
   "mode": "closure",
-  "source_sha256": "17fb61bb6a5bc18cb2259b3a4ce6102258f073503ba0432d17d0ba7e0bb6a7de",
-  "binary_sha256": "ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43",
-  "checks_and_transactions": 1688,
+  "source_sha256": "0d8488ab433d682584aeaa77e939a43571f2ecfe8d730ceb8f5cd855f9881199",
+  "binary_sha256": "c0e818148ea2aea8595a3024aac2a358c78f2052a45141ca0c299592dd7d6f87",
+  "checks_and_transactions": 1689,
   "all_passed": true,
   "post_closure_revenue_atoms": 2000000,
   "post_closure_expense_atoms": 232521833,

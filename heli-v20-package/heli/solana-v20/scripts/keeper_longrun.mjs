@@ -167,7 +167,7 @@ for(let m=1;m<=MONTHS;m++){
   const r=await run(keeper);check('a keeper wallet below its reserve sends nothing',['insufficient-balance','essential-reserve'].includes(r.status),r.status);
   check('…and the month stays due until it is refilled',(await settled())<due());
   await conn.confirmTransaction(await conn.requestAirdrop(keeperA.publicKey,2e9),'confirmed');await run(keeper);check('after a refill the keeper catches up',(await settled())===due());continue;}
- if(event==='pause'||event==='unpause'){paused=event==='pause';await sendTx([heliInstruction(idl,PROGRAM,'pause',{paused},{config:pda('config'),admin:adminKey.publicKey})],[adminKey]);}
+ if(event==='pause'||event==='unpause'){paused=event==='pause';await sendTx([heliInstruction(idl,PROGRAM,'pause',{paused},{config:pda('config'),governance:pda('governance'),admin:adminKey.publicKey})],[adminKey]);}
  if(event==='admin-replaced'){
   const gov={config:pda('config'),governance:pda('governance')};
   await sendTx([heliInstruction(idl,PROGRAM,'propose_admin',{new_admin:newAdmin.publicKey},{...gov,signer:recovery.publicKey})],[recovery]);

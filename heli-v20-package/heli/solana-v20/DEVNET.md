@@ -17,7 +17,7 @@ Bu rehber Devnet'te **değeri olmayan** bir deneme içindir. Bu bir mainnet lans
   - kurtarma;
   - güncelleme (programın upgrade yetkisi; yönetici ve kurtarmadan ayrı, çevrimdışı);
   - keeper.
-- **Test SOL'u:** yükleme anında geçici olarak **~14,1 SOL** gerekir. Program ~7,04 SOL tutar; geçici tampon ~7,04 SOL tutar ve yükleme bitince iade edilir. Kurulum işlemleri için birkaç SOL daha gerekir. Faucet günde sınırlı verdiği için SOL'u birkaç güne yayarak topla.
+- **Test SOL'u:** yükleme anında geçici olarak **~14,2 SOL** gerekir. Program ~7,09 SOL tutar; geçici tampon ~7,09 SOL tutar ve yükleme bitince iade edilir. Kurulum işlemleri için birkaç SOL daha gerekir. Faucet günde sınırlı verdiği için SOL'u birkaç güne yayarak topla.
 - **Test USDC'si:** 6 ondalıklı bir mint. Circle'ın Devnet USDC'sini kullanabilir ya da `spl-token create-token --decimals 6` ile kendin oluşturabilirsin.
 
 ## 1. Hazırlık kontrolü (sadece okur, işlem göndermez)

@@ -34,7 +34,7 @@ def drain():
 try:
  t.check('pause does not change the monthly maintenance plan',answer(True)['job']==answer()['job'])
  # Lost-key scenario (owner decision H2-B): paused on chain and never unpaused for the whole horizon.
- t.call('pause',{'paused':True})
+ t.ensure_governance();t.call('pause',{'paused':True})
  t.clock(t.boundary(10)+10*t.DAY);drain();t.check('ten missed months caught up sequentially',settled==list(range(1,11)))
  for n in range(11,721):
   t.clock(t.boundary(n));drain()
