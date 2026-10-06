@@ -28,11 +28,12 @@ async function refresh() {
   const mintAuthority = acc.mint && acc.mint.data[0] === 1;
   const circulating = supply - c.stocks[0] - c.stocks[3] - c.marketRemaining;
   const month = c.lastSettledEpoch; const epochKey = n => pda('epoch', new Uint8Array([n & 255, n >> 8]));
-  const [ep] = await conn.getMultipleAccountsInfo([epochKey(month + 1)]); const epoch = ep ? await D.decode(idl, 'Epoch', ep.data) : null;
+  // A month's cap is fixed when it settles (market_release.rs), so show the last settled month; the open one reads 0.
+  const [ep] = month > 0 ? await conn.getMultipleAccountsInfo([epochKey(month)]) : [null]; const epoch = ep ? await D.decode(idl, 'Epoch', ep.data) : null;
   set('s-supply', tok(supply)); set('s-reserve', tok(c.stocks[0])); set('s-mgmt', tok(c.stocks[3])); set('s-inventory', tok(c.marketRemaining));
   set('s-circ', tok(circulating)); set('s-mint', mintAuthority ? 'Present (before genesis)' : 'Revoked: no one can mint'); set('month-pill', `Month ${month} of 720`);
   set('s-next', c.closed ? 'Closed after 60 years' : date(D.boundary(Number(c.start), month + 1)));
-  set('s-cap', epoch ? `${tok(epoch.capacity)} (released ${tok(epoch.humanBudget + epoch.founder)})` : 'Opens at the next boundary');
+  set('s-cap', epoch ? `${tok(epoch.capacity)} cap; ${tok(epoch.humanBudget)} released for sale` : 'Set when the first month closes');
   set('pause-pill', c.paused ? 'Paused' : 'Active');
   const reserve = tokenAmount(acc.reserve) ?? 0n;
   set('t-reserve', usdc(reserve)); set('t-floor', c.projectFloor ? usdc(c.projectFloor) : 'Set after the auction');

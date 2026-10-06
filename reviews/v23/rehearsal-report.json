@@ -1,0 +1,59 @@
+{
+ "date": "2026-10-06T19:43:52.406Z",
+ "chain": "local LiteSVM rehearsal chain (scripts/svm_rpc.py), synthetic keys and quote mint",
+ "elf": "ce1949d9b35ca102b4e1ca515d1f26c3808e4cf0880f3063ad5bb98c49cbbc43",
+ "phases": [
+  "Funding synthetic accounts",
+  "Setup runner, phase pre",
+  "Opening auction: 40 bidders",
+  "Final five minutes",
+  "Auction end: the keeper finalizes",
+  "Setup runner, phase post",
+  "Every bidder claims",
+  "Transfers between holders",
+  "Upgrade key to the recovery key",
+  "Three months of keeper maintenance",
+  "Fixed technical expense (12 USDC)"
+ ],
+ "bidders": 40,
+ "clearing": {
+  "level": 3,
+  "priceUsdc": 0.00023,
+  "demand": "5587441",
+  "claimedChta": 4999999.999999,
+  "paidUsdc": 1150.000001,
+  "labels": {
+   "filled": 34,
+   "partly filled": 2,
+   "outbid": 4
+  }
+ },
+ "keeper": [
+  "submitted finalize_auction",
+  "confirmed finalize_auction",
+  "submitted open_epoch 1",
+  "confirmed open_epoch 1",
+  "submitted observe_release_market",
+  "confirmed observe_release_market",
+  "submitted settle 1",
+  "confirmed settle 1",
+  "submitted open_epoch 2",
+  "confirmed open_epoch 2",
+  "submitted observe_release_market",
+  "confirmed observe_release_market",
+  "submitted settle 2",
+  "confirmed settle 2",
+  "submitted open_epoch 3",
+  "confirmed open_epoch 3",
+  "submitted observe_release_market",
+  "confirmed observe_release_market",
+  "submitted settle 3",
+  "confirmed settle 3",
+  "submitted open_epoch 4",
+  "confirmed open_epoch 4",
+  "submitted observe_release_market",
+  "confirmed observe_release_market"
+ ],
+ "checks": 171,
+ "failures": []
+}
