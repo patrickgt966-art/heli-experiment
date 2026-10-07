@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Check the rules of any Solana token: who can mint more, who can freeze your wallet, who can change the code. Read straight from the chain, in plain words.">
+  <meta property="og:type" content="website"><meta property="og:site_name" content="Charta"><meta property="og:title" content="Check a token · Charta"><meta property="og:description" content="Check the rules of any Solana token, read straight from the chain. No scores, no opinions."><meta property="og:url" content="https://heli-experiment.pages.dev/check.html"><meta property="og:image" content="https://heli-experiment.pages.dev/logo-512.png"><meta name="twitter:card" content="summary"><link rel="canonical" href="https://heli-experiment.pages.dev/check.html">
+  <meta name="theme-color" content="#080d12"><title>Check a token · Charta</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css"><link rel="preload" href="fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin><script src="motion.js" defer></script><script src="auction-bg.js" defer></script><script src="bg.js" defer></script>
+  <script src="vendor/solana-web3.iife.min.js" defer></script><script type="module" src="check.js"></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="site-header"><a class="brand" href="index.html#home" aria-label="Charta home"><img class="brand-logo" src="logo.svg" alt="" width="34" height="34">Charta<span class="brand-sub">MONETARY EXPERIMENT</span></a><nav aria-label="Main navigation"><a href="check.html" aria-current="page">Check<span class="nav-long"> a token</span></a><a href="index.html#home">About<span class="nav-long"> Charta</span></a><a href="index.html#transparency">Transparency</a><a href="live.html">Live data</a><a href="guide.html">Guide</a><a href="auction.html">Auction</a></nav></header>
+<main id="content" class="page check-page">
+  <section class="check-hero" id="check-hero">
+    <p class="eyebrow"><span class="status-dot"></span> TOKEN RULES, READ FROM THE CHAIN</p>
+    <h1>What can change<br>in <em>your token?</em></h1>
+    <p class="lede">Paste any Solana token. See in plain words who can mint more, who can freeze your wallet and who can change the rules.</p>
+    <form class="check-search" id="check-form" role="search">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a3edcf" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="check-input" autocomplete="off" spellcheck="false" placeholder="Paste a token address…" aria-label="Token address">
+      <button class="check-btn" type="submit"><span class="nav-long">Check rules </span>→</button>
+    </form>
+    <p class="check-try">Try <button class="chip" type="button" data-mint="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v">USDC</button><button class="chip" type="button" data-mint="DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263">BONK</button><button class="chip charta" type="button" data-charta="1">Charta</button></p>
+    <p class="check-msg" id="check-msg" role="status" hidden></p>
+    <ul class="check-qs"><li><b>01</b> Can anyone mint more?</li><li><b>02</b> Can anyone freeze my tokens?</li><li><b>03</b> Can the rules change?</li><li><b>04</b> Who holds the supply?</li></ul>
+    <p class="check-principle">No scores. No opinions. Only what the chain says.</p>
+  </section>
+
+  <section class="check-result" id="check-result" hidden aria-live="polite">
+    <div class="check-grid">
+      <article class="check-card">
+        <div class="check-head"><div class="check-tok" id="r-avatar">–</div><div><h2 id="r-name">–</h2><p class="check-addr" id="r-addr">–</p></div><span class="check-tag" id="r-tag"></span></div>
+        <div id="r-rows"></div>
+      </article>
+      <aside class="check-side">
+        <div class="panel"><h3>Compare with Charta</h3><div class="check-compare" id="r-compare"></div><p class="small">Charta is not perfect either: until its audit, one offline key can still update its program. We show that too.</p></div>
+        <div class="panel"><h3>Share this card</h3><p class="small">Send it to someone before they buy. The card shows facts, not advice.</p><button class="button" type="button" id="r-copy">Copy link</button><p class="check-meta" id="r-meta"></p></div>
+      </aside>
+    </div>
+  </section>
+
+  <div class="check-byline"><img src="logo.svg" alt="" width="42" height="42"><p><strong>Built by Charta</strong>, a monetary experiment whose supply rule is fixed and public. We hold ourselves to the same card.</p><a href="#" id="charta-card">See Charta's card →</a></div>
+</main>
+<footer><div><a class="brand" href="index.html#home"><img class="brand-logo" src="logo.svg" alt="" width="34" height="34">Charta</a><p>A monetary experiment on Solana.<br>Not audited. Prices can fall; nothing here is a promise of returns.</p></div><div class="footer-links"><a href="check.html">Check a token</a><a href="index.html#home">About Charta</a><a href="index.html#transparency">Transparency</a><a href="live.html">Live data</a><a href="auction.html">Opening auction</a><a href="guide.html">How to take part</a><a href="risks.html">Risks</a><a href="verify.html">Verify on chain</a><a href="updates.html">Updates</a><a href="charta-rules.txt" download>Experiment rules ↓</a><a href="https://github.com/patrickgt966-art/heli-experiment" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div><div class="footer-bottom"><span>© 2026 Charta experiment</span><span>Development stage · Not audited · No live trading</span></div></footer>
+</body>
+</html>

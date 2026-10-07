@@ -26,7 +26,7 @@ ROOT=Path(__file__).resolve().parents[1]
 CHARTA=Pubkey.from_string('HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv')
 MANIFEST=Pubkey.from_string('MNFSTqtC93rEfYHB6hF82sKdZpUDFWkViLByLd1k1Ms')
 METADATA=Pubkey.from_string('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s')
-TOKEN=Pubkey.from_string('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
+TOKEN=Pubkey.from_string('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');TOKEN_2022=Pubkey.from_string('TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb')
 GENESIS='CHArTAReHeArSaL1111111111111111111111111111'  # not Devnet: the setup runner then requires localValidator
 DEVNET='EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG'
 
@@ -169,9 +169,10 @@ def call(method,params):
   return ctx({'amount':str(amt),'decimals':dec,'uiAmount':amt/10**dec,'uiAmountString':str(amt/10**dec)})
  if method=='getTokenLargestAccounts':
   mint=Pubkey.from_string(P[0]);dec=svm.get_account(mint).data[44];rows=[]
-  for k,a in svm.get_program_accounts(TOKEN):
+  # Token-2022 holdings are 165 bytes plus extensions (account type 2 at byte 165).
+  for k,a in [*svm.get_program_accounts(TOKEN),*svm.get_program_accounts(TOKEN_2022)]:
    d=bytes(a.data)
-   if len(d)==165 and d[:32]==bytes(mint):amt=struct.unpack_from('<Q',d,64)[0];rows.append({'address':str(k),'amount':str(amt),'decimals':dec,'uiAmount':amt/10**dec,'uiAmountString':str(amt/10**dec)})
+   if (len(d)==165 or len(d)>165 and d[165]==2) and d[:32]==bytes(mint):amt=struct.unpack_from('<Q',d,64)[0];rows.append({'address':str(k),'amount':str(amt),'decimals':dec,'uiAmount':amt/10**dec,'uiAmountString':str(amt/10**dec)})
   return ctx(sorted(rows,key=lambda r:-int(r['amount']))[:20])
  if method=='requestAirdrop':
   r=svm.airdrop(Pubkey.from_string(P[0]),int(P[1]));sig=str(r.signature()) if not isinstance(r,FailedTransactionMetadata) else 'airdrop'+str(time.time())
