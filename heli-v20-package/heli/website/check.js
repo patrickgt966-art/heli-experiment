@@ -4,10 +4,21 @@ import * as C from './check-core.js';
 import { readProgram } from './verify-core.js';
 
 const web3 = window.solanaWeb3, $ = id => document.getElementById(id);
-// Mainnet by default; a local test chain only when the page itself is served from this computer.
-const local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
-const RPC = (local && new URLSearchParams(location.search).get('rpc')) || 'https://api.mainnet-beta.solana.com';
-const conn = new web3.Connection(RPC, 'confirmed');
+// Mainnet through a provider that accepts browser requests, with the public endpoint as a fallback (it often refuses
+// browsers with 403 or rate limits). A local test chain only when the page itself is served from this computer.
+const local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname), testRpc = local && new URLSearchParams(location.search).get('rpc');
+const RPCS = testRpc ? [testRpc] : ['https://solana-rpc.publicnode.com', 'https://api.mainnet-beta.solana.com'];
+const connections = RPCS.map(url => new web3.Connection(url, { commitment: 'confirmed', disableRetryOnRateLimit: true }));
+const within = (p, ms) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(Error('timeout')), ms))]);
+let conn = connections[0];
+// Uses the first endpoint that answers, and keeps it for the following requests.
+async function first(call) {
+  let last;
+  for (const c of [conn, ...connections.filter(x => x !== conn)]) {
+    try { const r = await within(call(c), 12000); conn = c; return r; } catch (e) { last = e; }
+  }
+  throw last;
+}
 const ICON = { ok: '✓', warn: '~', bad: '!', info: 'i' };
 // Charta has not launched yet: its card comes from the published program, not from a mint on mainnet.
 const CHARTA = [
@@ -55,15 +66,15 @@ async function check(mint) {
   message('Reading from the chain…');
   try {
     const key = new web3.PublicKey(mint);
-    const info = await conn.getAccountInfo(key);
+    const info = await first(c => c.getAccountInfo(key));
     if (!info) { message('Nothing exists at this address on Solana mainnet. Check that you copied the whole address.'); return; }
     const m = C.parseMint(info.data, info.owner.toBase58());
     if (!m.ok) { message(m.why); return; }
     const metaKey = web3.PublicKey.findProgramAddressSync([new TextEncoder().encode('metadata'), new web3.PublicKey(C.METADATA).toBytes(), key.toBytes()], new web3.PublicKey(C.METADATA))[0];
     const [metaInfo, largest, slot] = await Promise.all([
-      conn.getAccountInfo(metaKey).catch(() => null),
-      conn.getTokenLargestAccounts(key).then(r => r.value.map(v => BigInt(v.amount))).catch(() => null),
-      conn.getSlot().catch(() => null)]);
+      within(conn.getAccountInfo(metaKey), 12000).catch(() => null),
+      within(conn.getTokenLargestAccounts(key), 15000).then(r => r.value.map(v => BigInt(v.amount))).catch(() => null),
+      within(conn.getSlot(), 8000).catch(() => null)]);
     let hook;
     if (m.ext.transferHook?.program) {
       const p = await conn.getAccountInfo(new web3.PublicKey(m.ext.transferHook.program)).catch(() => null);
@@ -76,7 +87,7 @@ async function check(mint) {
       meta: `Read from Solana mainnet${slot ? ` · slot ${slot.toLocaleString('en-US')}` : ''}. Every line can be checked on any explorer.` });
     history.replaceState(null, '', `?token=${mint}`);
   } catch (e) {
-    message('The network did not answer. Please try again in a moment.');
+    message('Solana did not answer just now (the free public connection is busy or refused the request). Please try again in a moment.');
   }
 }
 
