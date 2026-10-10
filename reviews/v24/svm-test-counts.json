@@ -1,0 +1,110 @@
+{
+ "date": "2026-10-10",
+ "commit": "58048a29d3cdfa4c88884b7bcd30a8d660755f1e",
+ "elf_sha256": "c0e818148ea2aea8595a3024aac2a358c78f2052a45141ca0c299592dd7d6f87",
+ "note": "transactions = transactions sent; refused_as_expected = of those, refused exactly as the test required; state_checks = explicit check() calls. Plain Python asserts inside some tests are not counted.",
+ "runs": [
+  {
+   "test": "test_codex_final_svm",
+   "transactions": 107,
+   "refused_as_expected": 6,
+   "state_checks": 6
+  },
+  {
+   "test": "test_crash_record_svm",
+   "transactions": 77,
+   "refused_as_expected": 8,
+   "state_checks": 7
+  },
+  {
+   "test": "test_expense_controls_svm",
+   "transactions": 40,
+   "refused_as_expected": 10,
+   "state_checks": 4
+  },
+  {
+   "test": "test_expense_v22_svm",
+   "transactions": 83,
+   "refused_as_expected": 19,
+   "state_checks": 13
+  },
+  {
+   "test": "test_governance_svm",
+   "transactions": 65,
+   "refused_as_expected": 24,
+   "state_checks": 11
+  },
+  {
+   "test": "test_market_measure_v22_svm",
+   "transactions": 1967,
+   "refused_as_expected": 30,
+   "state_checks": 30
+  },
+  {
+   "test": "test_market_release_svm",
+   "transactions": 1576,
+   "refused_as_expected": 22,
+   "state_checks": 59
+  },
+  {
+   "test": "test_no_free_allocation_svm",
+   "transactions": 64,
+   "refused_as_expected": 43,
+   "state_checks": 13
+  },
+  {
+   "test": "test_observation_controls_svm",
+   "transactions": 86,
+   "refused_as_expected": 10,
+   "state_checks": 12
+  },
+  {
+   "test": "test_policy_v22_svm-closure",
+   "transactions": 1623,
+   "refused_as_expected": 28,
+   "state_checks": 66
+  },
+  {
+   "test": "test_policy_v22_svm-depth",
+   "transactions": 167,
+   "refused_as_expected": 25,
+   "state_checks": 57
+  },
+  {
+   "test": "test_price_bounds_svm",
+   "transactions": 108,
+   "refused_as_expected": 19,
+   "state_checks": 8
+  },
+  {
+   "test": "test_redteam_outside_svm",
+   "transactions": 181,
+   "refused_as_expected": 37,
+   "state_checks": 9
+  },
+  {
+   "test": "test_redteam_svm",
+   "transactions": 172,
+   "refused_as_expected": 66,
+   "state_checks": 11
+  },
+  {
+   "test": "test_setup_controls_svm",
+   "transactions": 29,
+   "refused_as_expected": 6,
+   "state_checks": 2
+  },
+  {
+   "test": "test_v20_svm",
+   "transactions": 1464,
+   "refused_as_expected": 2,
+   "state_checks": 2887
+  }
+ ],
+ "total": {
+  "runs": 16,
+  "transactions": 7809,
+  "refused_as_expected": 355,
+  "state_checks": 3195
+ }
+}
