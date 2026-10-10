@@ -116,3 +116,31 @@ Hiçbiri. İşlem yok, Explorer bağlantısı yok, harcanan SOL yok. Cüzdan bak
 - `scripts/svm_fixture.py`: isteğe bağlı sayım raporu (`HELI_TEST_COUNTS`). İşlem, beklenen ret ve kontrol sayılarını ayrı yazar; test davranışı değişmez.
 - `scripts/devnet_preview.mjs`: Devnet test sitesi kopyası.
 - `reviews/v24/`: bu rapor, `svm-test-counts.json`, `devnet-setup-cost-local.json`.
+
+## 8. Ek: ağ izni açıldıktan sonra yapılan kontroller (10 Ekim, aynı gün)
+
+**Bakiye:** `5rYen19d…ngYq` Devnet'te **20 SOL** (20.000.000.000 lamport); resmî Devnet RPC'den doğrulandı.
+
+**Devnet hazırlık kontrolü (`devnet_readiness.mjs`, salt okunur):**
+- Devnet'te kira bu hesaptan **düşük.** Program verisi için asgari kira **5,18 SOL**; yükleme sırasındaki en yüksek ihtiyaç **~10,35 SOL.** Bölüm 3'teki 7,09 ve 14,19 SOL rakamları üst sınır olarak kalır; 20 SOL rahatça yeter.
+- Manifest ve Metaplex Devnet'te kurulu.
+- Devnet'teki Manifest, test ettiğimiz ikiliyle **aynı değil.**
+
+**Zincirdeki ikililerle tam test.** Üç farklı Manifest ikilisi var:
+
+| Manifest | Bayt | SHA-256 (ilk 16) | Yükleme slotu |
+|---|---|---|---|
+| Testlerde kullanılan v3.0.24 | 335.040 | `6d0aa96d34f33266` | – |
+| Devnet | 410.728 | `ad148f7660f13048` | 355.430.404 |
+| **Ana ağ** | 368.096 | `ef32efe941808ad5` | 447.525.709 |
+
+Zincirdeki ikililer indirildi ve testlerin bir kopyasında yerine konup **bütün test seti** yeniden çalıştırıldı. Kopya: 16 LiteSVM çalıştırması, fuzz, prova, 60 aylık test ve tatbikat. Depodaki dosyalar değişmedi.
+
+- **Ana ağ Manifest ve Metaplex ile: hepsi geçti.** 16/16 çalıştırma, fuzz 0 bulgu, prova 173, 60 aylık test 606, tatbikat 39 kontrol. 720 aylık piyasa testi de geçti (1.635 işlem ve kontrol). Lansmanda kullanılacak ikililerle uyumsuzluk bulunmadı.
+- **Devnet Manifest ile: 3 çalıştırma başarısız** (`test_market_release_svm`, `policy depth`, `policy closure`). Devnet'teki eski Manifest, aylık satış çağrısında (`execute_release_sale`) "Token account must be owned by the Token Program" hatası veriyor. Diğer 14 çalıştırma, prova, 60 aylık test ve tatbikat geçti.
+
+**Sonuç:** Devnet'te **aylık satış akışı çalışmaz.** Bu Charta'nın hatası değil; Devnet'teki Manifest eski bir sürüm. Seçenekler:
+- **(a) Önerilen:** Devnet testinde aylık satış akışı "bilinen Devnet farkı" olarak işaretlenir; bu akış ana ağ ikilisiyle yapılan yerel testlere dayanır.
+- **(b)** Manifest ekibinden Devnet'i güncellemesi istenir.
+
+Manifest adresi programa gömülü olduğu için Devnet'e kendi Manifest kopyamızı başka bir adreste kurmak program değişikliği gerektirir; önerilmez.
