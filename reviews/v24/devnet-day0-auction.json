@@ -319,21 +319,104 @@
    "error": null,
    "state": [],
    "pass": true
+  },
+  {
+   "id": "P1",
+   "phase": "paused",
+   "what": "C cancels while paused (allowed: money can always leave)",
+   "expect": "accepted",
+   "sig": "5kfUHyJHzja9gEuJa8XQ3FV65vzLQXPp43Fmd8hLSUoyoi38UfnTd6VHRH7LJ1VBUQx5ig2YwN3JDtahQJPieY4Z",
+   "ok": true,
+   "error": null,
+   "state": [],
+   "pass": true
+  },
+  {
+   "id": "P2",
+   "phase": "paused",
+   "what": "C bids again while paused",
+   "expect": "refused",
+   "sig": "4EZZcSYAPCrWnkivTDbwbwDynJLqzBLMx6usdi9pajkzD8Bv7DM7TjF6LDcfhZYzPeWiaobsuuEuyPXds769fqhp",
+   "ok": false,
+   "error": "Program log: AnchorError thrown in src/auction.rs:88. Error Code: State. Error Number: 6000. Error Message: Invalid state.",
+   "state": [],
+   "pass": true
+  },
+  {
+   "id": "P3",
+   "phase": "paused",
+   "what": "B cancels its 250,000 bid while paused (full refund)",
+   "expect": "accepted",
+   "sig": "2YxpPLL8bUPaFbkvhPJ6CGZZt5tDZY8yV6ujFgrenFuhcUDnTNGJg7eC4st14EwqHeUbKPgaD7NHAA1UpMLB32tC",
+   "ok": true,
+   "error": null,
+   "state": [
+    {
+     "what": "B quote refunded",
+     "got": "50000000",
+     "want": "50000000",
+     "ok": true
+    },
+    {
+     "what": "escrow -collateral",
+     "got": "50000000",
+     "want": "50000000",
+     "ok": true
+    },
+    {
+     "what": "bid inactive",
+     "got": "false",
+     "want": "false",
+     "ok": true
+    }
+   ],
+   "pass": true
+  },
+  {
+   "id": "U1",
+   "phase": "after",
+   "what": "B bids again after the pause: 200,000 at tick 10",
+   "expect": "accepted",
+   "sig": "2LYmohmFJT8VL3PtvbsnhoaTMXP7xU22JNLczpkfvu5heQqV3iPKxErZmSGiU1ed5AuKLvAwxeSTfvPr6qhgcy4Q",
+   "ok": true,
+   "error": null,
+   "state": [],
+   "pass": true
+  },
+  {
+   "id": "U2",
+   "phase": "after",
+   "what": "C bids again after the pause: 1,000 at tick 0",
+   "expect": "accepted",
+   "sig": "4fdZQRVQ9KJ2VdnRkihKhdp6dQB2AypJTwredrmriSeMy7AhkxfWdBnSXgDefbNVRFpE55L23Vdm6mhtFJBQ7L7V",
+   "ok": true,
+   "error": null,
+   "state": [],
+   "pass": true
   }
  ],
  "auction": {
   "active_bids": "4",
-  "escrow": "86100000",
+  "escrow": "96100000",
   "demand": {
-   "0": "251000",
+   "0": "1000",
    "3": "10000",
-   "8": "120000"
+   "8": "120000",
+   "10": "200000"
   }
  },
  "counts": {
   "open": {
    "transactions": 22,
    "stateChecks": 18
+  },
+  "paused": {
+   "transactions": 3,
+   "stateChecks": 3
+  },
+  "after": {
+   "transactions": 2,
+   "stateChecks": 0
   }
  }
 }

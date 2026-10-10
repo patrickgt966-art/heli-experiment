@@ -219,6 +219,22 @@ Sentetik cüzdanlar A–E kullanıldı. İşlem ücretlerini operatör ödedi. R
 
 İşlem imzaları: `devnet-day0-auction.json`.
 
+### Duraklatma sırasında iptal (`paused` ve `after` aşamaları)
+
+Yönetici programı sahibin bilgisayarından durdurdu (`4Vid6Kpx…`) ve sonra tekrar açtı (`KBQbApP9…`).
+
+| Vaka | Beklenen | Sonuç |
+|---|---|---|
+| P1: C durdurma sırasında iptal | kabul | ✓ |
+| P2: C durdurma sırasında teklif | ret (State) | ✓ |
+| P3: B durdurma sırasında 250.000'lik teklifi iptal | kabul, 50 TEST-USDC tam iade | ✓ |
+| U1: B açıldıktan sonra yeniden teklif (200.000) | kabul | ✓ |
+| U2: C açıldıktan sonra yeniden teklif (1.000) | kabul | ✓ |
+
+- Durdurma sırasında site Verify, Live ve Auction sayfalarında "PAUSED" gösterdi. Kilitli tutar 35,9 TEST-USDC idi; zincirle aynı.
+- **Teklif testlerinin toplamı:** 23 vaka (23/23 geçti), 21 durum kontrolü, 27 işlem (5 fonlama dahil).
+- **Açık artırmanın şimdiki durumu:** 4 etkin teklif, 331.000 tCHTA, emanette 96,1 TEST-USDC.
+
 ### Site karşılaştırması (https://devnet.heli-experiment.pages.dev)
 
 - **Live ve Auction sayfaları zincirle aynı:** 381.000 CHTA teklif, 4 cüzdan, 86,1 TEST-USDC kilitli (33,6 + 50 + 2,3 + 0,2), arz ve kasalar.
@@ -242,7 +258,6 @@ Sentetik cüzdanlar A–E kullanıldı. İşlem ücretlerini operatör ödedi. R
 
 ### Kalan adımlar
 
-- **Duraklatma sırasında iptal:** yönetici (sahibin bilgisayarı) `emergency.mjs pause --send` çalıştırır. Ardından `devnet_auction_day0.mjs paused` (iptal kabul, teklif ret), sonra `unpause` ve `after` çalıştırılır.
 - **18 Ekim 12:00 UTC sonrası:** kapanış (finalize), talepler ve iadeler, `setup post`, piyasa, keeper. Güncelleme yetkisi `ANRm…` anahtarına devredilir.
 - **Aylık satış:** bilinen Devnet farkı (bölüm 8).
 - **720 aylık senaryolar:** yerelde (bölüm 8), Devnet'te zaman atlatılmaz.
