@@ -50,7 +50,7 @@ Aşağıdaki V19 ve Human Dividend notları tarihsel kayıttır.
 15M hazinenin 5M + 5M + 5M birleşimi açıklanır. Telefon (390px) ve masaüstü görünümü,
 klavyeyle seçim ve tıklama kontrol edildi. Cloudflare üretim yayını başarıyla tamamlandı.
 Yayın kimliği: e4b23b55-df98-4939-8063-99b440a1d41b.
-Adres: https://heli-experiment.pages.dev/#token-allocation
+Adres: https://chartacoin.com/#token-allocation
 Bu ortamdan herkese açık adrese bağlantı zaman aşımına uğradı; dış erişim teyit edilmedi.
 Aşağıdaki yayınlanmamış sürüm notları tarihsel kayıttır; V19 site değişiklikleri bu yayına dahildir.
 
@@ -79,7 +79,7 @@ Kullanıcı isteğiyle yayımlanan bütün sayfalar ve indirilebilir kurallar İ
 Sunucu betiği ve README yayımlama arşivine dahil edilmez.
 
 Cloudflare Pages: Workers & Pages > Create > Pages > Upload assets.
-Proje adı: `heli-experiment`. Üretim adresi: https://heli-experiment.pages.dev/.
+Proje adı: `heli-experiment`. Üretim adresi: https://chartacoin.com/ (Cloudflare Pages varsayılan adresi https://heli-experiment.pages.dev/ de çalışır).
 1 Ekim 2026 tarihinde Cloudflare üretim yayını `success` durumuyla tamamlandı.
 Güncel yayın kimliği: `b2cb8cb7-29e0-4489-8c0e-d86b816c729e`.
 Koyu zeminli İngilizce ürün sitesi; dağıtım, Human Dividend, para anayasası, piyasa ve ilerleme bölümleri içerir.

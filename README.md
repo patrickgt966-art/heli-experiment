@@ -4,7 +4,7 @@ Token name **Charta**, symbol **CHTA**. The working name was HELI; program, fold
 
 Charta is an experimental token design exploring a rule-based alternative monetary system on Solana. This repository holds the program source, tests, operating tools and review records. **Nothing is deployed to Devnet or mainnet, and the code has not had an independent security audit.**
 
-Website: https://heli-experiment.pages.dev · Full rules: [`heli-v20-package/heli/website/charta-rules.txt`](heli-v20-package/heli/website/charta-rules.txt)
+Website: https://chartacoin.com · Full rules: [`heli-v20-package/heli/website/charta-rules.txt`](heli-v20-package/heli/website/charta-rules.txt)
 
 ## Rules (V24 design)
 
@@ -42,7 +42,7 @@ A project reserve is not a guaranteed redemption backing. Charta makes no claim 
 | Local tests | All 720 monthly periods and treasury, price, governance, expense and entitlement controls pass in a local Solana simulator (LiteSVM) with the real program: 16 runs, 7,809 transactions, 3,195 state checks; random-sequence (fuzz) testing 30 seeds, 0 findings; an end-to-end launch rehearsal (173 checks), a 60-month keeper run with injected faults (606 checks) and emergency drills (39 checks); two red-team runs (61 and 32 attacks) all blocked; Node suite 152/152. The whole set also passes with the Manifest order-book and Metaplex binaries copied from mainnet. Counts are local checks, not an audit. |
 | Devnet | Not deployed yet. Test wallet funded with 20 test SOL; setup runner, read-only readiness check and guide are ready (`heli-v20-package/heli/solana-v20/DEVNET.md`); separate Devnet test site: https://devnet.heli-experiment.pages.dev. Known difference: the Manifest program on Devnet is an older build that refuses the monthly release sale, so that one flow is verified locally against the mainnet binary. Report: [`reviews/v24/DEVNET_HAZIRLIK_2026-10-10.md`](reviews/v24/DEVNET_HAZIRLIK_2026-10-10.md). |
 | Free allocation | Removed by owner decision (4 October 2026). The earlier identity-verified free allocation and its live pilot tests are archived in `reviews/`; the program rejects those instructions. |
-| Website | Published and current (V24 rules), including a token rule card that reads any Solana token: https://heli-experiment.pages.dev/check |
+| Website | Published and current (V24 rules), including a token rule card that reads any Solana token: https://chartacoin.com/check |
 
 Details: [`heli-v20-package/V23_DURUM.md`](heli-v20-package/V23_DURUM.md) (with the V24 addendum), emergency runbook [`ACIL_DURUM.md`](heli-v20-package/heli/solana-v20/ACIL_DURUM.md), [`reviews/v23/V23_NOTLAR.md`](reviews/v23/V23_NOTLAR.md), [`reviews/v22/V22_DUZELTME_2026-10-04.md`](reviews/v22/V22_DUZELTME_2026-10-04.md), [`reviews/KIMLIK_CANLI_TEST_LISTESI.md`](reviews/KIMLIK_CANLI_TEST_LISTESI.md).
 
