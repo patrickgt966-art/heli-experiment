@@ -7,7 +7,7 @@ $heliKeeperNodePath = (Get-Command node).Source
 $heliKeeperRunnerPath = Join-Path $PSScriptRoot 'run.mjs'
 $heliKeeperServicePath = Join-Path $PSScriptRoot 'windows-service.ps1'
 $heliKeeperConfig = Get-Content -LiteralPath $heliKeeperConfigPath -Raw | ConvertFrom-Json
-if ($heliKeeperConfig.program -ne 'HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv') { throw 'V20 config required' }
+if ($heliKeeperConfig.program -ne 'DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG') { throw 'V20 config required' }
 if ($heliKeeperConfig.rpcUrl -notlike 'https://*') { throw 'HTTPS RPC required' }
 if (-not (Test-Path -LiteralPath $heliKeeperConfig.keeperKeyFile -PathType Leaf)) { throw 'Dedicated fee key file missing' }
 if ($heliKeeperConfig.trust.admin -like 'SET_*' -or $heliKeeperConfig.trust.verifier -like 'SET_*') { throw 'Verify trust pins first' }

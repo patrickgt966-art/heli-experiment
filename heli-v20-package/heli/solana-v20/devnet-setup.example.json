@@ -1,6 +1,6 @@
 {
  "rpcUrl": "https://api.devnet.solana.com",
- "program": "HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv",
+ "program": "DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG",
  "adminKeyFile": "/path/outside/the/repo/devnet-admin.json",
  "recovery": "DEVNET_RECOVERY_PUBLIC_KEY",
  "upgradeAuthority": "DEVNET_OFFLINE_UPGRADE_PUBLIC_KEY (not the admin, not the recovery key)",

@@ -8,7 +8,7 @@ import {heliInstruction} from '../../mobile/solana.mjs';
 import * as core from '../auction-core.js';
 
 const idl=JSON.parse(readFileSync(new URL('../../solana-v20/idl.json',import.meta.url)));
-const PROGRAM='HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv';
+const PROGRAM='DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG';
 const mint=web3.Keypair.generate().publicKey,quote=web3.Keypair.generate().publicKey,bidder=web3.Keypair.generate().publicKey;
 await core.ready();
 const A=core.addresses(web3,PROGRAM,mint,quote,bidder);

@@ -6,7 +6,7 @@ import {ClaimAdmission} from '../admission.mjs';import {storage} from '../storag
 const secret='recovery-secret-'.repeat(3),workflowId='workflow-test';
 function decision(s,doc='DOC-1',status='Approved'){return {session_id:s.providerId,vendor_data:s.id,workflow_id:workflowId,status,id_verifications:[{status:'Approved',age:30,document_number:doc,document_type:'Passport',issuing_state:'TEST',warnings:[],matches:[]}],liveness_checks:[{status:'Approved',warnings:[],matches:[]}],face_matches:[{status:'Approved',warnings:[]}]};}
 function fixture(){
- const data=storage(),created=[],a=new ClaimAdmission({program:'HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv',workflowId,applicationId:'app',provider:{async create(id){created.push(id);return {id:randomUUID(),url:'https://verify.didit.me/session/'+id};}},personSecret:secret,verifierKey:generateKeyPairSync('ed25519').privateKey,data,now:()=>2000});
+ const data=storage(),created=[],a=new ClaimAdmission({program:'DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG',workflowId,applicationId:'app',provider:{async create(id){created.push(id);return {id:randomUUID(),url:'https://verify.didit.me/session/'+id};}},personSecret:secret,verifierKey:generateKeyPairSync('ed25519').privateKey,data,now:()=>2000});
  const keyOf=()=>{const k=generateKeyPairSync('ed25519');return {k,wallet:new web3.PublicKey(k.publicKey.export({format:'der',type:'spki'}).subarray(-32)).toBase58()};};
  // One browser visit: new application challenge, signed by the wallet.
  const visit=async(w)=>{const r=a.session(w.wallet),s=a.get(r.id,r.token),result=await a.authenticate(s,sign(null,Buffer.from(r.message),w.k.privateKey).toString('base64'));return {r,result,s:a.get(result.resumed?result.id:r.id,r.token)};};

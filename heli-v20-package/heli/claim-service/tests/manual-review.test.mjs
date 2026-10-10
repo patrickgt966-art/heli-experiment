@@ -11,7 +11,7 @@ function decision(s,{doc='DOC-1',status='Approved',face=lowSimilarity,liveness=[
  return {session_id:s.providerId,vendor_data:s.id,workflow_id:workflowId,status,id_verifications:[{status:'Approved',age:30,document_number:doc,document_type:'Identity Card',issuing_state:'TEST',warnings:[],matches:[]}],liveness_checks:liveness,face_matches:[face]};
 }
 function fixture(){
- const data=storage(),results=new Map(),a=new ClaimAdmission({program:'HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv',workflowId,applicationId:'app',provider:{async create(){return {id:randomUUID(),url:'https://verify.didit.me/session/x'};},async decision(id){return results.get(id);}},personSecret:secret,verifierKey:generateKeyPairSync('ed25519').privateKey,data,now:()=>2000});
+ const data=storage(),results=new Map(),a=new ClaimAdmission({program:'DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG',workflowId,applicationId:'app',provider:{async create(){return {id:randomUUID(),url:'https://verify.didit.me/session/x'};},async decision(id){return results.get(id);}},personSecret:secret,verifierKey:generateKeyPairSync('ed25519').privateKey,data,now:()=>2000});
  const session=async()=>{const k=generateKeyPairSync('ed25519'),w=new web3.PublicKey(k.publicKey.export({format:'der',type:'spki'}).subarray(-32)).toBase58(),r=a.session(w),s=a.get(r.id,r.token);await a.authenticate(s,sign(null,Buffer.from(r.message),k.privateKey).toString('base64'));return s;};
  const set=(s,opts)=>{const d=decision(s,opts);results.set(s.providerId,d);a.apply(s,d);return d;};
  return {a,data,session,set};

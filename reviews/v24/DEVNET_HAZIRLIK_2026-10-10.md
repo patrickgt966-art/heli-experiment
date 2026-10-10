@@ -144,3 +144,25 @@ Zincirdeki ikililer indirildi ve testlerin bir kopyasında yerine konup **bütü
 - **(b)** Manifest ekibinden Devnet'i güncellemesi istenir.
 
 Manifest adresi programa gömülü olduğu için Devnet'e kendi Manifest kopyamızı başka bir adreste kurmak program değişikliği gerektirir; önerilmez.
+
+## 9. Ek: Devnet için yeni program adresi (10 Ekim, sahibin onayıyla)
+
+Sahip yeni bir program anahtarı üretti ve yalnız açık anahtarını verdi; kurtarma ve güncelleme anahtarları için de aynısını yaptı. Özel anahtarların hiçbiri bu ortama girmedi.
+
+| | Açık anahtar |
+|---|---|
+| Program | `DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG` |
+| Yönetici (Devnet deneme cüzdanı) | `5rYen19dNmVAPf4664KhxWdLNEc4ZncScYFhe3V2ngYq` |
+| Kurtarma | `HkBEzszeWGAgCPzHgPJBNryjGpbGd6N85vG5JmKbNPyJ` |
+| Çevrimdışı güncelleme | `ANRm3qEKohq78rkXTYPVqa2E7pf9ThC6ziGtK627co9o` |
+
+- **Kaynakta tek değişiklik:** `src/lib.rs` içindeki `declare_id!` satırı. Kurallar, oranlar ve süreler değişmedi.
+- **Yeniden derleme** (Agave 2.1.21): kaynak `4f0c0f8c883ad9b2eb2facd853867e411980300b3b77a0b9302601d3ea15d5d9`, ELF `9c9779c3ef4f23a93ba8edd5cd486aba26f115fc59b2ae87b2c05e1620f8f57c`, 1.018.560 bayt.
+  - ELF eskisinden 1.329 bayt farklı. Adres, derlenmiş kodun karşılaştırma yaptığı her yere sabit değer olarak gömülüyor.
+- Betikler, testler ve güncel belgelerdeki adres değiştirildi (25 dosya). Geçmiş inceleme kayıtlarına dokunulmadı.
+- **Yeni ELF ile bütün testler iki turda geçti:** depodaki Manifest v3.0.24 ile ve ana ağ Manifest + Metaplex ikilileriyle.
+  - Her turda: 16 LiteSVM çalıştırması, 30 tohumlu fuzz, prova (173), 60 aylık test (606), tatbikat (39).
+  - Node testleri 152/152.
+  - Depodaki doğrulama dosyaları yeni ELF hash'iyle yenilendi.
+- Açık anahtarlar ekran görüntüsünden okundu. Dördü de geçerli ve Devnet'te kullanılmamış. Kurulum adımları, `program.json` dosyasının açık anahtarının `declare_id!` ile birebir aynı olduğunu yükleme öncesinde ayrıca kontrol eder.
+

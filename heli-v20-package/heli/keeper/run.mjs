@@ -3,7 +3,7 @@ import {KeeperEngine} from './engine.mjs';import {SolanaAdapter} from './adapter
 import {atomicJson} from './storage.mjs';import {chainTelemetry,sampleBalance} from './telemetry.mjs';
 import {pollDelay} from './poll.mjs';
 const args=process.argv.slice(2),execute=args.includes('--execute'),once=args.includes('--once');const path=args.find(x=>x.endsWith('.json'));if(!path)throw Error('Usage: node heli/keeper/run.mjs config.json [--once] [--execute]');
-const config=JSON.parse(readFileSync(path)),program='HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv';
+const config=JSON.parse(readFileSync(path)),program='DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG';
 if(config.program!==program||!config.rpcUrl?.startsWith('https://'))throw Error('V20 and HTTPS RPC required');
 if(!Number.isSafeInteger(config.dailyCapLamports)||config.dailyCapLamports<=0||!Number.isSafeInteger(config.reserveLamports)||config.reserveLamports<0)throw Error('Explicit expense caps required');
 const root=fileURLToPath(new URL('./.state/',import.meta.url));mkdirSync(root,{recursive:true});const lock=root+'keeper.lock';

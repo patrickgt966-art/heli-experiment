@@ -6,7 +6,7 @@ Bu rehber Devnet'te **değeri olmayan** bir deneme içindir. Bu bir mainnet lans
 
 - Node.js 20+ ve depo kökünde `npm install`. Gereken paketler: `@solana/web3.js` ve `@solana/spl-token`.
 - Solana CLI (Agave). Devnet'e program yüklemek için güncel sürüm önerilir.
-- **Program anahtarı:** kodda yazılı program adresi `HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv`. Bu adresin anahtar dosyası sende yoksa:
+- **Program anahtarı:** kodda yazılı program adresi `DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG`. Bu adresin anahtar dosyası sende yoksa:
   - yeni bir anahtar oluşturulur;
   - `declare_id!` bu yeni adresle güncellenir;
   - program yeniden derlenir;
@@ -94,7 +94,7 @@ Bu aşama şunları yapar:
 ## 6. Elle yapılacak son adımlar
 
 ```
-solana program set-upgrade-authority HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv \
+solana program set-upgrade-authority DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG \
   --new-upgrade-authority <GÜNCELLEME.json> --url devnet
 ```
 

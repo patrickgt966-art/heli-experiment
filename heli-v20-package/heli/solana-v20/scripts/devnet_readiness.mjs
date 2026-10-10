@@ -9,7 +9,7 @@ const DEVNET='EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG';
 const LOADER=new web3.PublicKey('BPFLoaderUpgradeab1e11111111111111111111111');
 const MANIFEST=new web3.PublicKey('MNFSTqtC93rEfYHB6hF82sKdZpUDFWkViLByLd1k1Ms');
 const TOKEN_METADATA=new web3.PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s');
-const PROGRAM=new web3.PublicKey('HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv');
+const PROGRAM=new web3.PublicKey('DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG');
 const args=process.argv.slice(2);const local=args.includes('--local');const [payerArg,quoteArg]=args.filter(a=>!a.startsWith('--'));
 if(!payerArg)throw Error('usage: node scripts/devnet_readiness.mjs <payer-public-key> [quote-mint] [--local]');
 const c=new web3.Connection(local?'http://127.0.0.1:8899':'https://api.devnet.solana.com','confirmed');

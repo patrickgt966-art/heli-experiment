@@ -10,7 +10,7 @@ function send(server,path,{method='POST',body={},headers={}}={}){
  return new Promise((resolve,reject)=>{const req=request('http://127.0.0.1:'+server.address().port+path,{method,headers:{Host:'pilot.example',Origin:origin,'Content-Type':'application/json',...headers}},res=>{let text='';res.on('data',c=>text+=c);res.on('end',()=>resolve({status:res.statusCode,text}));});req.on('error',reject);req.end(method==='GET'?undefined:raw);});
 }
 async function serve(options){const server=createClaimServer({origin,mode:'identity',webhookSecret:secret,now:()=>2000,trustProxy:true,...options});await new Promise(r=>server.listen(0,'127.0.0.1',r));return server;}
-const admission=()=>{const data=storage();return {data,a:new ClaimAdmission({program:'HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv',workflowId:'w',applicationId:'app',provider:{async create(){return {id:randomUUID(),url:'https://verify.didit.me/session/x'};}},personSecret:secret,verifierKey:generateKeyPairSync('ed25519').privateKey,data,now:()=>2000,dailyProviderSessions:2})};};
+const admission=()=>{const data=storage();return {data,a:new ClaimAdmission({program:'DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG',workflowId:'w',applicationId:'app',provider:{async create(){return {id:randomUUID(),url:'https://verify.didit.me/session/x'};}},personSecret:secret,verifierKey:generateKeyPairSync('ed25519').privateKey,data,now:()=>2000,dailyProviderSessions:2})};};
 
 test('one client exhausting its quota does not lock out other applicants',async()=>{
  const {a,data}=admission(),server=await serve({admission:a,data});

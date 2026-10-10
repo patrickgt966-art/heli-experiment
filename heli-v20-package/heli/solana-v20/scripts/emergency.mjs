@@ -19,7 +19,7 @@ import {heliInstruction,decodeAccount} from '../../mobile/solana.mjs';
 
 const argv=process.argv.slice(2),flag=n=>{const i=argv.indexOf(n);return i>=0?argv[i+1]:undefined;},has=n=>argv.includes(n);
 const [command,arg]=argv.filter((x,i)=>!x.startsWith('--')&&!['--rpc','--key','--program'].includes(argv[i-1]));
-const rpc=flag('--rpc'),program=new web3.PublicKey(flag('--program')??'HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv');
+const rpc=flag('--rpc'),program=new web3.PublicKey(flag('--program')??'DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG');
 if(!command||!rpc)throw Error('usage: node scripts/emergency.mjs <command> [argument] --rpc <URL> [--key <KEYPAIR.json>] [--program <ID>] [--send]');
 const MAINNET='5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d',DEVNET='EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG';
 const LOADER=new web3.PublicKey('BPFLoaderUpgradeab1e11111111111111111111111');

@@ -20,7 +20,7 @@ from solders.sysvar import RENT
 INSTRUCTIONS_SYSVAR=Pubkey.from_string("Sysvar1nstructions1111111111111111111111111")
 from solders.compute_budget import set_compute_unit_limit
 U=1_000_000; DAY=86400
-PROGRAM=Pubkey.from_string('HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv')
+PROGRAM=Pubkey.from_string('DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG')
 TOKEN=Pubkey.from_string('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
 IDL=json.loads((ROOT/'idl.json').read_text())
 def snake(s):return re.sub(r'(?<!^)(?=[A-Z])','_',s).lower()
