@@ -6,7 +6,7 @@ Charta is an experimental token design exploring a rule-based alternative moneta
 
 Website: https://heli-experiment.pages.dev · Full rules: [`heli-v20-package/heli/website/charta-rules.txt`](heli-v20-package/heli/website/charta-rules.txt)
 
-## Rules (V23 design)
+## Rules (V24 design)
 
 **Supply**
 - Initial mint: 100 million CHTA. Initial burn: 10 million. Maximum remaining supply: 90 million.
@@ -34,21 +34,21 @@ Website: https://heli-experiment.pages.dev · Full rules: [`heli-v20-package/hel
 
 A project reserve is not a guaranteed redemption backing. Charta makes no claim of guaranteed price, returns or liquidity.
 
-## Status — 5 October 2026
+## Status — 10 October 2026
 
 | Area | Status |
 |---|---|
-| Program (V24) | Built reproducibly (Agave 2.1.21); 1.02 MB (upload rent ~7.09 SOL). ELF SHA-256 `c0e818148ea2aea8595a3024aac2a358c78f2052a45141ca0c299592dd7d6f87`. |
-| Local tests | All 720 monthly periods and treasury, price, governance, expense and entitlement controls pass in a local Solana simulator (LiteSVM) with the real program and Manifest binaries; two red-team runs (61 attacks incl. a malicious administrator, 32 outside-only attacks) were all blocked; Node suite 114/114. Counts are overlapping local checks, not an audit. |
-| Devnet | Not deployed. Setup runner, read-only readiness check and guide are ready (`heli-v20-package/heli/solana-v20/DEVNET.md`); the pre-auction setup was rehearsed on a local Agave 4.0 validator with the real Manifest and Metaplex binaries. |
+| Program (V24) | Built reproducibly (Agave 2.1.21; rebuilt on 10 October with an identical hash); 1.02 MB (program rent ~5.18 SOL at today's rent). ELF SHA-256 `c0e818148ea2aea8595a3024aac2a358c78f2052a45141ca0c299592dd7d6f87`. |
+| Local tests | All 720 monthly periods and treasury, price, governance, expense and entitlement controls pass in a local Solana simulator (LiteSVM) with the real program: 16 runs, 7,809 transactions, 3,195 state checks; random-sequence (fuzz) testing 30 seeds, 0 findings; an end-to-end launch rehearsal (173 checks), a 60-month keeper run with injected faults (606 checks) and emergency drills (39 checks); two red-team runs (61 and 32 attacks) all blocked; Node suite 152/152. The whole set also passes with the Manifest order-book and Metaplex binaries copied from mainnet. Counts are local checks, not an audit. |
+| Devnet | Not deployed yet. Test wallet funded with 20 test SOL; setup runner, read-only readiness check and guide are ready (`heli-v20-package/heli/solana-v20/DEVNET.md`); separate Devnet test site: https://devnet.heli-experiment.pages.dev. Known difference: the Manifest program on Devnet is an older build that refuses the monthly release sale, so that one flow is verified locally against the mainnet binary. Report: [`reviews/v24/DEVNET_HAZIRLIK_2026-10-10.md`](reviews/v24/DEVNET_HAZIRLIK_2026-10-10.md). |
 | Free allocation | Removed by owner decision (4 October 2026). The earlier identity-verified free allocation and its live pilot tests are archived in `reviews/`; the program rejects those instructions. |
-| Website | The repository copy is current (Charta name, V23 rules). The published Cloudflare Pages copy predates the rename and needs a new deploy. |
+| Website | Published and current (V24 rules), including a token rule card that reads any Solana token: https://heli-experiment.pages.dev/check |
 
-Details: [`heli-v20-package/V23_DURUM.md`](heli-v20-package/V23_DURUM.md), [`reviews/v23/V23_NOTLAR.md`](reviews/v23/V23_NOTLAR.md), [`reviews/v22/V22_DUZELTME_2026-10-04.md`](reviews/v22/V22_DUZELTME_2026-10-04.md), [`reviews/KIMLIK_CANLI_TEST_LISTESI.md`](reviews/KIMLIK_CANLI_TEST_LISTESI.md).
+Details: [`heli-v20-package/V23_DURUM.md`](heli-v20-package/V23_DURUM.md) (with the V24 addendum), emergency runbook [`ACIL_DURUM.md`](heli-v20-package/heli/solana-v20/ACIL_DURUM.md), [`reviews/v23/V23_NOTLAR.md`](reviews/v23/V23_NOTLAR.md), [`reviews/v22/V22_DUZELTME_2026-10-04.md`](reviews/v22/V22_DUZELTME_2026-10-04.md), [`reviews/KIMLIK_CANLI_TEST_LISTESI.md`](reviews/KIMLIK_CANLI_TEST_LISTESI.md).
 
 ## Remaining work
 
-- Devnet deployment with a real Manifest market and the keeper (scripts ready; needs the program key, Devnet keys, ~14 test SOL and a test USDC mint), then continuous-operation tests.
+- Devnet deployment with a real Manifest market and the keeper (scripts ready; needs the new program address and the Devnet admin, recovery and upgrade keys; peak ~10.4 test SOL), then continuous-operation tests.
 - Verifiable build (`solana-verify`) and an independent security audit before any mainnet decision.
 - Permanent hosting and own domain for the website.
 - Legal and privacy review for the chosen jurisdiction.
@@ -57,4 +57,4 @@ No wallet secrets or personal data are included in this repository.
 
 ## Türkçe
 
-Charta (CHTA), Solana üzerinde kurallı para arzını araştıran bir deneydir (çalışma adı HELI idi; kod içindeki adlar değişmedi). Ücretsiz dağıtım yoktur; 5 milyon CHTA açılış ihalesi ve piyasa yoluyla satılır. İhalede bir cüzdan en fazla 250.000 CHTA (teklifin %5'i) isteyebilir. Güncel tasarım V23'dir: yerel Solana simülatör testlerinden geçti (eski kimlik pilotu arşivdedir). Devnet veya ana ağda yayınlanmış değildir ve bağımsız güvenlik denetiminden geçmemiştir. Ayrıntılı durum: `heli-v20-package/V22_DURUM.md`.
+Charta (CHTA), Solana üzerinde kurallı para arzını araştıran bir deneydir (çalışma adı HELI idi; kod içindeki adlar değişmedi). Ücretsiz dağıtım yoktur; 5 milyon CHTA açılış ihalesi ve piyasa yoluyla satılır. İhalede bir cüzdan en fazla 250.000 CHTA (teklifin %5'i) isteyebilir. Güncel tasarım V24'tür: yerel Solana simülatör testlerinden, ana ağdaki Manifest ve Metaplex ikilileriyle de geçti (eski kimlik pilotu arşivdedir). Devnet veya ana ağda yayınlanmış değildir ve bağımsız güvenlik denetiminden geçmemiştir. Ayrıntılı durum: `heli-v20-package/V23_DURUM.md` (V24 eki dahil), Devnet hazırlığı: `reviews/v24/DEVNET_HAZIRLIK_2026-10-10.md`.
