@@ -141,11 +141,29 @@ export function bidStatus(a, est, b) {
   return whole ? 'filled' : 'partly filled';
 }
 
-// A transaction that reached the chain but failed comes back from confirmTransaction as value.err, without throwing.
-export async function confirmOrThrow(conn, sig) {
-  const r = await conn.confirmTransaction(sig, 'confirmed');
-  if (r?.value?.err) { const e = Error(`The transaction failed on chain and changed nothing (${JSON.stringify(r.value.err)}).`); e.onChain = r.value.err; throw e; }
-  return sig;
+// Confirmation by polling the signature status over plain HTTP. The websocket form of confirmTransaction gave up
+// after 30 s when the subscription could not be opened, and the page then reported a bid that had succeeded on
+// chain as failed (Devnet test, 10 Oct 2026). Three outcomes, never mixed up:
+//   confirmed without error -> returns; failed on chain -> throws with e.onChain;
+//   blockhash expired with no trace of the transaction -> throws with e.expired (it can no longer land);
+//   still unknown after maxMs -> throws with e.pending (the page says "not confirmed yet", never "failed").
+export async function confirmOrThrow(conn, sig, lastValidBlockHeight, { maxMs = 120000, pollMs = 1500, sleep = ms => new Promise(r => setTimeout(r, ms)), now = () => Date.now() } = {}) {
+  const until = now() + maxMs;
+  for (;;) {
+    const st = (await conn.getSignatureStatuses([sig], { searchTransactionHistory: true }).catch(() => null))?.value?.[0];
+    if (st?.err) { const e = Error(`The transaction failed on chain and changed nothing (${JSON.stringify(st.err)}).`); e.onChain = st.err; throw e; }
+    if (st && (st.confirmationStatus === 'confirmed' || st.confirmationStatus === 'finalized')) return sig;
+    if (!st && lastValidBlockHeight !== undefined) {
+      const height = await conn.getBlockHeight('confirmed').catch(() => null);
+      if (height !== null && height > lastValidBlockHeight) {
+        const again = (await conn.getSignatureStatuses([sig], { searchTransactionHistory: true }).catch(() => null))?.value?.[0];
+        if (!again) { const e = Error('The transaction expired before it reached the chain; nothing changed. You can try again.'); e.expired = true; throw e; }
+        continue;
+      }
+    }
+    if (now() >= until) { const e = Error(`Not confirmed yet. Check transaction ${sig} on an explorer before trying again.`); e.pending = true; e.signature = sig; throw e; }
+    await sleep(pollMs);
+  }
 }
 
 export function errorText(e) {

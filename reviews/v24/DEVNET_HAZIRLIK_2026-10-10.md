@@ -152,7 +152,7 @@ Sahip yeni bir program anahtarı üretti ve yalnız açık anahtarını verdi; k
 | | Açık anahtar |
 |---|---|
 | Program | `DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG` |
-| Yönetici (Devnet deneme cüzdanı) | `5rYen19dNmVAPf4664KhxWdLNEc4ZncScYFhe3V2ngYq` |
+| Yönetici (yeni, sahibin bilgisayarında) | `DobScceWyio1sLNFGSFqmheFVE713qHwaHbuW5Hnrw7A` (SOL `5rYen19d…` deneme cüzdanından aktarıldı) |
 | Kurtarma | `HkBEzszeWGAgCPzHgPJBNryjGpbGd6N85vG5JmKbNPyJ` |
 | Çevrimdışı güncelleme | `ANRm3qEKohq78rkXTYPVqa2E7pf9ThC6ziGtK627co9o` |
 
@@ -166,3 +166,83 @@ Sahip yeni bir program anahtarı üretti ve yalnız açık anahtarını verdi; k
   - Depodaki doğrulama dosyaları yeni ELF hash'iyle yenilendi.
 - Açık anahtarlar ekran görüntüsünden okundu. Dördü de geçerli ve Devnet'te kullanılmamış. Kurulum adımları, `program.json` dosyasının açık anahtarının `declare_id!` ile birebir aynı olduğunu yükleme öncesinde ayrıca kontrol eder.
 
+
+## 10. Devnet'te 1. gün (10 Ekim): kurulum, teklifler ve site karşılaştırması
+
+**Kullanılan commit:** program kodu `0d2dac1` (yalnız `declare_id!` değişti). Zincirdeki kod bu derlemeyle birebir aynı.
+Bu bir Devnet testidir; bağımsız güvenlik denetimi değildir.
+
+### Zincirdeki durum
+
+| | Değer |
+|---|---|
+| Program | [`DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG`](https://explorer.solana.com/address/DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG?cluster=devnet) |
+| Program verisi | `Fd41wnL4rZU2PvcnH66Kz42cGiXg1FSKxJp5f8gF8iqz`: kod 1.018.560 bayt, SHA-256 `9c9779c3…f8f57c` ✓; güncelleme yetkisi şimdilik yönetici `DobScce…` |
+| Yükleme işlemi | [`3x4a1KSr…`](https://explorer.solana.com/tx/3x4a1KSr8ckxLPnMJibMWnMPDfoFsU41fT15xRuCKTqH9Zq4XpCmFYxcqhwDtYGRtoU1pGHjAQnrupfdJuD3VFRY?cluster=devnet), yuva 509.513.812 |
+| CHTA (Devnet) mint | `4d1StKnwkxwFuoLNBQey7fc7U5v8LbdFNr6BLbmkjAhZ`: "Charta DEVNET TEST" / tCHTA; arz 90.000.000; basma ve dondurma yetkisi yok |
+| Kasalar | aylık kural 70.000.000; yönetim 15.000.000; açık artırma envanteri 5.000.000 (10M hiç basılmadı = yakılmış pay) |
+| Teklif tokenı | TEST-USDC `2ZC1gvHqHo5x2GnYxW4bcTsztp9SD4DpXiQn8KhTaFFD` (değersiz test tokenı) |
+| Manifest piyasası | `4pFZTJ7GrhyBoEd12QtnepXFiwgpg8e7qnAbwokLi44y`, programa bağlı |
+| Açık artırma bitişi | 18 Ekim 2026 12:00 UTC |
+
+- İlk yükleme denemesi `--use-rpc` ile ortak RPC'de "Max retries exceeded" verdi. Ara hesap (`5UAJs87p…`) kapatılıp 5,175 SOL geri alındı.
+- İkinci deneme öncelik ücretiyle tamamlandı.
+- Kurulum (`devnet_setup.mjs pre --send`): 15 adımın 15'i tamamlandı.
+
+### Teklif testleri (`scripts/devnet_auction_day0.mjs open`)
+
+Sentetik cüzdanlar A–E kullanıldı. İşlem ücretlerini operatör ödedi. Reddedilmesi beklenen işlemler ön kontrol kapalı gönderildi, böylece her ret Devnet'te gerçek bir başarısız işlem olarak kaydedildi.
+
+| Sayım | Değer |
+|---|---|
+| Test vakaları | 18 (17 işlem vakası + reddedilenler sonrası kasa kontrolü); **18/18 geçti** |
+| Durum kontrolleri (assert) | 18 |
+| Gönderilen işlem | 22 (5 fonlama + 17 vaka); 8'i beklendiği gibi reddedildi |
+
+**Kabul edilenler:**
+- Teklif.
+- Aynı teklifi tekrar verme (reddedilmeli, reddedildi).
+- İptal ve tam iade.
+- Değiştirme: iptal ve yeni teklif.
+- Cüzdan sınırında teklif: tam 250.000.
+
+**Reddedilenler (hata kodlarıyla):**
+- Sınır aşımı: 250.001 (Quota).
+- 256. fiyat seviyesi (Quota).
+- 0 adet (State).
+- Yetersiz bakiye (insufficient funds). İşlem tümüyle geri alındı, teklif hesabı açılmadı.
+- Başkasının teklifini iptal (ConstraintSeeds).
+- Başkasının TEST-USDC hesabından ödeme (ConstraintTokenOwner).
+- Sahte emanet hesabı (ConstraintSeeds).
+- Yönetici olmayan anahtarla durdurma (ConstraintHasOne).
+- Reddedilen işlemlerden sonra emanet bakiyesi değişmedi.
+
+İşlem imzaları: `devnet-day0-auction.json`.
+
+### Site karşılaştırması (https://devnet.heli-experiment.pages.dev)
+
+- **Live ve Auction sayfaları zincirle aynı:** 381.000 CHTA teklif, 4 cüzdan, 86,1 TEST-USDC kilitli (33,6 + 50 + 2,3 + 0,2), arz ve kasalar.
+- **Verify:** "Passed · 1 to note". Not, güncelleme anahtarının hâlâ var olması; kurulum bitince `ANRm…` anahtarına geçecek. RPC'ye ulaşılamadığında, mint okunamadığında veya program verisi okunamadığında özet "Could not read the chain" oluyor ve okunamayan satırlar "–" kalıyor. Eksik okumada hiçbir zaman "passed" yazmıyor.
+- **Sitedeki cüzdan akışı:** test cüzdanı E ve F ile, gerçek imzalarla 5 senaryo çalıştırıldı (`devnet-day0-site-wallet.json`).
+  - **Bulunan hata:** Onay adımı websocket'le 30 saniye bekliyordu. Websocket açılamayınca zincirde **başarılı** olan teklif, değiştirme ve iptal sayfada **"failed"** görünüyordu (3 senaryo).
+  - **Düzeltme** (`auction-core.js` `confirmOrThrow`): durum artık HTTP ile soruluyor. Üç sonuç ayrı gösteriliyor: başarılı, zincirde başarısız, süresi doldu / henüz belli değil. "Belli değil" durumu asla "failed" diye yazılmıyor.
+  - Testler eklendi; site testleri 39/39.
+  - Düzeltmeden sonra 5/5 senaryoda sayfa ile zincir aynı: ön kontrolde ret, zincirde başarısız işlem, teklif, değiştirme ve iptal.
+  - Bu düzeltme üretim sitesine bu PR birleşince yüklenecek.
+
+### SOL
+
+| | Bakiye |
+|---|---|
+| Başlangıç | yaklaşık 20,00 SOL |
+| Şimdi | yönetici 12,748, operatör 1,932, eski cüzdan 0,010; toplam yaklaşık 14,69 SOL |
+
+- Harcanan yaklaşık 5,31 SOL.
+- Bunun 5,175 SOL'ü programın kira teminatı; program kapatılırsa geri alınır.
+
+### Kalan adımlar
+
+- **Duraklatma sırasında iptal:** yönetici (sahibin bilgisayarı) `emergency.mjs pause --send` çalıştırır. Ardından `devnet_auction_day0.mjs paused` (iptal kabul, teklif ret), sonra `unpause` ve `after` çalıştırılır.
+- **18 Ekim 12:00 UTC sonrası:** kapanış (finalize), talepler ve iadeler, `setup post`, piyasa, keeper. Güncelleme yetkisi `ANRm…` anahtarına devredilir.
+- **Aylık satış:** bilinen Devnet farkı (bölüm 8).
+- **720 aylık senaryolar:** yerelde (bölüm 8), Devnet'te zaman atlatılmaz.

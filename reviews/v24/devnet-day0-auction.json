@@ -1,0 +1,339 @@
+{
+ "program": "DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG",
+ "quoteMint": "2ZC1gvHqHo5x2GnYxW4bcTsztp9SD4DpXiQn8KhTaFFD",
+ "operator": "8UzPv3FyFqRx2TgMDUSPapXffnajZReGMiZmLTHJDq5F",
+ "wallets": {
+  "A": "48TjQpRPs4vpd26Kbg5D7XFMBAMs2zRDG57H4evVGdzU",
+  "B": "3sMQexcTVbJhP5HDQQsWPARy4t3VL6LrC2DqHGdQNr9U",
+  "C": "2NDkgD31zFCWjW5RjCL6UvAixZ4McBW3PKcVcNjL1HRT",
+  "D": "9RmJHY6BELU5vUXVFbDCHQGAxcz9gZivMk7dQpL8kPjL",
+  "E": "CQBkzqrBhFB4HjDnTruaFSSZDvEziwh2kUtRrGis27jQ"
+ },
+ "cases": [
+  {
+   "id": "O1",
+   "phase": "open",
+   "what": "A creates a bid account and bids 100,000 at tick 5",
+   "expect": "accepted",
+   "sig": "3i92TNV17M496QcwkhQ8xLYUJu5bqq7qoJnngkeMJDi73TfscD5B6M1f3ikww61GWEuMKJGQtD3hypq2GmB4qH6p",
+   "ok": true,
+   "error": null,
+   "state": [
+    {
+     "what": "escrow +collateral",
+     "got": "25000000",
+     "want": "25000000",
+     "ok": true
+    },
+    {
+     "what": "A quote -collateral",
+     "got": "25000000",
+     "want": "25000000",
+     "ok": true
+    },
+    {
+     "what": "bid active",
+     "got": "true",
+     "want": "true",
+     "ok": true
+    },
+    {
+     "what": "bid qty",
+     "got": "100000",
+     "want": "100000",
+     "ok": true
+    },
+    {
+     "what": "demand[5] +qty",
+     "got": "100000",
+     "want": "100000",
+     "ok": true
+    }
+   ],
+   "pass": true
+  },
+  {
+   "id": "O2",
+   "phase": "open",
+   "what": "A bids again while its bid is active",
+   "expect": "refused",
+   "sig": "5QQZtfgFdPW57YR7RcLev3FX9EUpuncKGAoTp9fH7sdFaArVVBapyrA4LDxbHxwKxQ2E1ShUCDQpe4ogu1fanGYK",
+   "ok": false,
+   "error": "Program log: AnchorError thrown in src/auction.rs:88. Error Code: State. Error Number: 6000. Error Message: Invalid state.",
+   "state": [],
+   "pass": true
+  },
+  {
+   "id": "O3",
+   "phase": "open",
+   "what": "A cancels its bid (full refund)",
+   "expect": "accepted",
+   "sig": "2fy41ZbUZHu3K8L1KSC4B4qehxvHuHAtcebyZd3vubqobjZQWfm5KknZkXEdUeVPxA7FzxZQRfUeCaeqYr8Kh8v",
+   "ok": true,
+   "error": null,
+   "state": [
+    {
+     "what": "escrow -collateral",
+     "got": "25000000",
+     "want": "25000000",
+     "ok": true
+    },
+    {
+     "what": "A quote refunded",
+     "got": "25000000",
+     "want": "25000000",
+     "ok": true
+    },
+    {
+     "what": "bid inactive",
+     "got": "false",
+     "want": "false",
+     "ok": true
+    },
+    {
+     "what": "demand[5] -qty",
+     "got": "100000",
+     "want": "100000",
+     "ok": true
+    }
+   ],
+   "pass": true
+  },
+  {
+   "id": "O4",
+   "phase": "open",
+   "what": "A changes its bid: 120,000 at tick 8",
+   "expect": "accepted",
+   "sig": "62BkLh4mUw1jtPjyheho6MsDL3PXyWT4GQVQxAih5rtZ7qDTzBs1etf6UKMkKVypYgiWU42Zh6LvNBkTUP22emQi",
+   "ok": true,
+   "error": null,
+   "state": [
+    {
+     "what": "escrow +collateral",
+     "got": "33600000",
+     "want": "33600000",
+     "ok": true
+    },
+    {
+     "what": "bid tick",
+     "got": "8",
+     "want": "8",
+     "ok": true
+    },
+    {
+     "what": "demand[8] +qty",
+     "got": "120000",
+     "want": "120000",
+     "ok": true
+    }
+   ],
+   "pass": true
+  },
+  {
+   "id": "O5",
+   "phase": "open",
+   "what": "B bids exactly the wallet cap (250,000) at tick 0",
+   "expect": "accepted",
+   "sig": "er6ffY3p4ogduMwgoR3wn97zwGqWaCDvedT3yTE5qKyb1XJHyJnM3cb2ZKfpi4kc9qN5XxA74FUv2SEqwc7CVGs",
+   "ok": true,
+   "error": null,
+   "state": [
+    {
+     "what": "escrow +collateral",
+     "got": "50000000",
+     "want": "50000000",
+     "ok": true
+    },
+    {
+     "what": "demand[0] +qty",
+     "got": "250000",
+     "want": "250000",
+     "ok": true
+    }
+   ],
+   "pass": true
+  },
+  {
+   "id": "O6",
+   "phase": "open",
+   "what": "C creates its bid account",
+   "expect": "accepted",
+   "sig": "5zFeeAXt62t8UKwbaihrXEMTWrdmXhgiqiJgWSr413TcfmW1p4MEVBW3BDZv4NZYs4weWhzRyCS8fJp2HQuzweGg",
+   "ok": true,
+   "error": null,
+   "state": [
+    {
+     "what": "C bid owner",
+     "got": "2NDkgD31zFCWjW5RjCL6UvAixZ4McBW3PKcVcNjL1HRT",
+     "want": "2NDkgD31zFCWjW5RjCL6UvAixZ4McBW3PKcVcNjL1HRT",
+     "ok": true
+    }
+   ],
+   "pass": true
+  },
+  {
+   "id": "O7",
+   "phase": "open",
+   "what": "C bids 250,001 (over the 5% wallet cap)",
+   "expect": "refused",
+   "sig": "2uTKEtTGd7K5QQZstR1Wz2xRtRXcyWdKHwNornwXYNhMEiq9NY9puFia9wPV8NCHngVftmwt5djFRNN2WpNtWsDx",
+   "ok": false,
+   "error": "Program log: AnchorError thrown in src/auction.rs:89. Error Code: Quota. Error Number: 6002. Error Message: Quota exceeded.",
+   "state": [],
+   "pass": true
+  },
+  {
+   "id": "O8",
+   "phase": "open",
+   "what": "C bids at tick 256 (outside the 256 price levels)",
+   "expect": "refused",
+   "sig": "3r5TLRLx8YwStEU5azoL98VkCoaqWjV6gpWNMvLkEFitaFXCWrQbo52fWy7fCZavLjtujA9yfRxNqzP8M8nz3XPN",
+   "ok": false,
+   "error": "Program log: AnchorError thrown in src/auction.rs:73. Error Code: Quota. Error Number: 6002. Error Message: Quota exceeded.",
+   "state": [],
+   "pass": true
+  },
+  {
+   "id": "O9",
+   "phase": "open",
+   "what": "C bids quantity 0",
+   "expect": "refused",
+   "sig": "fmNVYQ3gfXi2a4c4xJNeAhv2onwGQk49uTgBAyX5414W7rtMcrkUXxSuEbuxFNJwhdEpWfPg96SzJS6PZB2KVgi",
+   "ok": false,
+   "error": "Program log: AnchorError thrown in src/auction.rs:88. Error Code: State. Error Number: 6000. Error Message: Invalid state.",
+   "state": [],
+   "pass": true
+  },
+  {
+   "id": "O10",
+   "phase": "open",
+   "what": "E bids 1,000 at tick 0 holding only 0.1 TEST-USDC (needs 0.2)",
+   "expect": "refused",
+   "sig": "2g3UTmfxAsUvLgQVRNpBouWLZMVewF1szBH7MiFAzFgVBZyRUrPSviRFvseSE4JxVNPWQoUkwZWpAMKxuXfwtR1A",
+   "ok": false,
+   "error": "Program log: Error: insufficient funds",
+   "state": [
+    {
+     "what": "E has no bid account (whole tx reverted)",
+     "got": "null",
+     "want": "null",
+     "ok": true
+    }
+   ],
+   "pass": true
+  },
+  {
+   "id": "O11",
+   "phase": "open",
+   "what": "D creates its bid account",
+   "expect": "accepted",
+   "sig": "21E4nHjkFwjaj4v8VUTTQkWR2WZC6uNVAr6vQYDR3bZpPsiwVw4rPmniFFuNsVe8zH9k2SQs8FDJ1UB3CVCNT4uG",
+   "ok": true,
+   "error": null,
+   "state": [],
+   "pass": true
+  },
+  {
+   "id": "O12",
+   "phase": "open",
+   "what": "D tries to cancel A's bid (passes A's bid account)",
+   "expect": "refused",
+   "sig": "2jQsZaSgqFJju3HYpphvTbqeYUGrFQ9XAohbamLuauyySH81Cj2TY47L4CooM9AxC71seBT9bQRTJAfhLMgfK1qU",
+   "ok": false,
+   "error": "Program log: AnchorError caused by account: bid. Error Code: ConstraintSeeds. Error Number: 2006. Error Message: A seeds constraint was violated.",
+   "state": [],
+   "pass": true
+  },
+  {
+   "id": "O13",
+   "phase": "open",
+   "what": "D bids paying from A's TEST-USDC account",
+   "expect": "refused",
+   "sig": "2M3U2WFMY59QhwyhmbnQbdKtxfonpVcUM174TYbuqzWaFDnj6YgwK114CFNEEVKuoMTLHvske1tYhsg1yc9bmmqr",
+   "ok": false,
+   "error": "Program log: AnchorError occurred. Error Code: ConstraintTokenOwner. Error Number: 2015. Error Message: A token owner constraint was violated.",
+   "state": [],
+   "pass": true
+  },
+  {
+   "id": "O14",
+   "phase": "open",
+   "what": "D bids into a fake escrow (its own token account)",
+   "expect": "refused",
+   "sig": "3StEyffPyQyur3RvbSah1Q4usLeDQpE4XpEurCHxnDbQJssuTajn6cE2CTB2EWdQyjWxzXYrsR4uUfGV1eDTzEJB",
+   "ok": false,
+   "error": "Program log: AnchorError caused by account: quote_escrow. Error Code: ConstraintSeeds. Error Number: 2006. Error Message: A seeds constraint was violated.",
+   "state": [],
+   "pass": true
+  },
+  {
+   "id": "O15",
+   "phase": "open",
+   "what": "The operator (not the administrator) tries to pause the program",
+   "expect": "refused",
+   "sig": "5nJpAtgjSoXBDp5emeqqx1vSvzm6TmyQnFzmD74Fc7oeQEqSFR7WZg8ok3vz5nQNBtooncXEFBVAETNrjeoUTeTj",
+   "ok": false,
+   "error": "Program log: AnchorError caused by account: config. Error Code: ConstraintHasOne. Error Number: 2001. Error Message: A has one constraint was violated.",
+   "state": [],
+   "pass": true
+  },
+  {
+   "id": "O7-O15 escrow",
+   "phase": "open",
+   "what": "escrow unchanged by the refused bids",
+   "state": [
+    {
+     "what": "escrow",
+     "got": "83600000",
+     "want": "83600000",
+     "ok": true
+    }
+   ],
+   "pass": true
+  },
+  {
+   "id": "O16",
+   "phase": "open",
+   "what": "D bids 10,000 at tick 3",
+   "expect": "accepted",
+   "sig": "4VWTiLjKrHmR6xRpk9AExsDXiXkFmii6gB4umG5vGV7tvAqyAY5j8WuMYvxtsvbMqNiMKARCBzC6EBuhapFqjsZm",
+   "ok": true,
+   "error": null,
+   "state": [
+    {
+     "what": "escrow +collateral",
+     "got": "2300000",
+     "want": "2300000",
+     "ok": true
+    }
+   ],
+   "pass": true
+  },
+  {
+   "id": "O17",
+   "phase": "open",
+   "what": "C bids 1,000 at tick 0",
+   "expect": "accepted",
+   "sig": "5Jr9EyvQLCqtmg1WugJ4aw3T7j1CDKSEY3BZ93AKr6u1EnLPaoBcJ9PQHpMwoMxTnCL7F9ocoEVBSYoTa7VDWPU3",
+   "ok": true,
+   "error": null,
+   "state": [],
+   "pass": true
+  }
+ ],
+ "auction": {
+  "active_bids": "4",
+  "escrow": "86100000",
+  "demand": {
+   "0": "251000",
+   "3": "10000",
+   "8": "120000"
+  }
+ },
+ "counts": {
+  "open": {
+   "transactions": 22,
+   "stateChecks": 18
+  }
+ }
+}
