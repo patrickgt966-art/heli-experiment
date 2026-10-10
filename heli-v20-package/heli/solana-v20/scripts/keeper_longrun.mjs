@@ -33,7 +33,7 @@ let seed=31;const rand=()=>((seed=(seed*1664525+1013904223)>>>0)/2**32);
 const fault={rate:0,injected:0};
 const keeperConn=new web3.Connection(RPC,{commitment:'confirmed',fetch:async(u,i)=>{if(fault.rate&&rand()<fault.rate){fault.injected++;throw new TypeError('fetch failed (injected outage)');}return fetch(u,i);}});
 
-const PROGRAM=new web3.PublicKey('HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv'),UNIT=1_000_000n;
+const PROGRAM=new web3.PublicKey('DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG'),UNIT=1_000_000n;
 const RATE=4_022_473_737_086_389n,SCALE=10n**18n;
 const idl=JSON.parse(readFileSync(new URL('../idl.json',import.meta.url)));
 const pda=(...s)=>web3.PublicKey.findProgramAddressSync(s.map(x=>typeof x==='string'?Buffer.from(x):x),PROGRAM)[0];

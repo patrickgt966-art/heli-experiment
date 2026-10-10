@@ -23,7 +23,7 @@ from solders.transaction_metadata import FailedTransactionMetadata
 import websockets
 
 ROOT=Path(__file__).resolve().parents[1]
-CHARTA=Pubkey.from_string('HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv')
+CHARTA=Pubkey.from_string('DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG')
 MANIFEST=Pubkey.from_string('MNFSTqtC93rEfYHB6hF82sKdZpUDFWkViLByLd1k1Ms')
 METADATA=Pubkey.from_string('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s')
 TOKEN=Pubkey.from_string('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');TOKEN_2022=Pubkey.from_string('TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb')

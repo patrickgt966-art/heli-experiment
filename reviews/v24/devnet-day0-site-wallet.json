@@ -1,0 +1,65 @@
+[
+ {
+  "id": "W1",
+  "what": "E (0.1 TEST-USDC) bids 1,000 at 0.0002 via the site: wallet preflight refuses",
+  "wallet": "CQBkzqrBhFB4HjDnTruaFSSZDvEziwh2kUtRrGis27jQ",
+  "status": "Place bid failed: Not enough TEST-USDC (or SOL for fees) in this wallet.",
+  "shownAs": "failed",
+  "onChain": "nothing sent",
+  "sigs": [],
+  "walletBidShown": "None",
+  "consistent": true
+ },
+ {
+  "id": "W2",
+  "what": "Same, but the transaction is forced onto the chain without preflight: fails on chain",
+  "wallet": "CQBkzqrBhFB4HjDnTruaFSSZDvEziwh2kUtRrGis27jQ",
+  "status": "Place bid failed: The transaction failed on chain and changed nothing ({\"InstructionError\":[1,{\"Custom\":1}]}).",
+  "shownAs": "failed",
+  "onChain": "failed",
+  "sigs": [
+   "55jC1VFPFMaGucpJTFrZghGprRBmymXXdeJT8rKm2WXUfeyKzUDu3oi93z4hwV827Dt15tRA8Xi6aVKZPEYEJXSD"
+  ],
+  "walletBidShown": "None",
+  "consistent": true
+ },
+ {
+  "id": "W3",
+  "what": "F bids 1,000 at 0.0002 via the site",
+  "wallet": "ESKgoTSDrQJEHZETt3CYWq5EPta2vTJ2w6vsPVcYMayb",
+  "status": "Place bid: done. Transaction 32YdqzRk…",
+  "shownAs": "success",
+  "onChain": "succeeded",
+  "sigs": [
+   "32YdqzRkst1Uw9Ebmdd8TvtxGoNYEydqA4dZReT76LsiZeggKkvZsSSSLVrjhpc76qzUQQwpTDXJ9Vo657zXP55T"
+  ],
+  "walletBidShown": "1,000 CHTA at up to 0.0002 TEST-USDC",
+  "consistent": true
+ },
+ {
+  "id": "W4",
+  "what": "F replaces its bid: 2,000 at 0.0003",
+  "wallet": "ESKgoTSDrQJEHZETt3CYWq5EPta2vTJ2w6vsPVcYMayb",
+  "status": "Replace bid: done. Transaction 5xwq6Jp9…",
+  "shownAs": "success",
+  "onChain": "succeeded",
+  "sigs": [
+   "5xwq6Jp9i9uruzReS2dbXZeK9UriXr3uXKQkQeCEXoYpynzFv1HCQDhsNftSCcnXmpP3cDdM3PTRWbE2j2EhPyfy"
+  ],
+  "walletBidShown": "2,000 CHTA at up to 0.0003 TEST-USDC",
+  "consistent": true
+ },
+ {
+  "id": "W5",
+  "what": "F cancels its bid via the site",
+  "wallet": "ESKgoTSDrQJEHZETt3CYWq5EPta2vTJ2w6vsPVcYMayb",
+  "status": "Cancel bid: done. Transaction 5ALhpFzF…",
+  "shownAs": "success",
+  "onChain": "succeeded",
+  "sigs": [
+   "5ALhpFzFCkDDU8iMUxHxgFu2nxC1KDa8gkGcMRaYyXgomMHMecDFGjb9gbP6w2TfbwUoGg3LXSP9E3HQebEDqfiD"
+  ],
+  "walletBidShown": "None",
+  "consistent": true
+ }
+]

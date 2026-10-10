@@ -2,7 +2,7 @@
 
 Son güncelleme: 6 Ekim 2026.
 
-Bu el kitabı programın bugünkü kurallarına (V24, ELF `c0e81814…`) dayanır. Buradaki her prosedür, prova zincirinde `scripts/emergency_drill.mjs` ile uygulandı: 9 tatbikat, 39 kontrol, 0 hata.
+Bu el kitabı programın bugünkü kurallarına (V24, program adresi `DZbsSEnZ…Bd2zG`, ELF `9c9779c3…`) dayanır. Buradaki her prosedür, prova zincirinde `scripts/emergency_drill.mjs` ile uygulandı: 9 tatbikat, 39 kontrol, 0 hata.
 
 Komutların hepsi `scripts/emergency.mjs` aracıyla verilir:
 - Araç her komutu **önce simüle eder** ve sonucu yazar. `--send` verilmeden hiçbir şey gönderilmez.

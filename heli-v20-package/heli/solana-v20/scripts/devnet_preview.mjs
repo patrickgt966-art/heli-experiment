@@ -33,6 +33,10 @@ writeFileSync(join(out, 'devnet-banner.js'), `// Devnet test preview banner (scr
 `);
 writeFileSync(join(out, 'style.css'), readFileSync(join(out, 'style.css'), 'utf8') +
   '\n/* Devnet test preview */\n.devnet-banner{position:sticky;top:0;z-index:50;background:#ff9a3c;color:#2b1400;font:650 12px/1.4 var(--mono,monospace);letter-spacing:.04em;text-align:center;padding:7px 12px}\n');
+// The Devnet token's on-chain metadata points here; its name says it is a test token.
+const token = JSON.parse(readFileSync(join(out, 'token.json'), 'utf8'));
+writeFileSync(join(out, 'token.json'), JSON.stringify({ ...token, name: 'Charta DEVNET TEST', symbol: 'tCHTA',
+  description: 'Devnet test token of the Charta program. It has no value and is not the Charta launch. ' + token.description }, null, 1) + '\n');
 writeFileSync(join(out, 'robots.txt'), 'User-agent: *\nDisallow: /\n');
 writeFileSync(join(out, '_headers'), readFileSync(join(out, '_headers'), 'utf8').replace('/*\n', '/*\n  X-Robots-Tag: noindex, nofollow\n'));
 

@@ -5,7 +5,7 @@ import {readFileSync} from 'node:fs';import {randomBytes} from 'node:crypto';
 import {web3} from '../../mobile/deps.mjs';
 import {SponsoredChain} from '../../mobile/solana.mjs';
 const idl=JSON.parse(readFileSync(new URL('../archived-idl.json',import.meta.url)));
-const program='HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv',RENT=1_000_000,FEE=10_000,COST=3*RENT+FEE;
+const program='DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG',RENT=1_000_000,FEE=10_000,COST=3*RENT+FEE;
 function chain(options={}){
  let now=100_000;const verifier=web3.Keypair.generate().publicKey.toBase58(),mint=web3.Keypair.generate().publicKey.toBase58();
  const connection={getLatestBlockhash:async()=>({blockhash:web3.Keypair.generate().publicKey.toBase58(),lastValidBlockHeight:1}),getFeeForMessage:async()=>({value:FEE}),getMinimumBalanceForRentExemption:async()=>RENT,getBalance:async()=>10e9};

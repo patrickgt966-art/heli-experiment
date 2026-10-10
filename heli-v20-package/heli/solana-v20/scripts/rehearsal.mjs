@@ -30,7 +30,7 @@ const rpc=async(method,params=[])=>{const r=await (await fetch(RPC,{method:'POST
 if(!(await rpc('getVersion'))['solana-core'].includes('charta-rehearsal'))throw Error('Refusing: not the local rehearsal chain');
 const chainNow=async()=>(await rpc('charta_clock')).unixTimestamp, warp=t=>rpc('charta_warp',[t]);
 
-const PROGRAM=new web3.PublicKey('HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv'),UNIT=1_000_000n,OFFER=5_000_000n,CAP=250_000n;
+const PROGRAM=new web3.PublicKey('DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG'),UNIT=1_000_000n,OFFER=5_000_000n,CAP=250_000n;
 const idl=JSON.parse(readFileSync(new URL('../idl.json',import.meta.url)));
 const compiled=JSON.parse(readFileSync(new URL('../compiled-source.json',import.meta.url)));
 const elfLength=readFileSync(new URL('../heli_core_v20.so',import.meta.url)).length;

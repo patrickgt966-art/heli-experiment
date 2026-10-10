@@ -8,7 +8,7 @@ import {heliInstruction} from '../../mobile/solana.mjs';
 import * as core from '../auction-core.js';
 
 const idl=JSON.parse(readFileSync(new URL('../../solana-v20/idl.json',import.meta.url)));
-const PROGRAM='HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv';
+const PROGRAM='DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG';
 const mint=web3.Keypair.generate().publicKey,quote=web3.Keypair.generate().publicKey,bidder=web3.Keypair.generate().publicKey;
 await core.ready();
 const A=core.addresses(web3,PROGRAM,mint,quote,bidder);
@@ -78,6 +78,21 @@ test('bid status follows the program: an undersubscribed final auction fills eve
  const exact={...fin2,marginalAtoms:3_000_000n*1_000_000n};assert.equal(core.bidStatus(exact,e2,{active:true,tick:10,quantity:1n}),'filled');
 });
 test('a transaction that landed but failed is reported as failed, not done (Codex finding, seen on a local validator)',async()=>{
- await assert.rejects(core.confirmOrThrow({confirmTransaction:async()=>({value:{err:{InstructionError:[0,{Custom:1}]}}})},'sig'),/failed on chain/);
- assert.equal(await core.confirmOrThrow({confirmTransaction:async()=>({value:{err:null}})},'sig'),'sig');
+ const conn=(statuses,height=0)=>{let i=0;return {getSignatureStatuses:async()=>({value:[statuses[Math.min(i++,statuses.length-1)]]}),getBlockHeight:async()=>height};};
+ const fast={sleep:async()=>{},pollMs:0};
+ await assert.rejects(core.confirmOrThrow(conn([{err:{InstructionError:[0,{Custom:1}]},confirmationStatus:'confirmed'}]),'sig',100,fast),e=>e.onChain&&/failed on chain/.test(e.message));
+ assert.equal(await core.confirmOrThrow(conn([null,{err:null,confirmationStatus:'processed'},{err:null,confirmationStatus:'confirmed'}]),'sig',100,fast),'sig');
+});
+test('confirmation never reports an unknown outcome as failed (Devnet test 10 Oct: websocket timeout showed a successful bid as failed)',async()=>{
+ const conn=(statuses,height)=>{let i=0;return {getSignatureStatuses:async()=>({value:[statuses[Math.min(i++,statuses.length-1)]]}),getBlockHeight:async()=>height};};
+ let t=0;const clock={sleep:async ms=>{t+=ms;},now:()=>t,pollMs:1000,maxMs:5000};
+ // Still in flight when the wait ends: "pending", with the signature, and not the word "failed".
+ await assert.rejects(core.confirmOrThrow(conn([null],50),'sig',100,clock),e=>e.pending&&!e.onChain&&e.signature==='sig'&&!/failed/i.test(e.message));
+ // Blockhash expired and the transaction is nowhere: it can no longer land, nothing changed.
+ await assert.rejects(core.confirmOrThrow(conn([null],101),'sig',100,{sleep:async()=>{},pollMs:0}),e=>e.expired&&!e.onChain);
+ // Expired height, but the transaction did land in the meantime: success, not "expired".
+ assert.equal(await core.confirmOrThrow(conn([null,{err:null,confirmationStatus:'confirmed'}],101),'sig',100,{sleep:async()=>{},pollMs:0}),'sig');
+ // RPC hiccups are retried, not reported.
+ let n=0;const flaky={getSignatureStatuses:async()=>{if(n++<2)throw Error('429');return {value:[{err:null,confirmationStatus:'finalized'}]};},getBlockHeight:async()=>0};
+ assert.equal(await core.confirmOrThrow(flaky,'sig',100,{sleep:async()=>{},pollMs:0}),'sig');
 });

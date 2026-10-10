@@ -16,7 +16,7 @@ const rpc=async(method,params=[])=>{const r=await (await fetch(RPC,{method:'POST
 if(!(await rpc('getVersion'))['solana-core'].includes('charta-rehearsal'))throw Error('Refusing: not the local rehearsal chain');
 const now=async()=>(await rpc('charta_clock')).unixTimestamp,warp=t=>rpc('charta_warp',[t]);
 const conn=new web3.Connection(RPC,'confirmed');conn._disableBlockhashCaching=true;
-const PROGRAM=new web3.PublicKey('HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv');
+const PROGRAM=new web3.PublicKey('DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG');
 const idl=JSON.parse(readFileSync(new URL('../idl.json',import.meta.url)));
 const pda=(...s)=>web3.PublicKey.findProgramAddressSync(s.map(x=>typeof x==='string'?Buffer.from(x):x),PROGRAM)[0];
 const read=async(k,type)=>{const a=await conn.getAccountInfo(k,'confirmed');return a?decodeAccount(idl,type,a.data):null;};

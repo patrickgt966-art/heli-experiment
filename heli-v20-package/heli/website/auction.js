@@ -96,14 +96,14 @@ async function send(label, instructions) {
   if (busy) return; busy = true; const s = $('tx-status'); s.hidden = false; s.textContent = `${label}: confirm in your wallet…`;
   try {
     const tx = new web3.Transaction().add(...instructions); tx.feePayer = wallet;
-    tx.recentBlockhash = (await conn.getLatestBlockhash('confirmed')).blockhash;
+    const block = await conn.getLatestBlockhash('confirmed'); tx.recentBlockhash = block.blockhash;
     const signed = await provider.signTransaction(tx);
     const sig = await conn.sendRawTransaction(signed.serialize());
     s.textContent = `${label}: sent, waiting for confirmation…`;
-    await core.confirmOrThrow(conn, sig);
+    await core.confirmOrThrow(conn, sig, block.lastValidBlockHeight);
     s.textContent = `${label}: done. Transaction ${sig.slice(0, 8)}…`;
     await refresh();
-  } catch (e) { s.textContent = `${label} failed: ${e?.onChain ? e.message : core.errorText(e)}`; refresh().catch(() => {}); }
+  } catch (e) { s.textContent = e?.pending ? `${label}: ${e.message}` : `${label} failed: ${e?.onChain || e?.expired ? e.message : core.errorText(e)}`; refresh().catch(() => {}); }
   finally { busy = false; }
 }
 const mineNow = () => bids.find(b => new web3.PublicKey(b.owner).equals(wallet));

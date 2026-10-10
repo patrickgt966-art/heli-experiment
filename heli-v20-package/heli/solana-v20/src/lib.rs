@@ -7,7 +7,7 @@ use calendar::{DAY,boundary}; use economics::*;
 use auction::*;
 use manifest_bridge::*; use release::*;
 use management::*; use market_release::*;
-declare_id!("HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv");
+declare_id!("DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG");
 /// Metaplex Token Metadata program (wallet-visible token name, symbol and logo).
 pub const TOKEN_METADATA:Pubkey=anchor_lang::solana_program::pubkey!("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 

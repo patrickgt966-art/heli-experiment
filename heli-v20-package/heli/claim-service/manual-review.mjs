@@ -15,7 +15,7 @@ const data=storage(fileURLToPath(new URL('./.state/claim.sqlite',import.meta.url
 try{
  const provider=new Didit({apiKey:read('didit-api-key.txt'),workflowId:policy.workflowId,callback:'unused'});
  // The verifier key is not used here (no on-chain attestation is signed).
- const admission=new ClaimAdmission({program:'HkScyzYb2nyhw9X8o31ShQTEFgbuKQj2ThBTBErBJAWv',workflowId:policy.workflowId,applicationId:'manual-review',provider,personSecret:read('person-hmac.txt'),verifierKey:generateKeyPairSync('ed25519').privateKey,data});
+ const admission=new ClaimAdmission({program:'DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG',workflowId:policy.workflowId,applicationId:'manual-review',provider,personSecret:read('person-hmac.txt'),verifierKey:generateKeyPairSync('ed25519').privateKey,data});
  const s=data.sessions[id];if(!s)throw Error('Unknown application');
  const record=await admission.manualApprove(s,reason,{allowDuplicateFace:flags.includes('--allow-duplicate-face')});
  console.log(JSON.stringify({application:id,status:s.status,reasonSha256:record.reason,allowDuplicateFace:record.allowDuplicateFace,at:new Date(record.at*1000).toISOString()}));
