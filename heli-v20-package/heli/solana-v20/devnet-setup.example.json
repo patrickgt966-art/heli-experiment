@@ -7,7 +7,7 @@
  "quoteMint": "DEVNET_TEST_USDC_MINT (6 decimals)",
  "start": 0,
  "minimumQuoteDepth": 25000000,
- "metadata": {"name": "Charta", "symbol": "CHTA", "uri": "https://heli-experiment.pages.dev/token.json"},
+ "metadata": {"name": "Charta", "symbol": "CHTA", "uri": "https://chartacoin.com/token.json"},
  "auction": {"floor": 200, "tick": 10},
  "marketKeyFile": "/path/outside/the/repo/devnet-manifest-market.json",
  "marketRentLamports": 10000000,
