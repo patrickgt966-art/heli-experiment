@@ -54,7 +54,7 @@ Sonradan yönetici değiştirildiğinde keeper bilinçli olarak durur ("Administ
 
 ## Yükleme maliyeti (4 Ekim 2026)
 
-- ELF 1.018.560 bayt (V24, 6 Ekim 2026): program verisi kirası ≈ **7,09 SOL** (yaklaşık 6.960 lamport/bayt). Yükleme sırasında aynı boyutta geçici bir tampon hesabı için bir o kadar daha gerekir; yükleme bitince iade edilir.
+- ELF 1.018.560 bayt (V24, 6 Ekim 2026): program verisi kirası ≈ **5,18 SOL** (10 Ekim 2026'da ana ağ ve Devnet RPC'nin `getMinimumBalanceForRentExemption` cevabı; eski 6.960 lamport/bayt hesabıyla 7,09 SOL çıkıyordu). Yükleme sırasında aynı boyutta geçici bir tampon hesabı için bir o kadar daha gerekir; yükleme bitince iade edilir.
 - Upgrade anahtarı kalıcı olarak kaldırıldığında bu kira geri alınamaz. Önceki sürümler büyürse `solana program extend` ile alan eklenir; yüklemede gereksiz boş alan ayırmayın (kullandığınız CLI sürümünün `--max-len` varsayılanını kontrol edin).
 - Program `no-idl` ile derlenir: zincir üstü IDL hesabı yoktur (`anchor idl init` kullanılamaz). IDL depoda (`idl.json`) yayımlanır.
 

@@ -33,10 +33,18 @@ svm.add_program_from_file(TOKEN_METADATA,ROOT/'test-programs/mpl_token_metadata-
 admin=Keypair();alice=Keypair();bob=Keypair();outsider=Keypair()
 KEYS={str(k.pubkey()):k for k in [admin,alice,bob,outsider]}
 for k in KEYS.values():svm.airdrop(k.pubkey(),100_000_000_000)
-checks=[];events=[]
+checks=[];events=[];_count={'check':0}
+# Optional count report (HELI_TEST_COUNTS=<dir>): transactions sent, how many were refused as the test expected, and
+# state checks (check() calls) kept apart, since checks[] lists both. No effect on the test itself.
+def _write_counts():
+ d=os.environ.get('HELI_TEST_COUNTS')
+ if not d:return
+ name=Path(sys.argv[0]).stem+('-'+sys.argv[1] if len(sys.argv)>1 else '')
+ Path(d,name+'.json').write_text(json.dumps({'test':name,'transactions':len(events),'refused_as_expected':sum(e['rejected'] for e in events),'state_checks':_count['check']}))
+import atexit;atexit.register(_write_counts)
 def check(name,value):
  assert value,name
- checks.append(name)
+ checks.append(name);_count['check']+=1
 def pda(*parts):return Pubkey.find_program_address(parts,PROGRAM)[0]
 def meta(k,w=False,s=False):return AccountMeta(k,s,w)
 def clock(t):
