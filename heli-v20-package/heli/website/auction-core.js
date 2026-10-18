@@ -54,6 +54,9 @@ export function decodeBid(d) {
 }
 
 export const priceAt = (a, tick) => a.floor + a.tickSize * BigInt(tick);
+// Quote still held in the auction escrow: collateral of bids that are active and not yet claimed. A claimed bid
+// stays "active" on chain (claimed=true), and its collateral has left the escrow (Devnet test, 18 Oct 2026).
+export const lockedAtoms = (a, bids) => bids.filter(b => b.active && !b.claimed).reduce((s, b) => s + b.quantity * priceAt(a, b.tick), 0n);
 export function tickFor(a, priceAtoms) {
   if (priceAtoms < a.floor) return null;
   const t = (priceAtoms - a.floor) / a.tickSize;

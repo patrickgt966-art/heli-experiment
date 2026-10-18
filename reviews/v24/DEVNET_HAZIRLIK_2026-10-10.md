@@ -235,6 +235,27 @@ Yönetici programı sahibin bilgisayarından durdurdu (`4Vid6Kpx…`) ve sonra t
 - **Teklif testlerinin toplamı:** 23 vaka (23/23 geçti), 21 durum kontrolü, 27 işlem (5 fonlama dahil).
 - **Açık artırmanın şimdiki durumu:** 4 etkin teklif, 331.000 tCHTA, emanette 96,1 TEST-USDC.
 
+### Açık artırmanın kapanışı (18 Ekim, `final` aşaması)
+
+Bitiş 18 Ekim 12:00 UTC. Kapanışı (finalize) yönetici değil, operatör imzaladı: herkes yapabiliyor.
+
+| Vaka | Beklenen | Sonuç |
+|---|---|---|
+| F1 kapanış | kabul; fiyat = taban 0,0002 (talep 331.000 < 5.000.000), satılan 331.000, bekleyen talep 4 | ✓ |
+| F2 ikinci kapanış | ret (Time) | ✓ |
+| F3 bitişten sonra iptal | ret (Time) | ✓ |
+| F4 bitişten sonra teklif | ret (State) | ✓ |
+| F5, F7–F9 A, B, C, D talep | tCHTA tam miktar; iade = teminat − miktar × 0,0002; emanet ve satış geliri kuruşuna doğru | ✓ (4 × 5 kontrol) |
+| F6 ikinci talep | ret (State) | ✓ |
+| F10 iptal edilmiş teklifle talep | ret (State) | ✓ |
+| F11 başkasının teklifiyle talep | ret (ConstraintSeeds) | ✓ |
+| Son durum | emanet 0; satış geliri 66,2 TEST-USDC (331.000 × 0,0002); bekleyen talep 0; envanter 4.669.000 | ✓ |
+
+- **Toplam teklif testleri:** 35 vaka, 35/35 geçti; 49 durum kontrolü; 38 işlem.
+- F1–F9 sonuçları betik dosyaya yazmadan önce durduğu için çalıştırma çıktısından aktarıldı; imzalar zincirde doğrulanabilir. Betik artık her vakadan sonra dosyayı yazıyor.
+- **Sitede bulunan ikinci hata:** talepler bittikten sonra Auction sayfası, zincirde emanet 0 iken "Locked bid funds 96.1" gösteriyordu; talep edilmiş teklifler hâlâ kilitli sayılıyordu. Düzeltme `auction-core.js` `lockedAtoms`, testi eklendi; site testleri 40/40.
+- Düzeltmenin Devnet test sitesine yüklenmesi bekliyor: oturumun ağ katmanı Cloudflare isteklerinin yetki başlığını yeni token'la değiştiriyor, wrangler'ın dosya yükleme adımı ise kendi kısa ömürlü anahtarını kullandığı için reddediliyor (Authorization failed, 8000013).
+
 ### Site karşılaştırması (https://devnet.heli-experiment.pages.dev)
 
 - **Live ve Auction sayfaları zincirle aynı:** 381.000 CHTA teklif, 4 cüzdan, 86,1 TEST-USDC kilitli (33,6 + 50 + 2,3 + 0,2), arz ve kasalar.
@@ -258,6 +279,6 @@ Yönetici programı sahibin bilgisayarından durdurdu (`4Vid6Kpx…`) ve sonra t
 
 ### Kalan adımlar
 
-- **18 Ekim 12:00 UTC sonrası:** kapanış (finalize), talepler ve iadeler, `setup post`, piyasa, keeper. Güncelleme yetkisi `ANRm…` anahtarına devredilir.
+- **Kalan:** `setup post` (yönetici), piyasa, keeper; güncelleme yetkisi `ANRm…` anahtarına devredilir.
 - **Aylık satış:** bilinen Devnet farkı (bölüm 8).
 - **720 aylık senaryolar:** yerelde (bölüm 8), Devnet'te zaman atlatılmaz.

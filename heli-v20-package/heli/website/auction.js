@@ -43,7 +43,7 @@ function render() {
   $('sum-demand').textContent = `${fmt(est.total)} CHTA`;
   $('sum-wallets').textContent = fmt(active.length);
   $('sum-floor').textContent = `${usd(auction.floor)} USDC`;
-  $('sum-locked').textContent = `${fmt(usd(active.reduce((s, b) => s + b.quantity * core.priceAt(auction, b.tick), 0n)), 2)} USDC`;
+  $('sum-locked').textContent = `${fmt(usd(core.lockedAtoms(auction, bids)), 2)} USDC`;
   // Demand by level, highest first.
   let cum = 0n; const rows = [];
   for (let i = core.LEVELS - 1; i >= 0; i--) {

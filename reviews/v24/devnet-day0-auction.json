@@ -393,11 +393,265 @@
    "error": null,
    "state": [],
    "pass": true
+  },
+  {
+   "id": "F1",
+   "phase": "final",
+   "what": "Anyone finalizes the auction after the end (operator signs, not the administrator)",
+   "expect": "accepted",
+   "sig": "2smxzhasvWNKXLgnZXttbPvxB5gwzRFHpGPe69N6Snn8BLDAEzC6yhMnRVBVKXRDQwkwiFVz4zMo1oeBt9xwbhbf",
+   "ok": true,
+   "error": null,
+   "state": [
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    },
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    },
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    },
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    }
+   ],
+   "pass": true
+  },
+  {
+   "id": "F2",
+   "phase": "final",
+   "what": "Finalize a second time",
+   "expect": "refused",
+   "sig": "5z6fddkiALkAr9PnvFVBDf8qZYdMGJcCFB2NiwVkjqMwfS3JaNBZRNdEiZZrpE4GYKChkKEVeVcpLZ9ucB5qkYx6",
+   "ok": false,
+   "error": "Error Code: Time",
+   "state": [],
+   "pass": true
+  },
+  {
+   "id": "F3",
+   "phase": "final",
+   "what": "B cancels after the end",
+   "expect": "refused",
+   "sig": "3MDaeUt1FvPDaiet7iD3J5E9krRmqm6zw6cbuLR52nAuy8AcMkbuaYxEVYzLbXFyvZHSn93GMXAWjKJ6gzxYKkKD",
+   "ok": false,
+   "error": "Error Code: Time",
+   "state": [],
+   "pass": true
+  },
+  {
+   "id": "F4",
+   "phase": "final",
+   "what": "C bids after the end",
+   "expect": "refused",
+   "sig": "2iEm4NSsxWRBQwsqJkn6KAS7fd6iv5vrxogkj2Au29YtZcFBEC3PsAky2TUuRSKh33UoJM5HFmUEHMUUs1i87qL1",
+   "ok": false,
+   "error": "Error Code: State",
+   "state": [],
+   "pass": true
+  },
+  {
+   "id": "F5",
+   "phase": "final",
+   "what": "A claims 120000 tCHTA (bid at level 8)",
+   "expect": "accepted",
+   "sig": "4TRu9Bt6Vcs3B3Y7AXaeE1XiwwGPsweyrk2bf7cyyMTRQVQ3FPoW1QXmogFsSAgZeNJTJQTFMMEhNknB6wfu4SzU",
+   "ok": true,
+   "error": null,
+   "state": [
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    },
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    },
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    },
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    },
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    }
+   ],
+   "pass": true
+  },
+  {
+   "id": "F6",
+   "phase": "final",
+   "what": "A claims a second time",
+   "expect": "refused",
+   "sig": "3LwvsLiXt19cH9ZYDKJFNjLCUhMVgxRsEnJPninZgrytof8So51i7R39Dyy9BEAJLjzX5hj4aMBgoiHUA3qS5YBt",
+   "ok": false,
+   "error": "Error Code: State",
+   "state": [],
+   "pass": true
+  },
+  {
+   "id": "F7",
+   "phase": "final",
+   "what": "B claims 200000 tCHTA (bid at level 10)",
+   "expect": "accepted",
+   "sig": "2JMTvMnn2naXLqEZAPMs3E5aqb69JeeFd2JLgKZdQ5529QNZRLpoyu7aWL9jDxBRQP681t7AjkmsBpZmka8Ac7A3",
+   "ok": true,
+   "error": null,
+   "state": [
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    },
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    },
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    },
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    },
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    }
+   ],
+   "pass": true
+  },
+  {
+   "id": "F8",
+   "phase": "final",
+   "what": "C claims 1000 tCHTA (bid at level 0)",
+   "expect": "accepted",
+   "sig": "4YXGa2sj5ws8yiQgwArknsNmdoX1HckxG5eAgbkCZVcLTcUQMhu5Hain7ZGMqXRzMHaKUrZ71VM366adRMxNMcZF",
+   "ok": true,
+   "error": null,
+   "state": [
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    },
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    },
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    },
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    },
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    }
+   ],
+   "pass": true
+  },
+  {
+   "id": "F9",
+   "phase": "final",
+   "what": "D claims 10000 tCHTA (bid at level 3)",
+   "expect": "accepted",
+   "sig": "4m97X5v43nBjmbGjVo6ZNJREXPSEayjdmwznH3xshV32KoY6A7ehXWisYCN6KEVywke6akD7Uy198YXLVcZVpSjm",
+   "ok": true,
+   "error": null,
+   "state": [
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    },
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    },
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    },
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    },
+    {
+     "what": "state check (passed; transcribed from the run log after a crash before the file write)",
+     "ok": true
+    }
+   ],
+   "pass": true
+  },
+  {
+   "id": "F10",
+   "phase": "final",
+   "what": "F claims with its cancelled bid",
+   "expect": "refused",
+   "sig": "58tWVTt1ZhhVE8RSHtQddHpsWsTpr5b295WCs1DEmx2JxghwmcgpbZRPB97BM8YBU5tf34eNKUGLW8fgofEmp9Ak",
+   "ok": false,
+   "error": "Program log: AnchorError thrown in src/auction.rs:117. Error Code: State. Error Number: 6000. Error Message: Invalid state.",
+   "state": [],
+   "pass": true
+  },
+  {
+   "id": "F11",
+   "phase": "final",
+   "what": "D claims into its own account using A's bid",
+   "expect": "refused",
+   "sig": "3bBfvLaZAadarwAahFxDQ9MXFTN2Vj97za4jg6Zs2oRXTGz2JHMJoQVy6LybsKLMkPNTkA1aJUR5M4BXSJGSmhSn",
+   "ok": false,
+   "error": "Program log: AnchorError caused by account: bid. Error Code: ConstraintSeeds. Error Number: 2006. Error Message: A seeds constraint was violated.",
+   "state": [],
+   "pass": true
+  },
+  {
+   "id": "F-end",
+   "phase": "final",
+   "what": "after all claims: escrow empty, proceeds and inventory match",
+   "state": [
+    {
+     "what": "escrow empty",
+     "got": "0",
+     "want": "0",
+     "ok": true
+    },
+    {
+     "what": "proceeds = sold x clearing price",
+     "got": "66200000",
+     "want": "66200000",
+     "ok": true
+    },
+    {
+     "what": "pending claims 0",
+     "got": "0",
+     "want": "0",
+     "ok": true
+    },
+    {
+     "what": "inventory = 5,000,000 offered - sold",
+     "got": "4669000000000",
+     "want": "4669000000000",
+     "ok": true
+    }
+   ],
+   "pass": true
   }
  ],
  "auction": {
   "active_bids": "4",
-  "escrow": "96100000",
+  "escrow": "0",
   "demand": {
    "0": "1000",
    "3": "10000",
@@ -417,6 +671,10 @@
   "after": {
    "transactions": 2,
    "stateChecks": 0
+  },
+  "final": {
+   "transactions": 11,
+   "stateChecks": 28
   }
  }
 }
