@@ -38,14 +38,28 @@ t.clock(now+7*t.DAY)
 act('accept_admin',a3,label='lost admin replaced after the waiting period')
 t.check('recovered admin installed',admin()==str(a3.pubkey()))
 
-# Stolen recovery key: the admin vetoes its proposal during the window.
-thief=key();now=t.svm.get_clock().unix_timestamp
-act('propose_admin',recovery,{'new_admin':thief.pubkey()})
+# Stolen admin key (owner decision 21 Oct 2026, internal review M-1, option A): the administrator can neither
+# cancel nor replace a pending recovery-key proposal, so it cannot block its own replacement.
+thief=key();a4=key();now=t.svm.get_clock().unix_timestamp
+act('propose_admin',recovery,{'new_admin':a4.pubkey()})
 act('cancel_admin_proposal',t.outsider,reject=UNAUTH,label='outsider cannot cancel proposals')
-act('cancel_admin_proposal',a3,label='admin vetoes a recovery-key proposal')
+act('cancel_admin_proposal',a3,reject=UNAUTH,label='admin (or a thief holding its key) cannot cancel a recovery-key proposal')
+act('propose_admin',a3,{'new_admin':thief.pubkey()},reject=UNAUTH,label='admin cannot overwrite a pending recovery-key proposal')
+t.check('recovery proposal still pending',G()['pendingAdmin']==str(a4.pubkey()) and G()['byRecovery'])
+t.clock(now+7*t.DAY)
+act('accept_admin',a4,label='recovery key replaces a stolen admin key after the waiting period')
+t.check('replacement admin installed',admin()==str(a4.pubkey()))
+# The recovery key can withdraw its own proposal; an administrator's own proposal stays cancellable by both keys.
+now=t.svm.get_clock().unix_timestamp
+act('propose_admin',recovery,{'new_admin':thief.pubkey()})
+act('cancel_admin_proposal',a4,reject=UNAUTH,label='new admin cannot cancel the recovery proposal either')
+act('cancel_admin_proposal',recovery,label='recovery key withdraws its own proposal')
 t.clock(now+8*t.DAY)
-act('accept_admin',thief,reject=UNAUTH,label='vetoed takeover cannot complete')
-t.check('admin unchanged after veto',admin()==str(a3.pubkey()))
+act('accept_admin',thief,reject=UNAUTH,label='withdrawn proposal cannot complete')
+act('propose_admin',a4,{'new_admin':thief.pubkey()});act('cancel_admin_proposal',a4,label='admin cancels its own proposal')
+act('propose_admin',a4,{'new_admin':thief.pubkey()});act('cancel_admin_proposal',recovery,label='recovery key cancels an admin proposal')
+t.check('admin unchanged',admin()==str(a4.pubkey()))
+a3=a4
 
 # Recovery key rotation: immediate by the recovery key itself; a delayed, vetoable replacement by the admin.
 r2=key()

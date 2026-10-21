@@ -2,7 +2,7 @@
 
 Son güncelleme: 6 Ekim 2026.
 
-Bu el kitabı programın bugünkü kurallarına (V24, program adresi `DZbsSEnZ…Bd2zG`, ELF `9c9779c3…`) dayanır. Buradaki her prosedür, prova zincirinde `scripts/emergency_drill.mjs` ile uygulandı: 9 tatbikat, 39 kontrol, 0 hata.
+Bu el kitabı programın bugünkü kurallarına (V24, program adresi `DZbsSEnZ…Bd2zG`, ELF `a377eebe…`) dayanır. Buradaki her prosedür, prova zincirinde `scripts/emergency_drill.mjs` ile uygulandı: 9 tatbikat, 39 kontrol, 0 hata.
 
 Komutların hepsi `scripts/emergency.mjs` aracıyla verilir:
 - Araç her komutu **önce simüle eder** ve sonucu yazar. `--send` verilmeden hiçbir şey gönderilmez.
@@ -85,9 +85,17 @@ Bu 7 gün içinde aylık kural çalışmaya devam eder. Durdurulmuş olan yalnı
 
 ### 3. Yönetici anahtarı çalındı ve hırsız benden hızlı davrandı
 
-**Bilinen sınır.** Bu durum `DEPLOYMENT.md`'de de yazılı ve tatbikat 6'da gösterildi:
-- Kurtarma anahtarının yönetici önerisi 7 gün bekler.
-- Mevcut yönetici bu öneriyi iptal edebilir. Yönetici artık hırsızsa, kurtarma anahtarı yönetimi tek başına geri alamaz.
+**Kurtarma anahtarı yönetimi geri alır** (sahibin 21 Ekim kararı, iç inceleme M-1; tatbikat 6):
+- Kurtarma anahtarıyla yeni bir yönetici önerin; öneri 7 gün bekler:
+  ```
+  emergency.mjs propose-admin <YENİ_YÖNETİCİ_PUBKEY> --key <KURTARMA.json> --send
+  ```
+- Hırsız bu öneriyi iptal edemez ve üzerine kendi önerisini yazamaz.
+- 7 gün sonra yeni yönetici kabul eder:
+  ```
+  emergency.mjs accept-admin --key <YENİ_YÖNETİCİ.json> --send
+  ```
+- Bu 7 gün boyunca aşağıdaki sınırlar geçerlidir; kurtarma anahtarıyla giderleri ve duraklatmayı izleyin.
 
 **Hırsız ne yapamaz**
 - **Para çekemez:** Her gider 7 gün bekler ve kurtarma anahtarı her birini iptal edebilir. Kurtarma anahtarıyla en az 7 günde bir `status` okuyun ve tanımadığınız her gideri iptal edin:
@@ -108,7 +116,7 @@ Bu 7 gün içinde aylık kural çalışmaya devam eder. Durdurulmuş olan yalnı
 - Fiyat bandı içinde, rezervin %10'una kadar zararlı alım-satım yapabilir.
 - Yeni gider önerebilir (kurtarma anahtarı iptal eder).
 
-**Kalıcı çözüm (yalnızca güncelleme anahtarı varken):** güncelleme anahtarıyla, yöneticiyi sıfırlayan düzeltilmiş bir program yüklemek. Bu bir kod değişikliğidir: önce yazılmalı, test edilmeli ve mümkünse denetlenmelidir (senaryo 6'daki adımlar). Güncelleme anahtarı kaldırıldıktan sonra yönetim hırsızda kalır, ama yukarıdaki sınırlar geçerlidir.
+Program güncellemesine gerek yoktur; güncelleme anahtarı kaldırıldıktan sonra da kurtarma anahtarı yönetimi geri alabilir.
 
 ### 4. Kurtarma anahtarı kayboldu
 
@@ -134,7 +142,7 @@ emergency.mjs accept-recovery --key <YENİ_KURTARMA.json> --send
 
 Güncelleme yetkisi ayrı anahtarda olduğu için hırsız **program kodunu değiştiremez** ve para çekemez. Yapabilecekleri:
 - kurtarma yetkisini anında kendine almak;
-- yeni bir yönetici önermek (7 gün bekler; yönetici iptal edebilir);
+- yeni bir yönetici önermek: 7 gün bekler ve **yönetici iptal edemez** (sahibin 21 Ekim kararı, iç inceleme M-1). 7 gün sonra hırsızın önerdiği anahtar yönetici olur;
 - bekleyen giderleri iptal etmek (sabit teknik gider dahil);
 - yöneticinin verdiği bir duraklatmayı kaldırmak; bundan sonra yönetici 7 gün duraklatamaz. Bu süre içinde acil durum freni çalışmaz; bir program hatası çıkarsa düzeltme güncelleme anahtarıyla yapılır (senaryo 6).
 
@@ -144,11 +152,8 @@ Yapılacaklar:
    emergency.mjs propose-recovery <YENİ> --key <ESKİ_KURTARMA.json> --send
    emergency.mjs accept-recovery --key <YENİ_KURTARMA.json> --send
    ```
-2. Hırsız daha hızlıysa: en az 7 günde bir `status` okuyun ve kurtarma anahtarından gelen her yönetici önerisini yöneticiyle iptal edin:
-   ```
-   emergency.mjs cancel-admin-proposal --key <YÖNETİCİ.json> --send
-   ```
-3. Yöneticiyle yeni bir kurtarma anahtarı önerin (7 gün bekler). Hırsız bu öneriyi iptal edebilir; o durumda yönetim yöneticide kalır, ama hırsız giderleri iptal etmeye devam edebilir. Kalıcı çözüm bir program güncellemesidir (senaryo 6, güncelleme anahtarıyla).
+2. Hırsız daha hızlıysa ve bir yönetici önerdiyse: yönetici bunu iptal edemez. Önerinin 7 günü dolmadan güncelleme anahtarıyla düzeltilmiş bir program yüklemek tek yoldur (senaryo 6). Bu, M-1 kararının bilinen bedelidir; güncelleme anahtarı kaldırıldıktan sonra hırsız 7 gün içinde yönetimi alır. Kurtarma anahtarını bu yüzden çevrimdışı ve en iyi korunan anahtar olarak saklayın.
+3. Hırsız henüz bir şey yapmadıysa: yöneticiyle yeni bir kurtarma anahtarı önerin (7 gün bekler; hırsız iptal edebilir).
 4. Duyurun.
 
 ### 6. Programda hata bulundu

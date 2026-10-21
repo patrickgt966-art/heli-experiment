@@ -21,7 +21,15 @@ def bootstrap(t, auction_quantity=1000, with_policy=False, min_depth=5000, rejec
   t.call('create_token_metadata',dict(name=NAME,symbol='CHTA',uri=URI),{'metadata':t.pda(b'not-metadata')},reject='Invalid or missing token metadata',label='metadata rejected: wrong metadata account')
   t.call('create_token_metadata',dict(name=NAME,symbol='CHTA',uri=URI),{'admin':t.outsider.pubkey()},reject='has one',label='only the admin writes the token metadata')
  t.call('create_token_metadata',dict(name=NAME,symbol='CHTA',uri=URI),label='token name, symbol and logo URI written before genesis')
- if metadata_checks:t.call('create_token_metadata',dict(name=NAME,symbol='CHTA',uri=URI),reject='Invalid state',label='metadata can be written only once')
+ if metadata_checks:
+  t.call('create_token_metadata',dict(name=NAME,symbol='CHTA',uri=URI),reject='Invalid state',label='metadata can be written only once')
+  # Owner decision (21 Oct 2026, review L-1): the Metaplex record is created immutable, so the name, symbol and
+  # logo URI cannot change even through a program upgrade. Layout: key, update authority, mint, then padded
+  # name/symbol/uri strings, seller fee, optional creators, primary_sale_happened, is_mutable.
+  d=bytes(t.svm.get_account(t.defaults['metadata']).data);o=65
+  for _ in range(3):o+=4+struct.unpack_from('<I',d,o)[0]
+  o+=2;o+=1+(4+34*struct.unpack_from('<I',d,o+1)[0] if d[o] else 0)
+  t.check('token metadata is immutable (is_mutable = false)',d[o+1]==0)
  t.call('genesis');t.call('prepare_auction_quote');t.call('prepare_auction_proceeds');t.call('open_auction',{'floor_quote_atoms_per_heli':100,'tick_size':50})
  if order_checks:t.call('initialize_fee_vaults',{'monthly_cap':10**15,'reserve':0,'project_floor':1000*t.U},{'operations':t.pda(b'operations'),'payer':t.admin.pubkey()},reject='Invalid state',label='project floor cannot be chosen before the opening auction has finished (review F5)')
  qw=t.token_account(q,t.alice.pubkey());hw=t.token_account(t.defaults['mint'],t.alice.pubkey())

@@ -24,6 +24,7 @@ Sahibin iki kararı:
 | Kaynak SHA-256 | `0d8488ab433d682584aeaa77e939a43571f2ecfe8d730ceb8f5cd855f9881199` |
 | ELF SHA-256 | `c0e818148ea2aea8595a3024aac2a358c78f2052a45141ca0c299592dd7d6f87` (1.018.560 bayt), program adresi `HkScy…JAWv` |
 | Devnet sürümü (10 Ekim) | Yalnız `declare_id!` yeni adrese çevrildi: `DZbsSEnZxsfQf1HejcLk63BEDNqzAMXPgVxTq97Bd2zG`. Kaynak `4f0c0f8c…`, ELF `9c9779c3ef4f23a93ba8edd5cd486aba26f115fc59b2ae87b2c05e1620f8f57c`, 1.018.560 bayt, program kirası ~5,18 SOL. Bütün testler yeniden geçti. |
+| V24.1 (21 Ekim) | İç inceleme sonrası sahip kararları: M-1 (yönetici, kurtarma anahtarının yönetici önerisini iptal edemez ve üzerine yazamaz) ve L-1 (token adı kaydı değiştirilemez oluşturulur). Kaynak `284f5003…`, ELF `a377eebe5aea3ca3c4c03170795c45b8afa547f3a42a3a41a7169a3da5c5d2b8`, 1.018.992 bayt. Bütün testler yeniden geçti. |
 
 Yeni ELF ile yeniden çalıştırılan testler:
 - 14 LiteSVM test betiği, `policy depth` ve `closure` dahil: hepsi geçti. Yönetim testi 76 kontrol.
