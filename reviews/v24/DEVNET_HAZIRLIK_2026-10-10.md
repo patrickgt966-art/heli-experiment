@@ -279,6 +279,22 @@ Bitiş 18 Ekim 12:00 UTC. Kapanışı (finalize) yönetici değil, operatör imz
 
 ### Kalan adımlar
 
-- **Kalan:** `setup post` (yönetici), piyasa, keeper; güncelleme yetkisi `ANRm…` anahtarına devredilir.
+### Kurulumun ikinci kısmı, yetki devri ve keeper (21 Ekim)
+
+- **`setup post --send`** (yönetici, sahibin bilgisayarı): 10 adımın 10'u tamamlandı.
+  - Zincirdeki değerler: aylık sınır 1000, yedek 0, korunan taban 120 TEST-USDC.
+  - Ücret kasaları, aylık satış koltuğu (tür 3) ve yönetim hesapları kuruldu.
+  - Satış geliri 66,2 TEST-USDC; tabanın altında, bu yüzden Devnet'te hazineden yalnız sabit teknik gider payı harcanabilir. Kural böyle, lansman değerleri değiştirilmedi.
+- **Güncelleme yetkisi:** yönetici ve `ANRm…` birlikte imzaladı; programın güncelleme yetkisi `ANRm3qEKohq78rkXTYPVqa2E7pf9ThC6ziGtK627co9o`. Verify sayfası bunu gösteriyor.
+- **Keeper** (`keeper/run.mjs`, ayrı ve yetkisiz bir keeper cüzdanı, `--once`):
+  - Önce yalnız plan: `open_epoch`.
+  - Sonra gerçek: `open_epoch` (`kNVUgSDa…`) ve `observe_release_market` (`2MW5HPgz…`) zincirde hatasız; ardından `idle`.
+  - Keeper, Devnet'teki Manifest ikilisine sabitlendi (`ad148f76…`, 410.728 bayt, yetki `ob3iwHov…`). `devnet_setup.mjs`'in yazdığı keeper ayarı depodaki Manifest v3.0.24'ün hash'ini kullanıyor; Devnet'te keeper'ı çalıştırmak için bu iki alan Devnet ikilisine göre ayarlanmalı.
+- **Test kaynaklarının iadesi:** TEST-USDC basma yetkisi yöneticiye (`DobScce…`) devredildi (`2ZMPJEYW…`). Operatör, keeper ve test cüzdanlarındaki SOL yöneticiye geri gönderildi; yönetici bakiyesi 14,67 SOL.
+
+### Kalan
+
+- Auction sayfasındaki kilitli tutar düzeltmesi main'de; Devnet test sitesine yüklenmesi yeni oturumu bekliyor (Cloudflare token'ı ortam değişkenine taşındı).
+- Aylık satış: bilinen Devnet farkı (bölüm 8).
 - **Aylık satış:** bilinen Devnet farkı (bölüm 8).
 - **720 aylık senaryolar:** yerelde (bölüm 8), Devnet'te zaman atlatılmaz.
