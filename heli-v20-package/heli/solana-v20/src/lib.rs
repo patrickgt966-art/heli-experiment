@@ -32,8 +32,7 @@ pub mod heli_core_v20 {
  pub fn create_fee_quote(ctx:Context<CreateFeeQuote>)->Result<()> {require!(!ctx.accounts.config.closed,ErrorCode::State);Ok(())}
  pub fn create_vault(ctx:Context<CreateVault>,kind:u8)->Result<()> {require!((kind==0||kind==3)&&!ctx.accounts.config.live&&!ctx.accounts.config.closed,ErrorCode::State);ctx.accounts.config.vault_mask|=1<<kind;Ok(())}
  // Owner decision (4 Oct 2026): the token's public name, symbol and logo URI are written once, before genesis,
- // while the config PDA is still the mint authority. The config PDA is also the update authority and the program
- // has no update instruction, so the metadata is fixed once the upgrade key is removed.
+ // while the config PDA is still the mint authority. The metadata is created immutable (review L-1).
  pub fn create_token_metadata(ctx:Context<CreateTokenMetadata>,name:String,symbol:String,uri:String)->Result<()> {
   let a=&ctx.accounts;let c=&a.config;
   require!(!c.live&&!c.closed&&!c.metadata_created&&a.mint.supply==0,ErrorCode::State);
@@ -42,11 +41,12 @@ pub mod heli_core_v20 {
    &&uri.bytes().all(|b|b>0x20&&b<0x7f),ErrorCode::TokenMetadata);
   let(expected,_)=Pubkey::find_program_address(&[b"metadata",TOKEN_METADATA.as_ref(),c.mint.as_ref()],&TOKEN_METADATA);
   require_keys_eq!(a.metadata.key(),expected,ErrorCode::TokenMetadata);
-  // CreateMetadataAccountV3 (index 33): DataV2 {name, symbol, uri, no royalty, no creators/collection/uses},
-  // is_mutable, no collection details.
+  // CreateMetadataAccountV3 (index 33): DataV2 {name, symbol, uri, ...}.
   let mut data=vec![33u8];
   for s in [&name,&symbol,&uri] {data.extend_from_slice(&(s.len() as u32).to_le_bytes());data.extend_from_slice(s.as_bytes());}
-  data.extend_from_slice(&[0,0,0,0,0,1,0]);
+  // No royalty, creators, collection or uses; is_mutable=false (owner decision 21 Oct 2026, internal review L-1:
+  // the name, symbol and logo URI can never change, even through a program upgrade); no collection details.
+  data.extend_from_slice(&[0,0,0,0,0,0,0]);
   use anchor_lang::solana_program::{instruction::{AccountMeta,Instruction},program::invoke_signed};
   let ix=Instruction{program_id:TOKEN_METADATA,data,accounts:vec![AccountMeta::new(a.metadata.key(),false),AccountMeta::new_readonly(a.mint.key(),false),
    AccountMeta::new_readonly(c.key(),true),AccountMeta::new(a.admin.key(),true),AccountMeta::new_readonly(c.key(),true),AccountMeta::new_readonly(a.system_program.key(),false)]};
@@ -182,7 +182,7 @@ pub mod heli_core_v20 {
   emit!(ExpenseCancelled{nonce:e.nonce,destination:e.destination,amount:e.amount});Ok(())
  }
  // Key governance (review C3, owner decision B): routine two-step admin handover, a cold recovery key that
- // can replace a lost admin after a 7-day window the current admin can veto.
+ // can replace a lost or stolen admin after a 7-day window; the admin cannot veto it (review M-1, 21 Oct 2026).
  pub fn initialize_governance(ctx:Context<InitializeGovernance>,recovery:Pubkey)->Result<()> {
   require!(recovery!=Pubkey::default()&&recovery!=ctx.accounts.config.admin,ErrorCode::Unauthorized);
   let g=&mut ctx.accounts.governance;g.recovery=recovery;g.bump=ctx.bumps.governance;Ok(())
@@ -191,6 +191,9 @@ pub mod heli_core_v20 {
   let a=&mut ctx.accounts;let signer=a.signer.key();let now=Clock::get()?.unix_timestamp;
   require!(new_admin!=Pubkey::default()&&new_admin!=a.governance.recovery&&new_admin!=a.config.admin,ErrorCode::Unauthorized);
   let by_recovery=if signer==a.config.admin {false}else{require!(signer==a.governance.recovery,ErrorCode::Unauthorized);true};
+  // Owner decision (21 Oct 2026, internal review M-1, option A): the administrator can neither replace nor cancel a
+  // pending recovery-key proposal, so a stolen administrator key cannot block its own replacement.
+  require!(by_recovery||!(a.governance.by_recovery&&a.governance.pending_admin!=Pubkey::default()),ErrorCode::Unauthorized);
   let g=&mut a.governance;g.pending_admin=new_admin;g.by_recovery=by_recovery;g.ready_at=if by_recovery {now.checked_add(GOVERNANCE_DELAY).ok_or(ErrorCode::Math)?}else{now};
   emit!(AdminProposed{new_admin,by_recovery,ready_at:g.ready_at});Ok(())
  }
@@ -203,7 +206,7 @@ pub mod heli_core_v20 {
  }
  pub fn cancel_admin_proposal(mut ctx:Context<GovernanceAction>)->Result<()> {
   let a=&mut ctx.accounts;let signer=a.signer.key();
-  require!(a.governance.pending_admin!=Pubkey::default()&&(signer==a.config.admin||signer==a.governance.recovery),ErrorCode::Unauthorized);
+  let g=&a.governance;require!(g.pending_admin!=Pubkey::default()&&(signer==g.recovery||(signer==a.config.admin&&!g.by_recovery)),ErrorCode::Unauthorized);
   let g=&mut a.governance;g.pending_admin=Pubkey::default();g.ready_at=0;g.by_recovery=false;Ok(())
  }
  pub fn propose_recovery(mut ctx:Context<GovernanceAction>,new_recovery:Pubkey)->Result<()> {

@@ -178,6 +178,18 @@ Bugün son çare, güncelleme anahtarıyla programı yenilemek. Bu anahtar denet
 - **Ölçüm talimatı:** Gözlem talimatı aynı işlemde başka talimata izin vermiyor. Böylece aynı işlem içinde emir koyup kaldırarak referans fiyat oynatılamaz.
 - **Self-trade koruması:** Proje ve yönetim emirlerinin birbirleriyle eşleşmesini engelleyen koruma zaman ve yuva olarak iki ayrı pencereyle tutuluyor.
 
+## Uygulama durumu (21 Ekim, sahip kararları)
+
+- **M-1: seçenek A uygulandı.** Kurtarma anahtarının yönetici önerisini yalnız kurtarma anahtarı geri çekebilir. Yönetici bu öneriyi iptal edemez ve üzerine kendi önerisini yazamaz. Yöneticinin kendi önerisini yönetici de kurtarma anahtarı da iptal edebilir.
+  - Testler: `test_governance_svm.py` (87 kontrol) ve tatbikat 6.
+  - Bilinen bedeli: kurtarma anahtarı çalınırsa 7 gün sonra yönetimi alır. `ACIL_DURUM.md` senaryo 3 ve 5 buna göre yazıldı.
+- **L-1: seçenek A uygulandı.** Token adı kaydı `is_mutable=false` ile oluşturuluyor.
+  - Test: `bootstrap_v15.py`, `test_no_free_allocation_svm.py` içinde zincirdeki kaydı okuyan bir kontrol.
+  - Devnet'teki tCHTA kaydı eski kodla oluşturulduğu için değiştirilebilir kalır; ana ağ kaydı yeni kodla oluşturulacak.
+- **Yeni derleme:** kaynak `284f5003…`, ELF `a377eebe5aea3ca3c4c03170795c45b8afa547f3a42a3a41a7169a3da5c5d2b8`, 1.018.992 bayt (432 bayt büyüdü).
+- **Testler:** bütün LiteSVM testleri, 30 tohumlu fuzz, prova (173), 60 aylık test (606) ve tatbikat (9 tatbikat, 40 kontrol) geçti. Ayrıca ana ağ Manifest ve Metaplex ikilileriyle ikinci tur çalıştırıldı.
+- M-2, L-2…L-5 ve bilgi notları açık; sahip kararını bekliyor.
+
 ## Sonraki adımlar
 
 1. M-1 ve L-1 için sahip kararı: seçenek A, B veya C.

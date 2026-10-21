@@ -88,9 +88,10 @@ r=em(['accept-admin','--send'],'admin-3');check('accepting before the 7 days is 
 await warp((await now())+7*86400+60);
 r=em(['accept-admin','--send'],'admin-3');check('after 7 days the new administrator takes over',r.ok&&(await cfg()).admin===admin3.publicKey.toBase58(),r.out);
 
-drill('6. Known limit: a thief holding the admin key can veto the recovery key');
+drill('6. A thief holding the admin key cannot veto the recovery key (owner decision 21 Oct 2026, review M-1)');
 const admin4=key('admin-4');r=em(['propose-admin',admin4.publicKey.toBase58(),'--send'],'recovery');
-r=em(['cancel-admin-proposal','--send'],'admin-3');check('the current administrator can cancel the recovery proposal (documented limit)',r.ok&&(await gov()).pending_admin==='11111111111111111111111111111111');
+r=em(['cancel-admin-proposal','--send'],'admin-3');check('the administrator cannot cancel the recovery proposal',!r.ok&&(await gov()).pending_admin===admin4.publicKey.toBase58(),r.out);
+r=em(['cancel-admin-proposal','--send'],'recovery');check('the recovery key can withdraw its own proposal',r.ok&&(await gov()).pending_admin==='11111111111111111111111111111111',r.out);
 x=await propose(admin3,80_000_000n);r=em(['recovery-cancel-expense',String(x.n),'--send'],'recovery');
 check('…but the recovery key still stops every expense the thief proposes',r.ok);
 

@@ -9,7 +9,7 @@
 //   recovery-cancel-expense <nonce>       recovery key
 //   propose-admin <pubkey>                administrator (takes effect at once) or recovery key (after 7 days)
 //   accept-admin                          the proposed new administrator
-//   cancel-admin-proposal                 administrator or recovery key
+//   cancel-admin-proposal                 recovery key (any proposal) or administrator (only its own)
 //   propose-recovery <pubkey>             recovery key (at once) or administrator (after 7 days)
 //   accept-recovery                       the proposed new recovery key
 //   cancel-recovery-proposal              recovery key

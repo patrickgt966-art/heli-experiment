@@ -1,7 +1,7 @@
 {
-  "source_sha256": "4f0c0f8c883ad9b2eb2facd853867e411980300b3b77a0b9302601d3ea15d5d9",
-  "binary_sha256": "9c9779c3ef4f23a93ba8edd5cd486aba26f115fc59b2ae87b2c05e1620f8f57c",
-  "checks_and_transactions": 77,
+  "source_sha256": "284f5003b7b507aba68c66690f6a14ccdf75fbef0a73ccf3290c00e5343ab856",
+  "binary_sha256": "a377eebe5aea3ca3c4c03170795c45b8afa547f3a42a3a41a7169a3da5c5d2b8",
+  "checks_and_transactions": 78,
   "checks": [
     "allocate 82",
     "TEST quote mint",
@@ -25,6 +25,7 @@
     "only the admin writes the token metadata",
     "token name, symbol and logo URI written before genesis",
     "metadata can be written only once",
+    "token metadata is immutable (is_mutable = false)",
     "genesis",
     "prepare_auction_quote",
     "prepare_auction_proceeds",

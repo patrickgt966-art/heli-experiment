@@ -17,7 +17,7 @@ Acil durumlar (anahtar kaybı ya da hırsızlığı, hata, duraklatma, bakım se
 Kurallar (programda zorlanır):
 
 - **Olağan devir:** `propose_admin` (yönetici) + `accept_admin` (yeni anahtar), bekleme yok. Aynı işlemde yapılabilir. Yönetici anahtarının çalındığından şüphelenince hemen kullanın.
-- **Kurtarma:** `propose_admin` (kurtarma anahtarı) → 7 gün → `accept_admin` (yeni anahtar). Bu sürede yönetici `cancel_admin_proposal` ile itiraz edebilir.
+- **Kurtarma:** `propose_admin` (kurtarma anahtarı) → 7 gün → `accept_admin` (yeni anahtar). Yönetici bu öneriyi iptal edemez ve üzerine yeni öneri yazamaz (sahibin 21 Ekim kararı, iç inceleme M-1); yalnız kurtarma anahtarı kendi önerisini geri çekebilir. Bedeli: kurtarma anahtarı çalınırsa 7 gün sonra yönetimi alabilir; tek karşı önlem, güncelleme anahtarı varken program güncellemesidir.
 - **Kurtarma anahtarı değişimi:** Kurtarma anahtarı kendini anında değiştirir. Yönetici ise ancak 7 gün bekleyen ve eski kurtarma anahtarının iptal edebildiği bir öneriyle değiştirir. Yeni anahtarın kabul için imza atması gerekir.
 - **Kurtarma anahtarı yönetici olamaz, yönetici de kurtarma anahtarı olamaz.**
 - **Savunma:** Kurtarma anahtarı `recovery_cancel_expense` ile bekleyen bir gideri durdurabilir.
