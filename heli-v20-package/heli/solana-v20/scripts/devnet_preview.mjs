@@ -46,7 +46,8 @@ let pages = 0, labels = 0;
 for (const f of readdirSync(out)) {
   if (!/\.(html|js)$/.test(f) || keep.has(f) || f.startsWith('vendor')) continue;
   let s = readFileSync(join(out, f), 'utf8');
-  s = s.replace(/\bUSDC\b/g, () => { labels++; return 'TEST-USDC'; });
+  // Never relabel text that already says TEST-USDC (the banner did: "TEST-TEST-USDC", found 21 Oct 2026).
+  s = s.replace(/(?<!TEST-)\bUSDC\b/g, () => { labels++; return 'TEST-USDC'; });
   if (f.endsWith('.html')) { s = s.replace('</head>', '  <script src="devnet-banner.js" defer></script>\n</head>').replace(/<title>/, '<title>[DEVNET TEST] '); pages++; }
   writeFileSync(join(out, f), s);
 }
