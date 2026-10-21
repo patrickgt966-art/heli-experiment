@@ -96,3 +96,9 @@ test('confirmation never reports an unknown outcome as failed (Devnet test 10 Oc
  let n=0;const flaky={getSignatureStatuses:async()=>{if(n++<2)throw Error('429');return {value:[{err:null,confirmationStatus:'finalized'}]};},getBlockHeight:async()=>0};
  assert.equal(await core.confirmOrThrow(flaky,'sig',100,{sleep:async()=>{},pollMs:0}),'sig');
 });
+test('locked funds leave out cancelled and claimed bids (Devnet test 18 Oct: page showed 96.1 locked with an empty escrow)',()=>{
+ const a={floor:200n,tickSize:10n};
+ const bids=[{active:true,claimed:false,quantity:1000n,tick:0},{active:true,claimed:true,quantity:120000n,tick:8},{active:false,claimed:false,quantity:0n,tick:3}];
+ assert.equal(core.lockedAtoms(a,bids),200000n);
+ assert.equal(core.lockedAtoms(a,bids.map(b=>({...b,claimed:b.active}))),0n);
+});

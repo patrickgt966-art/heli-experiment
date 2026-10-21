@@ -1,10 +1,11 @@
-// Devnet opening-auction test with synthetic wallets (before the auction end): bid, change, cancel, limits,
-// unauthorised accounts, and cancel/bid while the administrator has paused the program.
+// Devnet opening-auction test with synthetic wallets: before the end (open/paused/after) bid, change, cancel, limits,
+// unauthorised accounts, and cancel/bid while the administrator has paused the program; after the end (final)
+// finalize, claims with refunds at the clearing price, and the refused late, double and foreign actions.
 // The operator key pays every fee and mints the worthless TEST-USDC; the synthetic bidder keys are created in
 // <keydir> and hold no SOL. Rejected cases are sent with preflight off on purpose, so each refusal is a real
 // failed transaction on Devnet that an explorer (and the Live/Verify pages) must show as failed.
 // Key files stay outside the repository. Refuses any cluster other than Devnet.
-//   node scripts/devnet_auction_day0.mjs open|paused|after --operator <op.json> --keydir <dir> --out <results.json>
+//   node scripts/devnet_auction_day0.mjs open|paused|after|final --operator <op.json> --keydir <dir> --out <results.json>
 import {readFileSync,writeFileSync,existsSync,mkdirSync} from 'node:fs';
 import {join} from 'node:path';
 import {web3,spl} from '../../mobile/deps.mjs';
@@ -12,7 +13,7 @@ import {heliInstruction,decodeAccount} from '../../mobile/solana.mjs';
 
 const argv=process.argv.slice(2),flag=n=>{const i=argv.indexOf(n);return i>=0?argv[i+1]:undefined;};
 const phase=argv[0],opFile=flag('--operator'),dir=flag('--keydir'),out=flag('--out');
-if(!['open','paused','after'].includes(phase)||!opFile||!dir||!out)throw Error('usage: node scripts/devnet_auction_day0.mjs open|paused|after --operator <op.json> --keydir <dir> --out <results.json>');
+if(!['open','paused','after','final'].includes(phase)||!opFile||!dir||!out)throw Error('usage: node scripts/devnet_auction_day0.mjs open|paused|after|final --operator <op.json> --keydir <dir> --out <results.json>');
 const DEVNET='EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG';
 const conn=new web3.Connection(flag('--rpc')??'https://api.devnet.solana.com','confirmed');
 if(await conn.getGenesisHash()!==DEVNET)throw Error('Refusing: not Devnet');
@@ -21,7 +22,7 @@ const program=new web3.PublicKey(flag('--program')??'DZbsSEnZxsfQf1HejcLk63BEDNq
 const pda=(...s)=>web3.PublicKey.findProgramAddressSync(s.map(x=>typeof x==='string'?Buffer.from(x):x),program)[0];
 const load=f=>web3.Keypair.fromSecretKey(Uint8Array.from(JSON.parse(readFileSync(f,'utf8'))));
 const op=load(opFile);mkdirSync(dir,{recursive:true});
-const W=Object.fromEntries(['A','B','C','D','E'].map(n=>{const f=join(dir,`${n}.json`);
+const W=Object.fromEntries(['A','B','C','D','E','F'].map(n=>{const f=join(dir,`${n}.json`);
  if(!existsSync(f))writeFileSync(f,JSON.stringify(Array.from(web3.Keypair.generate().secretKey)),{mode:0o600});return [n,load(f)];}));
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function retry(f){for(let i=0;;i++){try{return await f();}catch(e){if(i>=6)throw e;await sleep(1500*2**i);}}}
@@ -55,6 +56,7 @@ async function run(id,what,expectOk,ixs,signers,checks=async()=>[]){
  const state=r.ok===expectOk?await checks():[];stateChecks+=state.length;
  const pass=r.ok===expectOk&&state.every(s=>s.ok);
  results.cases=results.cases.filter(c=>c.id!==id);results.cases.push({id,phase,what,expect:expectOk?'accepted':'refused',...r,state,pass});
+ writeFileSync(out,JSON.stringify(results,(k,v)=>typeof v==='bigint'?v.toString():v,1)+'\n');
  console.log(`  ${pass?'PASS':'FAIL'} ${id} ${what}: ${r.ok?'accepted':'refused'}${r.error?` (${r.error})`:''} ${r.sig}`);
  for(const s of state)if(!s.ok)console.log(`       state ${s.what}: got ${s.got}, want ${s.want}`);
 }
@@ -116,6 +118,38 @@ if(phase==='after'){
  const {B,C}=W;
  await run('U1','B bids again after the pause: 200,000 at tick 10',true,[place(B,200_000n,10)],[B]);
  await run('U2','C bids again after the pause: 1,000 at tick 0',true,[place(C,1_000n,0)],[C]);
+}
+if(phase==='final'){
+ const now=Math.floor(Date.now()/1000);let a0=await read(auctionKey,'OpeningAuction');
+ if(now<Number(a0.end))throw Error(`The auction ends at ${new Date(Number(a0.end)*1000).toISOString()}`);
+ const {A,B,C,D,F}=W,mint=new web3.PublicKey(config.mint),inventory=pda('market-inventory'),proceeds=pda('auction-proceeds');
+ const heliAta=w=>spl.getAssociatedTokenAddressSync(mint,w.publicKey);
+ const finalize=()=>heliInstruction(idl,program,'finalize_auction',{},{config:pda('config'),auction:auctionKey,market_inventory:inventory});
+ const claim=(w,o={})=>[spl.createAssociatedTokenAccountIdempotentInstruction(op.publicKey,heliAta(w),w.publicKey,mint),
+  ix('claim_auction_bid',{},{market_inventory:inventory,sale_proceeds:proceeds,bid:bidKey(w),bidder_heli:heliAta(w),bidder_quote:ata(w),bidder:w.publicKey,...o})];
+ const demand=a0.demand.reduce((x,y)=>x+y,0n);
+ await run('F1','Anyone finalizes the auction after the end (operator signs, not the administrator)',true,[finalize()],[],async()=>{const a=await read(auctionKey,'OpeningAuction');
+  return [eq('finalized',a.finalized,true),eq('clearing price = floor (demand below the offer)',a.clearing_price,a.floor),eq('sold = total demand',a.sold_heli,demand),eq('pending claims = active bids',a.pending_claims,a0.active_bids)];});
+ await run('F2','Finalize a second time',false,[finalize()],[]);
+ await run('F3','B cancels after the end',false,[cancel(B)],[B]);
+ await run('F4','C bids after the end',false,[place(C,1_000n,0)],[C]);
+ const a=await read(auctionKey,'OpeningAuction'),p=a.clearing_price;let paidTotal=0n;
+ for(const [id,n,w] of [['F5','A',A],['F7','B',B],['F8','C',C],['F9','D',D]]){
+  const bid=await read(bidKey(w),'OpeningBid'),coll=bid.quantity_heli*(a.floor+a.tick_size*BigInt(bid.tick)),pay=bid.quantity_heli*p;
+  const q0=await bal(ata(w)),h0=await bal(heliAta(w)),e0=await bal(escrow),r0=await bal(proceeds);
+  await run(id,`${n} claims ${bid.quantity_heli} tCHTA (bid at level ${bid.tick})`,true,claim(w),[w],async()=>{const b2=await read(bidKey(w),'OpeningBid');
+   return [eq(`${n} receives tCHTA`,(await bal(heliAta(w)))-h0,bid.quantity_heli*1_000_000n),eq(`${n} refund = collateral - paid`,(await bal(ata(w)))-q0,coll-pay),
+    eq('escrow -collateral',e0-(await bal(escrow)),coll),eq('proceeds +paid',(await bal(proceeds))-r0,pay),eq('bid claimed',b2.claimed,true)];});
+  paidTotal+=pay;
+  if(id==='F5')await run('F6','A claims a second time',false,claim(A),[A]);
+ }
+ await run('F10','F claims with its cancelled bid',false,claim(F),[F]);
+ await run('F11','D claims into its own account using A\'s bid',false,claim(D,{bid:bidKey(A)}),[D]);
+ const aEnd=await read(auctionKey,'OpeningAuction');
+ const end=[eq('escrow empty',await bal(escrow),0n),eq('proceeds = sold x clearing price',await bal(proceeds),demand*p),eq('pending claims 0',aEnd.pending_claims,0n),
+  eq('inventory = 5,000,000 offered - sold',await bal(inventory),(5_000_000n-demand)*1_000_000n)];stateChecks+=end.length;
+ results.cases=results.cases.filter(c=>c.id!=='F-end');results.cases.push({id:'F-end',phase,what:'after all claims: escrow empty, proceeds and inventory match',state:end,pass:end.every(x=>x.ok)});
+ console.log(`  ${end.every(x=>x.ok)?'PASS':'FAIL'} F-end ${end.map(x=>`${x.what}: ${x.got}`).join('; ')}`);
 }
 const a=await read(auctionKey,'OpeningAuction');
 results.auction={active_bids:a.active_bids.toString(),escrow:(await bal(escrow)).toString(),demand:Object.fromEntries(a.demand.map((d,i)=>[i,d.toString()]).filter(([,d])=>d!=='0'))};
